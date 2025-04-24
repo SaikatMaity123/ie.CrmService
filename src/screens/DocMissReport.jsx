@@ -72,6 +72,7 @@ const DocMissReport = () => {
   const show = () => {
     if (currDate === '') {
       Alert.alert('Select Start Date');
+      Alert.alert('Select Start Date');
     } else if (currEDate === '') {
       Alert.alert('Select End Date');
     } else {
