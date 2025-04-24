@@ -1,0 +1,605 @@
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  TextInput,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
+import DeviceInfo from 'react-native-device-info';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ActivityIndicator} from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
+import {BASE_URL} from '@env';
+
+const DoctorQuizScreen = () => {
+  const [form, setForm] = useState({area: '', doctor: '', contact: ''});
+  const [areaList, setAreaList] = useState([]);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
+  const [shortAnswer, setShortAnswer] = useState('');
+  const [isQuizFinished, setIsQuizFinished] = useState(false);
+  const [doctorList, setDoctorList] = useState([]);
+  const [IDEmployee, setIDEmployee] = useState(null);
+  const [empEmail, setEmpEmail] = useState(null);
+  const [selectedDoctorName, setSelectedDoctorName] = useState('');
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [device, setDevice] = useState('');
+  const [answersMap, setAnswersMap] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingAreas, setLoadingAreas] = useState(false);
+  const [useBusinessID, setBusinessID] = useState('');
+
+  useEffect(() => {
+    DeviceInfo.getDeviceName().then(setDevice);
+  }, []);
+
+  const currentQuestion = quizQuestions[currentQuestionIndex];
+
+  useEffect(() => {
+    AsyncStorage.getItem('UserData').then(value => {
+      if (value) {
+        const user = JSON.parse(value);
+        setIDEmployee(user.IDEmployee);
+        setEmpEmail(user.Empemail);
+        setBusinessID(user.BusinessID);
+        NetInfo.fetch().then(async state => {
+          if (state.isConnected) {
+            fetchAreas(user.IDEmployee, user.BusinessID);
+          } else {
+            Alert.alert('No Internet');
+          }
+        }, []);
+      }
+    });
+  }, []);
+
+  const fetchAreas = async (IDEmployee, BusinessID) => {
+    setLoadingAreas(true); // Show loader
+    try {
+      const url =
+        BASE_URL +
+        'Area/EmployeeWiseAreaList?Businessid=' +
+        BusinessID +
+        '&IDEmployee=' +
+        IDEmployee;
+      const response = await fetch(url);
+      const data = await response.json();
+      setAreaList(data);
+    } catch (error) {
+      console.error('Error fetching areas:', error);
+      Alert.alert('Error', 'Failed to load areas.');
+    } finally {
+      setLoadingAreas(false); // Hide loader
+    }
+  };
+
+  const fetchDoctors = async (selectedAreaId = 0) => {
+    if (!IDEmployee) return;
+    const url =
+      BASE_URL +
+      'Doctor/EmployeeAndAreaWiseDoctorList?Businessid=' +
+      useBusinessID +
+      '&IDEmployee=' +
+      IDEmployee +
+      '&IDArea=' +
+      selectedAreaId;
+    const response = await fetch(url);
+    const data = await response.json();
+    setDoctorList(data);
+  };
+
+  const handleStart = async () => {
+    if (
+      !form.area ||
+      !form.doctor ||
+      !form.contact ||
+      !/^\d{10}$/.test(form.contact)
+    ) {
+      Alert.alert('Invalid input', 'Please fill all fields with valid data.');
+      return;
+    }
+
+    setIsLoading(true); // Show loader
+
+    try {
+      const response = await fetch(
+        `https://apitest.mendine.co.in/api/crm/Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}`,
+      );
+      const json = await response.json();
+
+      if (json.result?.length > 0) {
+        const formatted = json.result.map(q => ({
+          id: q.IDQuestion.toString(),
+          IDQuestion: q.IDQuestion,
+          IDSurvey: q.IDSurvey,
+          question: q.Question,
+          options: [
+            q.Option1,
+            q.Option2,
+            q.Option3,
+            q.Option4,
+            q.Option5,
+          ].filter(Boolean),
+          type: q.QuestionType.includes('MULTIPLE')
+            ? 'multiple'
+            : q.QuestionType === 'SHORT-TEXT' || q.QuestionType === 'LONG-TEXT'
+            ? 'TEXT'
+            : 'single',
+          textType: q.QuestionType, // <-- Add this line to track original text type
+        }));
+
+        setQuizQuestions(formatted);
+        setQuizStarted(true);
+      } else {
+        Alert.alert('No quiz available.');
+      }
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false); // Hide loader
+    }
+  };
+
+  const handleOptionPress = optionIndex => {
+    const q = currentQuestion;
+    const selected =
+      q.type === 'multiple'
+        ? selectedAnswers.includes(optionIndex)
+          ? selectedAnswers.filter(i => i !== optionIndex)
+          : [...selectedAnswers, optionIndex]
+        : [optionIndex];
+    setSelectedAnswers(selected);
+
+    const answerObj = {
+      IDQuestion: q.IDQuestion,
+      IDSurvey: q.IDSurvey,
+      AnswerShortText: '',
+      AnswerLongText: '',
+    };
+    q.options.forEach((_, idx) => {
+      answerObj[`Answer${idx + 1}`] = selected.includes(idx);
+    });
+    setAnswersMap(prev => ({...prev, [q.id]: answerObj}));
+  };
+
+  const handleTextAnswerChange = text => {
+    setShortAnswer(text);
+    const q = currentQuestion;
+    setAnswersMap(prev => ({
+      ...prev,
+      [q.id]: {
+        IDQuestion: q.IDQuestion,
+        IDSurvey: q.IDSurvey,
+        AnswerShortText: q.type === 'TEXT' ? text : '',
+        AnswerLongText: '',
+        Answer1: false,
+        Answer2: false,
+        Answer3: false,
+        Answer4: false,
+        Answer5: false,
+      },
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex + 1 < quizQuestions.length) {
+      const newIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(newIndex);
+
+      const nextQuestion = quizQuestions[newIndex];
+      const savedAnswer = answersMap[nextQuestion.id];
+
+      // Restore multi/single selection answers
+      const selectedOptions = [];
+      nextQuestion.options?.forEach((opt, idx) => {
+        if (savedAnswer?.[`Answer${idx + 1}`]) {
+          selectedOptions.push(idx);
+        }
+      });
+
+      setSelectedAnswers(selectedOptions || []);
+
+      if (nextQuestion.type === 'TEXT') {
+        setShortAnswer(
+          savedAnswer?.AnswerShortText || savedAnswer?.AnswerLongText || '',
+        );
+      }
+    } else {
+      setIsQuizFinished(true);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      const newIndex = currentQuestionIndex - 1;
+      setCurrentQuestionIndex(newIndex);
+
+      const prevQuestion = quizQuestions[newIndex];
+      const savedAnswer = answersMap[prevQuestion.id];
+
+      // Restore selected options
+      const selectedOptions = [];
+      prevQuestion.options?.forEach((opt, idx) => {
+        if (savedAnswer?.[`Answer${idx + 1}`]) {
+          selectedOptions.push(idx); // use index to match handleOptionPress
+        }
+      });
+
+      setSelectedAnswers(selectedOptions || []);
+
+      // Restore text if applicable
+      if (prevQuestion.type === 'TEXT') {
+        setShortAnswer(
+          savedAnswer?.AnswerShortText || savedAnswer?.AnswerLongText || '',
+        );
+      }
+    }
+  };
+
+  const SubmitDocQuiz = async () => {
+    const requestBody = {
+      IDEmployee: encodeURIComponent(IDEmployee),
+      IDDoctor: form.doctor,
+      Mobile: form.contact,
+      IDArea: form.area,
+      EntryUser: empEmail,
+      EntryDevice: `Mobile - ${device}`,
+      Businessid: 'MEND-PVTL-890',
+      Answers: Object.values(answersMap),
+    };
+
+    // Construct API URL
+    const apiUrl = BASE_URL + 'Survey/Doctor/SubmitAnswer';
+
+    console.log('Submitted Data:', JSON.stringify(requestBody));
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log('API Response:', responseData); // Debugging
+
+      // ✅ Check if response is {"result":""}
+      if (responseData.result === '') {
+        Alert.alert('Success', 'Your Quiz Submitted Successfully.', [
+          {text: 'OK'},
+        ]);
+        handleNext();
+      } else {
+        Alert.alert(
+          'Error',
+          responseData.result || 'Unexpected error occurred.',
+          [{text: 'OK'}],
+        );
+      }
+    } catch (error) {
+      console.error('Error submitting Quiz:', error);
+      Alert.alert('Error', 'Failed to submit Quiz request. Please try again.', [
+        {text: 'OK'},
+      ]);
+    }
+  };
+
+  const handleRestart = () => {
+    setQuizStarted(false);
+    setIsQuizFinished(false);
+    setCurrentQuestionIndex(0);
+    setSelectedAnswers([]);
+    setShortAnswer('');
+    setForm({area: '', doctor: '', contact: ''});
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {!quizStarted ? (
+        <>
+          {loadingAreas ? (
+            <ActivityIndicator
+              size="small"
+              color="#33767C"
+              style={{marginVertical: 10}}
+            />
+          ) : (
+            <Picker
+              selectedValue={form.area}
+              onValueChange={val => {
+                setForm({...form, area: val});
+                console.log('Selected Area', val);
+                fetchDoctors(val || 0);
+              }}
+              style={styles.picker}>
+              <Picker.Item label="Select Area" value="" />
+              {areaList.map(item => (
+                <Picker.Item
+                  key={item.IDArea}
+                  label={item.Name}
+                  value={item.IDArea}
+                />
+              ))}
+            </Picker>
+          )}
+
+          <Picker
+            selectedValue={form.doctor}
+            onValueChange={val => {
+              setForm({...form, doctor: val});
+              console.log('Selected DoctorId', val);
+              const doc = doctorList.find(d => d.IDDoctor === val);
+              setSelectedDoctorName(doc?.Name || '');
+              // If no area is selected, fetch doctors with IDArea 0
+              if (!form.area) {
+                fetchDoctors(0);
+              }
+            }}
+            style={styles.picker}>
+            <Picker.Item label="Select Doctor" value="" />
+            {doctorList && doctorList.length > 0 ? (
+              doctorList.map(doc => (
+                <Picker.Item
+                  key={doc.IDDoctor}
+                  label={doc.Name}
+                  value={doc.IDDoctor}
+                />
+              ))
+            ) : (
+              <Picker.Item label="No Doctors Available" value="" />
+            )}
+          </Picker>
+
+          <TextInput
+            placeholder="Enter number"
+            keyboardType="number-pad"
+            style={styles.input}
+            value={form.contact}
+            maxLength={10}
+            onChangeText={val => setForm({...form, contact: val})}
+          />
+
+          {isLoading ? (
+            <ActivityIndicator
+              size="large"
+              color="#33767C"
+              style={{marginTop: 20}}
+            />
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={handleStart}>
+              <Text style={styles.buttonText}>Start Quiz</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      ) : isQuizFinished ? (
+        <View style={styles.resultContainer}>
+          <Text style={styles.resultText}>
+            🎉 CONGRATULATION Dr. {selectedDoctorName} !{' '}
+          </Text>
+          <Text style={styles.resultText}>Thank you for participating. </Text>
+          <Text style={styles.resultText1}>
+            You are always very special for Team Mendine.{' '}
+          </Text>
+          <TouchableOpacity style={styles.button} onPress={handleRestart}>
+            <Text style={styles.buttonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView>
+          <Text style={styles.questionText}>{currentQuestion?.question}</Text>
+
+          {currentQuestion.type === 'TEXT' ? (
+            <View>
+              {currentQuestion.textType === 'SHORT-TEXT' && (
+                <Text style={styles.wordLimit}>{'(Word limit : 100)'}</Text>
+              )}
+              {currentQuestion.textType === 'LONG-TEXT' && (
+                <Text style={styles.wordLimit}>{'(Word limit : 500)'}</Text>
+              )}
+
+              <TextInput
+                placeholder="Type your answer"
+                style={[
+                  styles.input,
+                  currentQuestion.textType === 'LONG-TEXT' &&
+                    styles.longTextInput,
+                  currentQuestion.textType === 'SHORT-TEXT' &&
+                    styles.shortTextInput,
+                ]}
+                value={shortAnswer}
+                onChangeText={handleTextAnswerChange}
+                multiline={true}
+                numberOfLines={currentQuestion.textType === 'LONG-TEXT' ? 6 : 3}
+                maxLength={
+                  currentQuestion.textType === 'SHORT-TEXT' ? 100 : 500
+                }
+              />
+            </View>
+          ) : (
+            currentQuestion.options.map((option, idx) => (
+              <TouchableOpacity
+                key={`${option}-${idx}`}
+                style={[
+                  styles.optionButton,
+                  selectedAnswers.includes(idx) && styles.optionSelected,
+                ]}
+                onPress={() => handleOptionPress(idx)}>
+                <View style={styles.optionRow}>
+                  {/* Selection icon */}
+                  {currentQuestion.type === 'multiple' ? (
+                    <View style={styles.checkbox}>
+                      {selectedAnswers.includes(idx) && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </View>
+                  ) : (
+                    <View style={styles.radioOuter}>
+                      {selectedAnswers.includes(idx) && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
+                  )}
+                  <Text style={styles.optionText}>{option}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+
+          <View style={styles.navRow}>
+            {/* Previous Button (Always show) */}
+            <TouchableOpacity
+              style={[
+                styles.button,
+                {
+                  backgroundColor:
+                    currentQuestionIndex === 0 ? 'gray' : '#33767C',
+                },
+              ]}
+              onPress={handlePrevious}
+              disabled={currentQuestionIndex === 0}>
+              <Text style={styles.buttonText}>Previous</Text>
+            </TouchableOpacity>
+
+            {/* Conditional Next or Submit Button */}
+            {currentQuestionIndex + 1 < quizQuestions.length ? (
+              <TouchableOpacity style={styles.button} onPress={handleNext}>
+                <Text style={styles.buttonText}>Next</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.button, {backgroundColor: 'green'}]}
+                onPress={() => {
+                  SubmitDocQuiz();
+                  // handleNext();
+                }}>
+                <Text style={styles.buttonText}>Submit & Finish</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+};
+
+export default DoctorQuizScreen;
+
+const styles = StyleSheet.create({
+  container: {flex: 1, padding: 20, backgroundColor: '#f2f2f2'},
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 20,
+    marginVertical: 15,
+    backgroundColor: '#fff',
+  },
+  picker: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 10,
+  },
+  questionText: {fontSize: 20, fontWeight: 'bold', marginBottom: 20},
+  optionButton: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  optionText: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#33767C',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  buttonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
+  resultContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  resultText: {fontSize: 20, fontWeight: 'bold', marginVertical: 10},
+  resultText1: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    marginHorizontal: 5,
+  },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    //justifyContent: '',
+    alignItems: 'center',
+  },
+  optionSelected: {
+    backgroundColor: '#e6f9e6',
+    borderColor: '#4CAF50',
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 3,
+  },
+  checkmark: {
+    fontSize: 14,
+    color: 'green',
+    fontWeight: 'bold',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#4CAF50',
+  },
+  wordLimit: {
+    fontSize: 14,
+    color: 'gray',
+    marginBottom: 4,
+  },
+  longTextInput: {
+    height: 120, // more height for long text
+    textAlignVertical: 'top', // to start text from top in multiline
+  },
+  shortTextInput: {
+    height: 60, // Compact height
+    textAlignVertical: 'top',
+  },
+});
