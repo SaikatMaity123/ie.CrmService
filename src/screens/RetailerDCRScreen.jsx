@@ -946,10 +946,9 @@ const RetailerDCRScreen = ({navigation}) => {
 
             let sql =
               'INSERT INTO CRM_ManagerOfflineViewRetDCR(Customer,Code,DCRDate,Area,CustomerType) VALUES (?,?,?,?,?)';
-            let params = [docLabel, docValue, cdate,useMAreaLabel, '']; //storing user data in an array
+            let params = [docLabel, docValue, cdate, useMAreaLabel, '']; //storing user data in an array
             db.executeSql(sql, params);
-          } 
-          else {
+          } else {
             let Mvisitwith = [];
             let GProdID = [];
             let GfStatus = [];
@@ -1058,7 +1057,7 @@ const RetailerDCRScreen = ({navigation}) => {
 
             let sql =
               'INSERT INTO CRM_OfflineViewRetDCR(Customer,Code,DCRDate,Area,CustomerType) VALUES (?,?,?,?,?)';
-            let params = [docLabel, docValue, cdate,useAreaLabel, '']; //storing user data in an array
+            let params = [docLabel, docValue, cdate, useAreaLabel, '']; //storing user data in an array
             db.executeSql(sql, params);
           }
         }
@@ -1178,7 +1177,9 @@ const RetailerDCRScreen = ({navigation}) => {
             txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
             txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
           });
-          Alert.alert(result.result);
+          //Alert.alert(result.result);
+          //Alert.alert('Error Alert', `${result.result}`);
+          Alert.alert(result.result, `${result.result}`);
         }
       } else {
         let samples = [];
@@ -1234,43 +1235,45 @@ const RetailerDCRScreen = ({navigation}) => {
           ProductStatuss: status,
           Visitwiths: Mvisitwith,
         };
-        //console.log('User End', data_api);
-        //let result = await fetch(BASE_URL + 'DCR/Mobile/End', {
-        let result = await fetch(BASE_URL + 'DCR/Mobile/Save', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data_api),
-        });
+        console.log('User End', data_api);
+        // //let result = await fetch(BASE_URL + 'DCR/Mobile/End', {
+        // let result = await fetch(BASE_URL + 'DCR/Mobile/Save', {
+        //   method: 'POST',
+        //   headers: {
+        //     Accept: 'application/json',
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify(data_api),
+        // });
 
-        result = await result.json();
-        //console.log(result);
-        if (result.result === '') {
-          db.transaction(txn => {
-            txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
-            txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
-          });
-          Alert.alert(
-            'Success',
-            'Record Successfully Saved',
-            [
-              {
-                text: 'Ok',
-                //onPress: () => navigation.navigate('Report DashBoard'),
-                onPress: () => navigation.navigate('AppNavDCRScreen'),
-              },
-            ],
-            {cancelable: false},
-          );
-        } else {
-          db.transaction(txn => {
-            txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
-            txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
-          });
-          Alert.alert('Else : ' + result.result);
-        }
+        // result = await result.json();
+        // //console.log(result);
+        // if (result.result === '') {
+        //   db.transaction(txn => {
+        //     txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
+        //     txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
+        //   });
+        //   Alert.alert(
+        //     'Success',
+        //     'Record Successfully Saved',
+        //     [
+        //       {
+        //         text: 'Ok',
+        //         //onPress: () => navigation.navigate('Report DashBoard'),
+        //         onPress: () => navigation.navigate('AppNavDCRScreen'),
+        //       },
+        //     ],
+        //     {cancelable: false},
+        //   );
+        // } else {
+        //   db.transaction(txn => {
+        //     txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
+        //     txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
+        //   });
+        //   //Alert.alert('Else : ' + result.result);
+        //   //Alert.alert('Error Alert', `${result.result}`);
+        //   Alert.alert(result.result, `${result.result}`);
+        // }
       }
     }
   };

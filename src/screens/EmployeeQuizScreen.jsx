@@ -373,7 +373,7 @@
 //   },
 // });
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -384,13 +384,13 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ActivityIndicator} from 'react-native';
-import {Card} from 'react-native-paper';
+import { ActivityIndicator } from 'react-native';
+import { Card } from 'react-native-paper';
 import NetInfo from '@react-native-community/netinfo';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import moment from 'moment';
 import axios from 'axios';
 
@@ -443,9 +443,12 @@ const EmployeeQuizScreen = () => {
                 'Survey/EmployeeQuizDetail?Businessid=' +
                 user.BusinessID +
                 '&IDEmployee=' +
-                user.IDEmployee;
+                user.IDEmployee
+                + '&SurveyType=EMPLOYEE';
               const response = await fetch(url);
+              //console.log('Url',url);
               const json = await response.json();
+              //console.log('Details',json);
               setIDSurvey(json[0].IDSurvey);
               setQuizData(json[0]); // Assuming only one object is returned
             } else {
@@ -478,13 +481,43 @@ const EmployeeQuizScreen = () => {
                 useIDSurvey;
               const response = await fetch(url);
               const json = await response.json();
-              if (json.d === '') {
+              if (json.d !== '') {
+                Alert.alert('Survey Already Submitted', 'This Employee Survey has already submitted.');
+                return;
+              }
+
+              const EmpStartBody = {
+                IDEmployee: useIDEmployee,
+                EntryUser: useEmpemail,
+                EntryDevice: `Mobile - ${device}`,
+                Businessid: 'MEND-PVTL-890',
+                SurveyType: 'EMPLOYEE',
+              };
+
+              const submitEmpResponse = await fetch(`${BASE_URL}Survey/Start/Save`, {
+                method: 'POST',
+                headers: {
+                  Accept: 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(EmpStartBody),
+              });
+
+              const submitData = await submitEmpResponse.json();
+
+              if (submitData.result !== "") {
+                Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
+                return;
+              }
+
+              if (submitData.result === '') {
                 const url =
                   BASE_URL +
                   'Survey/Employee/QuestionList?Businessid=' +
                   useBusinessID +
                   '&IDEmployee=' +
-                  useIDEmployee;
+                  useIDEmployee +
+                  '&SurveyType=EMPLOYEE';
                 const response = await fetch(url);
                 const json = await response.json();
                 //setQuestions(data.result);
@@ -505,8 +538,8 @@ const EmployeeQuizScreen = () => {
                       ? 'multiple'
                       : q.QuestionType === 'SHORT-TEXT' ||
                         q.QuestionType === 'LONG-TEXT'
-                      ? 'TEXT'
-                      : 'single',
+                        ? 'TEXT'
+                        : 'single',
                     textType: q.QuestionType, // <-- Add this line to track original text type
                   }));
 
@@ -562,7 +595,7 @@ const EmployeeQuizScreen = () => {
     q.options.forEach((_, idx) => {
       answerObj[`Answer${idx + 1}`] = selected.includes(idx);
     });
-    setAnswersMap(prev => ({...prev, [q.id]: answerObj}));
+    setAnswersMap(prev => ({ ...prev, [q.id]: answerObj }));
   };
 
   const handleTextAnswerChange = text => {
@@ -645,6 +678,7 @@ const EmployeeQuizScreen = () => {
       EntryUser: useEmpemail,
       EntryDevice: 'Mobile_' + device,
       Businessid: useBusinessID,
+      SurveyType : 'EMPLOYEE',
       Answers: Object.values(answersMap),
     };
     console.log(payload);
@@ -672,7 +706,7 @@ const EmployeeQuizScreen = () => {
       // ✅ Check if response is {"result":""}
       if (responseData.result === '') {
         Alert.alert('Success', 'Your Quiz Submitted Successfully.', [
-          {text: 'OK'},
+          { text: 'OK' },
         ]);
         attemptedAnswer();
         handleNext();
@@ -680,13 +714,13 @@ const EmployeeQuizScreen = () => {
         Alert.alert(
           'Error',
           responseData.result || 'Unexpected error occurred.',
-          [{text: 'OK'}],
+          [{ text: 'OK' }],
         );
       }
     } catch (error) {
       console.error('Error submitting Quiz:', error);
       Alert.alert('Error', 'Failed to submit Quiz request. Please try again.', [
-        {text: 'OK'},
+        { text: 'OK' },
       ]);
     }
   };
@@ -724,7 +758,7 @@ const EmployeeQuizScreen = () => {
           {quizData ? (
             <Card.Content>
               <View style={styles.detailRow}>
-                <Text style={[styles.value, {fontWeight: 'bold'}]}>
+                <Text style={[styles.value, { fontWeight: 'bold' }]}>
                   {quizData.SurveyName}
                 </Text>
               </View>
@@ -810,9 +844,9 @@ const EmployeeQuizScreen = () => {
                 style={[
                   styles.input,
                   currentQuestion.textType === 'LONG-TEXT' &&
-                    styles.longTextInput,
+                  styles.longTextInput,
                   currentQuestion.textType === 'SHORT-TEXT' &&
-                    styles.shortTextInput,
+                  styles.shortTextInput,
                 ]}
                 value={shortAnswer}
                 onChangeText={handleTextAnswerChange}
@@ -875,7 +909,7 @@ const EmployeeQuizScreen = () => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.button, {backgroundColor: 'green'}]}
+                style={[styles.button, { backgroundColor: 'green' }]}
                 onPress={handleSubmit}>
                 <Text style={styles.buttonText}>Submit & Finish</Text>
               </TouchableOpacity>
@@ -888,7 +922,7 @@ const EmployeeQuizScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 20, backgroundColor: '#f2f2f2'},
+  container: { flex: 1, padding: 20, backgroundColor: '#f2f2f2' },
   card: {
     padding: 10,
     marginVertical: 10,
@@ -920,7 +954,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 10,
   },
-  questionText: {fontSize: 20, fontWeight: 'bold', marginBottom: 20},
+  questionText: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
   optionButton: {
     backgroundColor: '#fff',
     padding: 15,
@@ -942,9 +976,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
-  buttonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
-  resultContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
-  resultText: {fontSize: 20, fontWeight: 'bold', marginVertical: 10},
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  resultContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  resultText: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
   resultText1: {
     fontSize: 20,
     fontWeight: 'bold',

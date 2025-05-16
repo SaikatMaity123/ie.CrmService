@@ -50,6 +50,9 @@ import MarketSurveyScreen from './src/screens/MarketSurveyScreen';
 import HalfDayLeaveScreen from './src/screens/HalfDayLeaveScreen';
 import FullDayLeaveScreen from './src/screens/FullDayLeaveScreen';
 import UserInfoScreen from './src/screens/UserInfoScreen';
+import DCRDoctor from './src/screens/DCRDoctor';
+import ClientDashBoard from './src/screens/ClientDashBoard';
+import ClientMSRList from './src/screens/ClientMSRList';
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -237,6 +240,24 @@ const App = () => {
           component={RequestApprovalScreen}
         />
         <Stack.Screen
+         options={{
+          headerShown: true,
+          headerBackTitleVisible: false,
+          headerBackVisible: false,
+          headerTitleAlign:'center'
+        }}
+          name="Dashboard"
+          component={ClientDashBoard}
+        />
+        <Stack.Screen
+          options={{
+            headerBackTitleVisible: false,
+            headerTintColor: 'black',
+          }}
+          name="Customer Visit"
+          component={ClientMSRList}
+        />
+        <Stack.Screen
           options={{
             //headerShown: false,
             headerBackTitleVisible: false,
@@ -340,7 +361,8 @@ const App = () => {
             //headerBackVisible: false,
           }}
           name="Doctor Daily Call Report"
-          component={DoctorDCRScreen}
+          //component={DoctorDCRScreen}
+          component={DCRDoctor}
         />
         <Stack.Screen
           options={{

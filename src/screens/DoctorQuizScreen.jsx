@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,15 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ActivityIndicator} from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 
 const DoctorQuizScreen = () => {
-  const [form, setForm] = useState({area: '', doctor: '', contact: ''});
+  const [form, setForm] = useState({ area: '', doctor: '', contact: '' });
   const [areaList, setAreaList] = useState([]);
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -108,13 +108,56 @@ const DoctorQuizScreen = () => {
     setIsLoading(true); // Show loader
 
     try {
-      const response = await fetch(
-        `https://apitest.mendine.co.in/api/crm/Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}`,
+      // Step 1: Check if the quiz has already been submitted
+      const checkQuizResponse = await fetch(
+        `${BASE_URL}Survey/CheckDoctorQuiz?Businessid=MEND-PVTL-890&IDDoctor=${form.doctor}&IDArea=${form.area}&SurveyType=DOCTOR`
       );
-      const json = await response.json();
+      const checkQuizData = await checkQuizResponse.json();
 
-      if (json.result?.length > 0) {
-        const formatted = json.result.map(q => ({
+      if (checkQuizData.d !== "") {
+        Alert.alert('Quiz Already Submitted', 'This doctor Quiz has already submitted.');
+        setIsLoading(false);
+        return;
+      }
+
+
+      // Step 2: Submit doctor details
+      const StartBody = {
+        IDParticipants: form.doctor,
+        IDEmployee: encodeURIComponent(IDEmployee),
+        Mobile: form.contact,
+        IDArea: form.area,
+        EntryUser: empEmail,
+        EntryDevice: `Mobile - ${device}`,
+        Businessid: 'MEND-PVTL-890',
+        SurveyType: 'DOCTOR',
+      };
+
+      const submitResponse = await fetch(`${BASE_URL}Survey/ParticipantsStart/Save`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(StartBody),
+      });
+
+      const submitData = await submitResponse.json();
+
+      if (submitData.result !== "") {
+        Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 3: Fetch quiz questions
+      const questionsResponse = await fetch(
+        `${BASE_URL}Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}&SurveyType=DOCTOR`
+      );
+      const questionsData = await questionsResponse.json();
+
+      if (questionsData.result?.length > 0) {
+        const formatted = questionsData.result.map(q => ({
           id: q.IDQuestion.toString(),
           IDQuestion: q.IDQuestion,
           IDSurvey: q.IDSurvey,
@@ -129,8 +172,8 @@ const DoctorQuizScreen = () => {
           type: q.QuestionType.includes('MULTIPLE')
             ? 'multiple'
             : q.QuestionType === 'SHORT-TEXT' || q.QuestionType === 'LONG-TEXT'
-            ? 'TEXT'
-            : 'single',
+              ? 'TEXT'
+              : 'single',
           textType: q.QuestionType, // <-- Add this line to track original text type
         }));
 
@@ -166,7 +209,7 @@ const DoctorQuizScreen = () => {
     q.options.forEach((_, idx) => {
       answerObj[`Answer${idx + 1}`] = selected.includes(idx);
     });
-    setAnswersMap(prev => ({...prev, [q.id]: answerObj}));
+    setAnswersMap(prev => ({ ...prev, [q.id]: answerObj }));
   };
 
   const handleTextAnswerChange = text => {
@@ -175,6 +218,7 @@ const DoctorQuizScreen = () => {
     setAnswersMap(prev => ({
       ...prev,
       [q.id]: {
+       // IDEmployee:IDEmployee,
         IDQuestion: q.IDQuestion,
         IDSurvey: q.IDSurvey,
         AnswerShortText: q.type === 'TEXT' ? text : '',
@@ -245,15 +289,17 @@ const DoctorQuizScreen = () => {
 
   const SubmitDocQuiz = async () => {
     const requestBody = {
-      IDEmployee: encodeURIComponent(IDEmployee),
+      IDParticipants :form.doctor,
       IDDoctor: form.doctor,
       Mobile: form.contact,
       IDArea: form.area,
       EntryUser: empEmail,
       EntryDevice: `Mobile - ${device}`,
       Businessid: 'MEND-PVTL-890',
+      SurveyType:'DOCTOR', 
       Answers: Object.values(answersMap),
     };
+
 
     // Construct API URL
     const apiUrl = BASE_URL + 'Survey/Doctor/SubmitAnswer';
@@ -279,20 +325,20 @@ const DoctorQuizScreen = () => {
       // ✅ Check if response is {"result":""}
       if (responseData.result === '') {
         Alert.alert('Success', 'Your Quiz Submitted Successfully.', [
-          {text: 'OK'},
+          { text: 'OK' },
         ]);
         handleNext();
       } else {
         Alert.alert(
           'Error',
           responseData.result || 'Unexpected error occurred.',
-          [{text: 'OK'}],
+          [{ text: 'OK' }],
         );
       }
     } catch (error) {
       console.error('Error submitting Quiz:', error);
       Alert.alert('Error', 'Failed to submit Quiz request. Please try again.', [
-        {text: 'OK'},
+        { text: 'OK' },
       ]);
     }
   };
@@ -303,7 +349,7 @@ const DoctorQuizScreen = () => {
     setCurrentQuestionIndex(0);
     setSelectedAnswers([]);
     setShortAnswer('');
-    setForm({area: '', doctor: '', contact: ''});
+    setForm({ area: '', doctor: '', contact: '' });
   };
 
   return (
@@ -314,13 +360,13 @@ const DoctorQuizScreen = () => {
             <ActivityIndicator
               size="small"
               color="#33767C"
-              style={{marginVertical: 10}}
+              style={{ marginVertical: 10 }}
             />
           ) : (
             <Picker
               selectedValue={form.area}
               onValueChange={val => {
-                setForm({...form, area: val});
+                setForm({ ...form, area: val });
                 console.log('Selected Area', val);
                 fetchDoctors(val || 0);
               }}
@@ -339,7 +385,7 @@ const DoctorQuizScreen = () => {
           <Picker
             selectedValue={form.doctor}
             onValueChange={val => {
-              setForm({...form, doctor: val});
+              setForm({ ...form, doctor: val });
               console.log('Selected DoctorId', val);
               const doc = doctorList.find(d => d.IDDoctor === val);
               setSelectedDoctorName(doc?.Name || '');
@@ -364,19 +410,19 @@ const DoctorQuizScreen = () => {
           </Picker>
 
           <TextInput
-            placeholder="Enter number"
+            placeholder="Enter Mobile number"
             keyboardType="number-pad"
             style={styles.input}
             value={form.contact}
             maxLength={10}
-            onChangeText={val => setForm({...form, contact: val})}
+            onChangeText={val => setForm({ ...form, contact: val })}
           />
 
           {isLoading ? (
             <ActivityIndicator
               size="large"
               color="#33767C"
-              style={{marginTop: 20}}
+              style={{ marginTop: 20 }}
             />
           ) : (
             <TouchableOpacity style={styles.button} onPress={handleStart}>
@@ -415,9 +461,9 @@ const DoctorQuizScreen = () => {
                 style={[
                   styles.input,
                   currentQuestion.textType === 'LONG-TEXT' &&
-                    styles.longTextInput,
+                  styles.longTextInput,
                   currentQuestion.textType === 'SHORT-TEXT' &&
-                    styles.shortTextInput,
+                  styles.shortTextInput,
                 ]}
                 value={shortAnswer}
                 onChangeText={handleTextAnswerChange}
@@ -480,7 +526,7 @@ const DoctorQuizScreen = () => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.button, {backgroundColor: 'green'}]}
+                style={[styles.button, { backgroundColor: 'green' }]}
                 onPress={() => {
                   SubmitDocQuiz();
                   // handleNext();
@@ -498,7 +544,7 @@ const DoctorQuizScreen = () => {
 export default DoctorQuizScreen;
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 20, backgroundColor: '#f2f2f2'},
+  container: { flex: 1, padding: 20, backgroundColor: '#f2f2f2' },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -515,7 +561,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 10,
   },
-  questionText: {fontSize: 20, fontWeight: 'bold', marginBottom: 20},
+  questionText: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
   optionButton: {
     backgroundColor: '#fff',
     padding: 15,
@@ -537,9 +583,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
-  buttonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
-  resultContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
-  resultText: {fontSize: 20, fontWeight: 'bold', marginVertical: 10},
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  resultContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  resultText: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
   resultText1: {
     fontSize: 20,
     fontWeight: 'bold',

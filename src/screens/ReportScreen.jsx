@@ -11,7 +11,7 @@ import {
   Alert,
   BackHandler,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect,useState} from 'react';
 import HomeImg from '../images/home.svg';
 import CRMImg from '../images/CRMNEW.svg';
 import {
@@ -19,6 +19,7 @@ import {
   promptForEnableLocationIfNeeded,
 } from 'react-native-android-location-enabler';
 import {openDatabase} from 'react-native-sqlite-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //database connection
 const db = openDatabase(
@@ -43,6 +44,7 @@ const data = [
   {label: 'Item 8', value: 'View DCR'},
 ];
 const ReportScreen = ({navigation}) => {
+
   useEffect(() => {
     handleCheckPressed();
   }, []);
@@ -81,8 +83,8 @@ const ReportScreen = ({navigation}) => {
         txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
         txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
       });
-      //console.warn('Doctor');
-    } else if (moduleData.value === 'Party') {
+    } 
+    else if (moduleData.value === 'Party') {
       navigation.navigate('Retailer Daily Call Report');
       db.transaction(txn => {
         txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);

@@ -13,18 +13,18 @@ import {
   Modal,
   Button,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { Dropdown } from 'react-native-element-dropdown';
+import React, {useEffect, useState} from 'react';
+import {Dropdown} from 'react-native-element-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '@env';
+import {BASE_URL} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DeviceInfo from 'react-native-device-info';
-import { useFocusEffect } from '@react-navigation/native';
-import { BackHandler } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
+import {BackHandler} from 'react-native';
 
-const RCPAN = ({ navigation }) => {
+const RCPAN = ({navigation}) => {
   const [isFocus, setIsFocus] = useState(false);
   const [useBusinessID, setBusinessID] = useState('');
   const [empEmail, setEmpEmail] = useState('');
@@ -85,42 +85,52 @@ const RCPAN = ({ navigation }) => {
   const [dataList, setDataList] = useState([]);
   const [CompetitorAdded, setCompetitorAdded] = useState(true); //  Track apply status
 
-
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
         if (!CompetitorAdded) {
-          Alert.alert('Hold On, competitor Product Not Found!', 'Add 1 competitor Product before going back.');
+          Alert.alert(
+            'Hold On, competitor Product Not Found!',
+            'Add 1 competitor Product before going back.',
+          );
           return true; // Prevent default back
         }
 
         // Reset navigation if Add product is applied
         navigation.reset({
           index: 0,
-          routes: [{ name: 'AppNavDCRScreen' }],
+          routes: [{name: 'AppNavDCRScreen'}],
         });
         return true; // Prevent default back
       };
 
-      const beforeRemoveListener = (e) => {
+      const beforeRemoveListener = e => {
         if (!CompetitorAdded) {
           e.preventDefault();
-          Alert.alert('Hold On, competitor Product Not Found!', 'Add 1 competitor Product before going back.');
+          Alert.alert(
+            'Hold On, competitor Product Not Found!',
+            'Add 1 competitor Product before going back.',
+          );
         }
       };
 
       // Add listeners
-      const backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      const beforeRemoveSubscription = navigation.addListener('beforeRemove', beforeRemoveListener);
+      const backHandlerSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      const beforeRemoveSubscription = navigation.addListener(
+        'beforeRemove',
+        beforeRemoveListener,
+      );
 
       // Clean up
       return () => {
         backHandlerSubscription.remove();
         beforeRemoveSubscription();
       };
-    }, [CompetitorAdded, navigation])
+    }, [CompetitorAdded, navigation]),
   );
-
 
   useEffect(() => {
     LogBox.ignoreLogs([
@@ -416,6 +426,7 @@ const RCPAN = ({ navigation }) => {
               t => t.label === item.label && t.value === item.value,
             ),
         );
+        setUnitName('');
         selfTData(uniqueData);
       } else {
         Alert.alert(result.Result);
@@ -500,7 +511,7 @@ const RCPAN = ({ navigation }) => {
               onPress: () => navigation.navigate('AppNavDCRScreen'),
             },
           ],
-          { cancelable: false },
+          {cancelable: false},
         );
       } else {
         Alert.alert(result.result);
@@ -513,9 +524,14 @@ const RCPAN = ({ navigation }) => {
     //setModalVisible(!isModalVisible);
     if (useSelfTProductName === '') {
       Alert.alert('Select Self Product');
-    } else if (useCompProductCode === '') {
+    } 
+    else if (useCompProductCode === '') {
       Alert.alert('Select Competitor Product');
-    } else if (usePackSize === '') {
+    } 
+    else if (useCompCompanyListCode === '') {
+      Alert.alert('Select Company');
+    } 
+    else if (usePackSize === '') {
       Alert.alert('Select Pack Size');
     } else if (useUnitName === '') {
       Alert.alert('Select Unit');
@@ -606,7 +622,7 @@ const RCPAN = ({ navigation }) => {
   };
 
   const addProduct = () => {
-    if(useQty===''){
+    if (useQty === '') {
       Alert.alert('Quantity is missing');
       return;
     }
@@ -639,7 +655,7 @@ const RCPAN = ({ navigation }) => {
     setQty('');
   };
   const addProductComp = () => {
-    if(useQty === ''){
+    if (useQty === '') {
       Alert.alert('quantity is Missing');
       return;
     }
@@ -783,7 +799,7 @@ const RCPAN = ({ navigation }) => {
       setPackSize(jsonResponse.PackSize.toString());
       // Process and set data for the dropdown
       const dropdownData = [
-        { label: jsonResponse.Unit, value: jsonResponse.IDUnit },
+        {label: jsonResponse.Unit, value: jsonResponse.IDUnit},
       ];
       setUnit(dropdownData);
     } catch (error) {
@@ -808,11 +824,11 @@ const RCPAN = ({ navigation }) => {
       setPackSize(jsonResponse.PackSize.toString());
       // Process and set data for the dropdown
       const dropdownData = [
-        { label: jsonResponse.Unit, value: jsonResponse.IDUnit },
+        {label: jsonResponse.Unit, value: jsonResponse.IDUnit},
       ];
       setUnit(dropdownData);
       const dropdownCData = [
-        { label: jsonResponse.Company, value: jsonResponse.IDCompititor },
+        {label: jsonResponse.Company, value: jsonResponse.IDCompititor},
       ];
       setCompCompanyList(dropdownCData);
     } catch (error) {
@@ -957,7 +973,7 @@ const RCPAN = ({ navigation }) => {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: false }}
+      style={{flex: 1, backgroundColor: false}}
       showsVerticalScrollIndicator={false}>
       <View
         style={{
@@ -968,9 +984,9 @@ const RCPAN = ({ navigation }) => {
         }}>
         {showRData ? (
           <View>
-            <View style={{ margin: 5, padding: 5 }}>
+            <View style={{margin: 5, padding: 5}}>
               <Dropdown
-                style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
@@ -997,9 +1013,9 @@ const RCPAN = ({ navigation }) => {
                 }}
               />
             </View>
-            <View style={{ marginLeft: 5, marginRight: 5, padding: 5 }}>
+            <View style={{marginLeft: 5, marginRight: 5, padding: 5}}>
               <Dropdown
-                style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
@@ -1065,7 +1081,7 @@ const RCPAN = ({ navigation }) => {
         ) : null}
 
         {showSData ? (
-          <View style={{ margin: 5, padding: 5 }}>
+          <View style={{margin: 5, padding: 5}}>
             <TextInput
               style={style.textInput}
               placeholder="Doctor"
@@ -1076,7 +1092,7 @@ const RCPAN = ({ navigation }) => {
               value={useALabel}
               editable={false}
             />
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <TextInput
                 style={style.textInput}
                 placeholder="Retailer"
@@ -1089,9 +1105,9 @@ const RCPAN = ({ navigation }) => {
               />
             </View>
 
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <Dropdown
-                style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
@@ -1116,12 +1132,12 @@ const RCPAN = ({ navigation }) => {
                   fetchUData(item.value);
                 }}
               />
-              <View style={{ flexDirection: 'row', marginTop: 10 }}>
+              <View style={{flexDirection: 'row', marginTop: 10}}>
                 <TextInput
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Pack Size"
                   placeholderTextColor="#555"
                   inputMode="numeric"
@@ -1132,7 +1148,7 @@ const RCPAN = ({ navigation }) => {
                 <Dropdown
                   style={[
                     style.dropdownNew,
-                    isFocus && { borderColor: 'blue', width: '50%' },
+                    isFocus && {borderColor: 'blue', width: '50%'},
                   ]}
                   placeholderStyle={style.placeholderStyle}
                   selectedTextStyle={style.selectedTextStyle}
@@ -1164,7 +1180,7 @@ const RCPAN = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 inputMode="numeric"
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="MRP"
                 placeholderTextColor="#555"
                 value={useMRP}
@@ -1176,7 +1192,7 @@ const RCPAN = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 inputMode="default"
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="LOT/SCHEME"
                 placeholderTextColor="#555"
                 value={useLot}
@@ -1187,7 +1203,7 @@ const RCPAN = ({ navigation }) => {
                 mode="outlined"
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="Rack Stock"
                 placeholderTextColor="#555"
                 value={useRackStock}
@@ -1258,7 +1274,6 @@ const RCPAN = ({ navigation }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-
               <TouchableOpacity
                 style={{
                   backgroundColor: '#a6331a',
@@ -1281,13 +1296,12 @@ const RCPAN = ({ navigation }) => {
                   Save Self Data
                 </Text>
               </TouchableOpacity>
-
             </View>
           </View>
         ) : null}
 
         {showCData ? (
-          <View style={{ margin: 5, padding: 5 }}>
+          <View style={{margin: 5, padding: 5}}>
             <TextInput
               style={style.textInput}
               placeholder="Doctor"
@@ -1298,7 +1312,7 @@ const RCPAN = ({ navigation }) => {
               value={useALabel}
               editable={false}
             />
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <TextInput
                 style={style.textInput}
                 placeholder="Retailer"
@@ -1311,9 +1325,9 @@ const RCPAN = ({ navigation }) => {
               />
             </View>
 
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <Dropdown
-                style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
@@ -1333,9 +1347,9 @@ const RCPAN = ({ navigation }) => {
                   setSelfTProductName(item.label);
                 }}
               />
-              <View style={{ marginTop: 5, paddingTop: 5, flexDirection: 'row' }}>
+              <View style={{marginTop: 5, paddingTop: 5, flexDirection: 'row'}}>
                 <Dropdown
-                  style={[style.dropdownNew1, isFocus && { borderColor: 'blue' }]}
+                  style={[style.dropdownNew1, isFocus && {borderColor: 'blue'}]}
                   placeholderStyle={style.placeholderStyle}
                   selectedTextStyle={style.selectedTextStyle}
                   inputSearchStyle={style.inputSearchStyle}
@@ -1384,9 +1398,9 @@ const RCPAN = ({ navigation }) => {
                   </Text>
                 </TouchableOpacity>
               </View>
-              <View style={{ marginTop: 5, paddingTop: 5 }}>
+              <View style={{marginTop: 5, paddingTop: 5}}>
                 <Dropdown
-                  style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                   placeholderStyle={style.placeholderStyle}
                   selectedTextStyle={style.selectedTextStyle}
                   inputSearchStyle={style.inputSearchStyle}
@@ -1433,12 +1447,12 @@ const RCPAN = ({ navigation }) => {
                   </Text>
                 </TouchableOpacity> */}
               </View>
-              <View style={{ flexDirection: 'row', marginTop: 10 }}>
+              <View style={{flexDirection: 'row', marginTop: 10}}>
                 <TextInput
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Pack Size"
                   placeholderTextColor="#555"
                   inputMode="numeric"
@@ -1449,7 +1463,7 @@ const RCPAN = ({ navigation }) => {
                 <Dropdown
                   style={[
                     style.dropdownNew,
-                    isFocus && { borderColor: 'blue', width: '50%' },
+                    isFocus && {borderColor: 'blue', width: '50%'},
                   ]}
                   placeholderStyle={style.placeholderStyle}
                   selectedTextStyle={style.selectedTextStyle}
@@ -1481,7 +1495,7 @@ const RCPAN = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 inputMode="numeric"
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="MRP"
                 placeholderTextColor="#555"
                 value={useMRP}
@@ -1493,7 +1507,7 @@ const RCPAN = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 inputMode="default"
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="LOT/SCHEME"
                 placeholderTextColor="#555"
                 value={useLot}
@@ -1504,7 +1518,7 @@ const RCPAN = ({ navigation }) => {
                 mode="outlined"
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={[style.textInput, { marginBottom: 5 }]}
+                style={[style.textInput, {marginBottom: 5}]}
                 placeholder="Rack Stock"
                 placeholderTextColor="#555"
                 value={useRackStock}
@@ -1606,7 +1620,7 @@ const RCPAN = ({ navigation }) => {
             transparent={true}
             //visible={visible}
             animationType="slide"
-          //onRequestClose={onClose}
+            //onRequestClose={onClose}
           >
             <View style={style.modalBackground}>
               <View style={style.modalContainer}>
@@ -1622,7 +1636,7 @@ const RCPAN = ({ navigation }) => {
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Enter product name"
                   placeholderTextColor="#555"
                   value={useCompProdName}
@@ -1634,7 +1648,7 @@ const RCPAN = ({ navigation }) => {
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Enter company name"
                   placeholderTextColor="#555"
                   value={useCompCompanyName}
@@ -1646,7 +1660,7 @@ const RCPAN = ({ navigation }) => {
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Enter pack size"
                   placeholderTextColor="#555"
                   value={useCompAddPackSize}
@@ -1654,9 +1668,9 @@ const RCPAN = ({ navigation }) => {
                   onChangeText={text => setCompAddPackSize(text)}
                 />
                 <Text style={style.label}>Unit</Text>
-                <View style={{ marginBottom: 5, paddingBottom: 5 }}>
+                <View style={{marginBottom: 5, paddingBottom: 5}}>
                   <Dropdown
-                    style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                     placeholderStyle={style.placeholderStyle}
                     selectedTextStyle={style.selectedTextStyle}
                     inputSearchStyle={style.inputSearchStyle}
@@ -1703,7 +1717,7 @@ const RCPAN = ({ navigation }) => {
             transparent={true}
             //visible={visible}
             animationType="slide"
-          //onRequestClose={onClose}
+            //onRequestClose={onClose}
           >
             <View style={style.modalBackground}>
               <View style={style.modalContainer}>
@@ -1719,7 +1733,7 @@ const RCPAN = ({ navigation }) => {
                   mode="outlined"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={[style.textInput, { marginBottom: 5 }]}
+                  style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Enter company name"
                   placeholderTextColor="#555"
                   value={useCompCompanyName}
@@ -1748,15 +1762,15 @@ const RCPAN = ({ navigation }) => {
             transparent={true}
             //visible={visible}
             animationType="fade"
-          //onRequestClose={onClose}
+            //onRequestClose={onClose}
           >
             <View style={style.modalOverlay}>
               <View style={style.modalContainer}>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{flexDirection: 'row'}}>
                   <Dropdown
                     style={[
                       style.dropdownNew,
-                      isFocus && { borderColor: 'blue', width: '50%' },
+                      isFocus && {borderColor: 'blue', width: '50%'},
                     ]}
                     placeholderStyle={style.placeholderStyle}
                     selectedTextStyle={style.selectedTextStyle}
@@ -1803,7 +1817,7 @@ const RCPAN = ({ navigation }) => {
                   />
                 </View>
 
-                <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
+                <View style={{flexDirection: 'row', alignSelf: 'center'}}>
                   {showCData ? (
                     <TouchableOpacity
                       style={{
@@ -1888,7 +1902,7 @@ const RCPAN = ({ navigation }) => {
                 <FlatList
                   data={uselfData}
                   keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => (
+                  renderItem={({item, index}) => (
                     <TouchableWithoutFeedback>
                       <View
                         style={[
@@ -1918,7 +1932,7 @@ const RCPAN = ({ navigation }) => {
                             justifyContent: 'center',
                             margin: 5,
                           }}>
-                          <View style={{ flexDirection: 'row' }}>
+                          <View style={{flexDirection: 'row'}}>
                             <Text
                               style={{
                                 fontSize: 12,
@@ -2260,11 +2274,11 @@ const RCPAN = ({ navigation }) => {
             transparent={true}
             //visible={visible}
             animationType="fade"
-          //onRequestClose={onClose}
+            //onRequestClose={onClose}
           >
             <View style={style.modalOverlay}>
               <View style={style.modalContainer}>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{flexDirection: 'row'}}>
                   <TouchableOpacity
                     style={{
                       backgroundColor: '#33767C',
@@ -2295,7 +2309,7 @@ const RCPAN = ({ navigation }) => {
                 <FlatList
                   data={dataList}
                   keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item, index }) => (
+                  renderItem={({item, index}) => (
                     <TouchableWithoutFeedback>
                       <View
                         style={[
@@ -2352,7 +2366,7 @@ const RCPAN = ({ navigation }) => {
                               {item.selfprodName}
                             </Text>
                           </View>
-                          <View style={{ flexDirection: 'row' }}>
+                          <View style={{flexDirection: 'row'}}>
                             <Text
                               style={{
                                 fontSize: 12,
@@ -2601,7 +2615,7 @@ const style = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowRadius: 10,
     elevation: 5,
   },
