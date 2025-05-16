@@ -12,7 +12,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
-import {BASE_URL} from '@env';
+import {BASE_URL,url} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import {openDatabase} from 'react-native-sqlite-storage';
 import axios from 'axios';
@@ -62,7 +62,7 @@ const CustomExpense = props => {
   const [selectedImageName, setSelectedImageName] = useState('');
   const [selectedImageType, setSelectedImageType] = useState('');
   const [imageUrlNew, setImageUrlNew] = useState(null);
-  const url = 'https://crmfieldforceapi.mendine.co.in';
+ // const url = 'https://crmfieldforceapi.mendine.co.in';
 
   //Get Current Month Name
   const monthNames = [

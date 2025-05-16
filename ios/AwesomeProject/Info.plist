@@ -35,20 +35,18 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We use your location to...</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We use your location to...</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to show you relevant places.</string>
-	<!-- <string>We use your location to...</string> -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save images to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-<string>We need access to your photo library to upload images.</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>We need access to save images to your library.</string>
-<key>NSCameraUsageDescription</key>
-<string>We need access to your camera to take photos.</string>
-
+	<string>We need access to your photo library to upload images.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

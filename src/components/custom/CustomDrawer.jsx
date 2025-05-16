@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import {BASE_URL} from '@env';
+import {BASE_URL,url} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import {openDatabase} from 'react-native-sqlite-storage';
 //import SQLite from 'react-native-sqlite-2'
@@ -69,7 +69,7 @@ const CustomDrawer = props => {
   const [selectedImageType, setSelectedImageType] = useState('');
   const [imageUrlNew, setImageUrlNew] = useState(null);
   const viewShotRef = useRef(null);
-  const url = 'https://crmfieldforceapi.mendine.co.in';
+  //const url = 'https://crmfieldforceapi.mendine.co.in';
   //const url = 'https://apitest.mendine.co.in';
   //Get Current Month Name
   const monthNames = [

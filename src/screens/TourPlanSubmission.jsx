@@ -20,16 +20,29 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {BASE_URL} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import ProgressDialog from '../components/custom/ProgressDialog';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TourPlanSubmission = props => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [useBusinessID, setBusinessID] = useState('');
 
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
     }, 3000);
+    try {
+      AsyncStorage.getItem('UserData').then(value => {
+        if (value != null) {
+          let user = JSON.parse(value);
+
+          setBusinessID(user.BusinessID);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
     NetInfo.fetch().then(state => {
       if (state.isConnected) {
         getAPIData();
@@ -52,13 +65,18 @@ const TourPlanSubmission = props => {
   };
 
   const submit = async (month, year, monthStatus) => {
+    //console.warn(useBusinessID);
+
     //console.warn(item);
-    //props.navigation.navigate('Tour Program', {month,year,monthStatus});
+    // props.navigation.navigate('Tour Program', {month, year, monthStatus});
     const url =
-      BASE_URL + 'Configuration/CheckTourProgramDate?Businessid=MEND-PVTL-890';
+      //BASE_URL + 'Configuration/CheckTourProgramDate?Businessid=MEND-PVTL-890';
+      BASE_URL +
+      'Configuration/CheckTourProgramDate?Businessid=' +
+      useBusinessID;
     let result = await fetch(url);
     result = await result.json();
-    //console.log(result.d);
+    console.log(url);
     if (result.d === '') {
       props.navigation.navigate('Tour Program', {month, year, monthStatus});
     } else {

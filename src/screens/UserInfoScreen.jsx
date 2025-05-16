@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Alert, Platform, PermissionsAndroid } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  Platform,
+} from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
-import SmsRetriever from 'react-native-sms-retriever';
-import NetInfo from '@react-native-community/netinfo'; // Import NetInfo
+import NetInfo from '@react-native-community/netinfo';
 
 const UserInfoScreen = ({ navigation }) => {
   const [userInfo, setUserInfo] = useState({
@@ -13,71 +20,54 @@ const UserInfoScreen = ({ navigation }) => {
     buildNumber: 'Not Available',
   });
 
-  const [device, setDevice] = useState(''); // To store device name
-  const [connectionType, setConnectionType] = useState(''); // For connection type (WiFi, cellular)
-  const [connectionSpeed, setConnectionSpeed] = useState('Checking...'); // For connection speed
+  const [device, setDevice] = useState('');
+  const [connectionType, setConnectionType] = useState('');
+  const [connectionSpeed, setConnectionSpeed] = useState('Checking...');
+  const deviceId = DeviceInfo.getDeviceId();
+  const brand = DeviceInfo.getBrand();
 
   useEffect(() => {
     const initializeData = async () => {
-      await getUserData(); // Fetch user data from AsyncStorage
-      fetchDeviceName(); // Fetch device name
-      if (Platform.OS === 'android') {
-        await requestPhonePermission(); // Request permission for phone number on Android
-        await getPhoneNumber(); // Fetch phone number for Android
-        await getBuildNumber(); // Fetch Build number for Android
+      try {
+        await getUserData();
+        await fetchDeviceName();
+        await getBuildNumber();
+        await getNetworkInfo();
+      } catch (error) {
+        console.error('Initialization error:', error);
       }
-      await getNetworkInfo(); // Fetch initial network information
     };
+
     initializeData();
 
-    // Set up listener to monitor changes in network state
     const unsubscribe = NetInfo.addEventListener(state => {
-      setConnectionType(state.type); // Update connection type
+      setConnectionType(state.type);
       if (state.isConnected) {
-        getConnectionSpeed(); // Update speed only if connected
+        getConnectionSpeed();
       } else {
-        setConnectionSpeed("No internet connection"); // Set speed to no connection if offline
+        setConnectionSpeed('No internet connection');
       }
     });
 
-    // Start measuring speed every 2 seconds
-    const id = setInterval(() => {
+    const intervalId = setInterval(() => {
       getConnectionSpeed();
     }, 2000);
 
-    // Clean up the listener and interval when the component is unmounted
     return () => {
-      clearInterval(id);
+      clearInterval(intervalId);
       unsubscribe();
     };
   }, []);
 
-  // Get the phone number
-  const getPhoneNumber = async () => {
-    try {
-      const phoneNumber = await SmsRetriever.requestPhoneNumber();
-      if (phoneNumber) {
-        setUserInfo(prevState => ({ ...prevState, phone: phoneNumber }));
-      } else {
-        console.log('Phone number not available');
-      }
-    } catch (error) {
-      console.log(JSON.stringify(error));
-    }
-  };
-
-  // Fetch device name
   const fetchDeviceName = async () => {
     try {
       const deviceName = await DeviceInfo.getDeviceName();
       setDevice(deviceName);
-      console.log('Device Name:', deviceName);
     } catch (error) {
       console.error('Error fetching device name:', error);
     }
   };
 
-  // Retrieve user data from AsyncStorage
   const getUserData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('UserData');
@@ -86,7 +76,7 @@ const UserInfoScreen = ({ navigation }) => {
         setUserInfo({
           name: userData.Empname || 'Not Available',
           email: userData.Empemail || 'Not Available',
-          phone: userData.phone || 'Not Available',
+          phone: userData.phone || 'Not Available', // fallback only
           buildNumber: userData.BuildNumber || 'Not Available',
         });
       } else {
@@ -97,117 +87,100 @@ const UserInfoScreen = ({ navigation }) => {
     }
   };
 
-  // Request permission for phone number (Android only)
-  const requestPhonePermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
-          {
-            title: 'Phone Permission',
-            message: 'We need access to your phone number to show it.',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Phone permission granted');
-        } else {
-          console.log('Phone permission denied');
-        }
-      } catch (err) {
-        console.warn(err);
-      }
-    }
-  };
-
-  // Fetch Build number
   const getBuildNumber = async () => {
     try {
       const buildNumber = await DeviceInfo.getBuildNumber();
-      setUserInfo(prevState => ({ ...prevState, buildNumber }));
+      setUserInfo(prev => ({ ...prev, buildNumber }));
     } catch (error) {
       console.error('Error fetching Build number:', error);
     }
   };
 
-  // Fetch network type and check connection status
   const getNetworkInfo = async () => {
     try {
       const state = await NetInfo.fetch();
-      setConnectionType(state.type); // Get connection type (WiFi, cellular, etc.)
-
-      // Check if there's an actual internet connection by trying to fetch data
-      const isConnected = await fetch('https://www.google.com', { method: 'HEAD' })
-        .then(() => true)
-        .catch(() => false);
-
-      // if (state.isConnected && isConnected) {
-      //   setConnectionSpeed("Good connection");
-      // } else {
-      //   setConnectionSpeed("No internet connection");
-      // }
+      setConnectionType(state.type);
     } catch (error) {
       console.error('Error fetching network information:', error);
     }
   };
 
-  // Measure the connection speed by downloading a large file
   const getConnectionSpeed = async () => {
     const startTime = Date.now();
-    const url = 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png'; // Example small image
-  
+    const url = 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png';
+
     try {
-      // First, check if the user is connected to the internet
       const state = await NetInfo.fetch();
       if (!state.isConnected) {
         setConnectionSpeed('No internet connection');
         return;
       }
-  
-      // Proceed to measure speed if connected
-      const response = await fetch(url); // Attempt to fetch the image
-      const data = await response.blob(); // Get data as a blob
-  
-      const duration = (Date.now() - startTime) / 1000; // Time in seconds
-      const fileSizeInBytes = data.size; // Get the file size in bytes
-      const speedInKbps = (fileSizeInBytes / duration) / 1024; // Calculate speed in KB/s
-  
-      setConnectionSpeed(`${speedInKbps.toFixed(2)} KB/s`); // Display the speed in the UI
+
+      const response = await fetch(url);
+      const data = await response.blob();
+
+      const duration = (Date.now() - startTime) / 1000;
+      const fileSizeInBytes = data.size;
+      const speedInKbps = (fileSizeInBytes / duration) / 1024;
+
+      setConnectionSpeed(`${speedInKbps.toFixed(2)} KB/s`);
     } catch (error) {
-      console.error('Error fetching connection speed:', error); // Log the error for debugging
-      setConnectionSpeed('Unable to measure speed'); // Set speed to unable to measure in case of failure
+      console.error('Speed test error:', error.message);
+      setConnectionSpeed('Unable to measure speed');
     }
   };
-  
-  let deviceId = DeviceInfo.getDeviceId();
-  let brand = DeviceInfo.getBrand();
 
-  // Handle navigation back to AppNavScreen
   const handleBack = () => {
-    navigation.goBack(); // Go back to the previous screen in the stack
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>User Information</Text>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>Name: {userInfo.name}</Text>
-        <Text style={styles.infoText}>Email: {userInfo.email}</Text>
-        <Text style={styles.infoText}>Phone: {userInfo.phone}</Text>
-        {device && <Text style={styles.infoText}>Device: {brand} {device} </Text>}
-        {userInfo.buildNumber !== 'Not Available' && (
-          <Text style={styles.infoText}>Build Number: {userInfo.buildNumber}</Text>
-        )}
-        <Text style={styles.infoText}>DeviceId: {deviceId}</Text>
-        <Text style={styles.infoText}>Connection Type: {connectionType}</Text>
-        <Text style={styles.infoText}>Connection Speed: {connectionSpeed}</Text>
+      <Text style={styles.title}>📱 User Profile</Text>
+  
+      {/* ✅ Card View Starts */}
+      <View style={styles.card}>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>👤 Name:</Text>
+          <Text style={styles.value}>{userInfo.name}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>📧 Email:</Text>
+          <Text style={styles.value}>{userInfo.email}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>📱 Device:</Text>
+          <Text style={styles.value}>{brand} {device}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>🏗️ Build No :</Text>
+          <Text style={styles.value}>{userInfo.buildNumber}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>🔑 Device ID:</Text>
+          <Text style={styles.value}>{deviceId}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>🌐 Network:</Text>
+          <Text style={styles.value}>{connectionType}</Text>
+        </View>
+  
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>⚡ Speed:</Text>
+          <Text style={styles.value}>{connectionSpeed}</Text>
+        </View>
       </View>
-
-      <Button title="Go Back" onPress={handleBack} />
+      {/* ✅ Card View Ends */}
+  
+      <Button title="⬅ Go Back" color="#33767C" onPress={handleBack} />
     </View>
   );
+  
 };
 
 export default UserInfoScreen;
@@ -215,22 +188,46 @@ export default UserInfoScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 24,
+    backgroundColor: '#EAF1F1',
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
+    color: '#33767C',
     marginBottom: 20,
+    alignSelf: 'center',
   },
-  infoContainer: {
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 20,
+    elevation: 5, // Android
+    shadowColor: '#000', // iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  infoRow: {
+    flexDirection: 'row',
     alignItems: 'flex-start',
+    marginBottom: 12,
+    flexWrap: 'wrap',
   },
-  infoText: {
-    fontSize: 18,
-    marginVertical: 5,
+  label: {
+    fontWeight: '600',
+    fontSize: 16,
+    color: '#555',
+    width: 130,
+  },
+  value: {
+    fontSize: 16,
+    color: '#111',
+    flex: 1,
+    flexWrap: 'wrap',
   },
 });
+
+

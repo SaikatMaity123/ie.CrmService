@@ -80,8 +80,8 @@ android {
         applicationId "com.ieCRMAPP"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 32
-        versionName "32.0"
+        versionCode 38
+        versionName "38.0"
     }
     signingConfigs {
         debug {

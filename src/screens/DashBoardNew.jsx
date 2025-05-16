@@ -11,8 +11,11 @@ import {
   BackHandler,
   Linking,
   Modal,
+  TextInput,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CRMImg from '../images/CRMNEW.svg';
 import HomeImg from '../images/home.svg';
@@ -23,6 +26,8 @@ import axios from 'axios';
 import moment from 'moment';
 import {useFocusEffect} from '@react-navigation/native';
 import ProgressDialog from '../components/custom/ProgressDialog';
+import Voice from '@react-native-voice/voice';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 //database connection
 const db = openDatabase(
@@ -53,6 +58,15 @@ const DashBoardNew = ({navigation}) => {
   const [speed, setSpeed] = useState(null);
   const [connectionType, setConnectionType] = useState('');
   const [isPoorConnection, setIsPoorConnection] = useState(false);
+  const [fcmToken, setFcmToken] = useState('');
+  const [chatVisible, setChatVisible] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [netState, setNetState] = useState({isConnected: true});
+  const scrollViewRef = useRef(null);
 
   let tableCreated = false;
 
@@ -61,51 +75,62 @@ const DashBoardNew = ({navigation}) => {
   };
 
   const measureSpeed = async () => {
-    const netState = await NetInfo.fetch();
-    if (!netState.isConnected) {
-      console.log('No connection. Skipping speed check.');
-      return;
+    let poorCount = 0;
+
+    for (let i = 0; i < 5; i++) {
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        console.log('No connection. Skipping speed check.');
+        setIsPoorConnection(true);
+        return;
+      }
+
+      const startTime = Date.now();
+      try {
+        const response = await fetch(
+          'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
+        );
+        const data = await response.blob();
+        const endTime = Date.now();
+
+        const duration = (endTime - startTime) / 1000;
+        const fileSizeInBytes = data.size;
+        const speedInKbps = fileSizeInBytes / duration / 1024;
+
+        setSpeed(speedInKbps);
+        // console.log(Check ${i + 1}: ${speedInKbps.toFixed(2)} KB/s);
+
+        if (speedInKbps < 50.0) {
+          poorCount++;
+        }
+      } catch (err) {
+        console.log('Speed check failed.');
+        setSpeed(null);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000)); // wait 1 second before next check
     }
 
-    const startTime = new Date().getTime();
-    try {
-      const response = await fetch(
-        BASE_URL +
-          'user/Mobile/Modulelist?Businessid=MEND-PVTL-890&Type=Mobile',
-      );
-      const data = await response.blob();
-      const endTime = new Date().getTime();
-
-      const duration = (endTime - startTime) / 1000; // in seconds
-      const fileSizeInBytes = data.size;
-      const speedInKbps = fileSizeInBytes / duration / 1024;
-
-      setSpeed(speedInKbps);
-      //console.log(`Internet Speed: ${speedInKbps.toFixed(2)} KB/s`);
-
-      if (speedInKbps < 0.5) {
-        setIsPoorConnection(true);
-      } else {
-        setIsPoorConnection(false);
-      }
-    } catch (error) {
-      console.log('Skipping speed check due to network error.');
-      setSpeed(null);
+    if (poorCount === 5) {
+      setIsPoorConnection(true);
+    } else {
       setIsPoorConnection(false);
     }
   };
 
   useEffect(() => {
     // Get the current connection type and check if connected
+    // Monitor network changes
     const unsubscribe = NetInfo.addEventListener(state => {
-      setConnectionType(state.type);
-      console.log(`Connection Type: ${state.type}`);
+      setNetState(state);
 
-      if (state.isConnected) {
-        measureSpeed(); // Call measureSpeed only if connected
+      // Update poor connection logic
+      if (!state.isConnected) {
+        setIsPoorConnection(false); // No internet is not the same as poor
       } else {
-        Alert.alert('No Internet');
-        setIsPoorConnection(false); // Reset poor connection state if disconnected
+        // Mark cellular or unknown networks as poor (custom logic)
+        const poorTypes = ['cellular', 'unknown'];
+        setIsPoorConnection(poorTypes.includes(state.type));
       }
     });
 
@@ -370,6 +395,171 @@ const DashBoardNew = ({navigation}) => {
     }
   }, []);
 
+  const botResponses = {
+    hello: 'Hi there! How can I help you?',
+    hi: "Hey! What's up?",
+    help: 'Sure! Ask me anything.',
+    bye: 'Goodbye! Have a great day.',
+    thanks: "You're welcome!",
+    who: "I'm your offline and Online assistant chatbot.",
+    'what is ie.crm':
+      "it's a Mendine Group internal app to handel there field Employee.",
+    'how do i log in to the crm':
+      "Open the app and enter your Business ID, Email ID, and Password on the Login screen. If the credentials are valid, you'll be redirected to the dashboard.",
+    'what can i access from the crm dashboard':
+      'From the dashboard, you can access DCR, Expense, Orders, Tour Program, Reports, Master Data, and Settings.',
+    'how do i start filling a daily call report (dcr)':
+      'Navigate to the DCR module, select the client type (Doctor, Retailer, or Others), choose the area, and start entering interaction details, location, samples, and remarks.',
+    'what details should i fill in a doctor dcr':
+      'You must enter location (captured via GPS), select the doctor, enter remarks, choose samples/gifts given, and update product stages using the Doctor Product Stage Interface.',
+    'how can i record doctor feedback during visits':
+      'Use the Doctor Product Stage Interface within the DCR to log doctor feedback, product interest, objections, and stage of discussion (TG, CVT, SCT, RX).',
+    'can i enter expenses during visits':
+      'Yes. In the Expense module, select the expense head (e.g., Travel), enter the amount and remarks, and submit.',
+    'how do i log a new customer if they are not listed':
+      'Go to the Unlisted section in the DCR module, fill in customer name, mobile, work type, and remarks, then save the record.',
+    'what is the use of the order module':
+      'The Order module helps you record customer orders. Select the customer, add products with quantity and amount, and submit the order.',
+    'how do i plan and track visits using tour program':
+      'Use the Tour Program module to add planned visits. You can schedule daily/weekly visits with specific objectives and receive reminders.',
+    'what is rcpa in crm':
+      'RCPA (Retail Chemist Prescription Audit) tracks prescriptions at chemist shops. You can log doctor prescriptions, check availability, record alternate brands, and get chemist feedback.',
+    'what details do i enter in the rcpa module':
+      'Enter doctor name, chemist, prescribed product, availability, competitor brand (if any), and save the data for syncing.',
+    'how can i track marketing activities in crm':
+      'Go to the Activity Tracking module to log events like doctor meetings, CMEs, or detailing activities. Include time, location, and discussion outcomes.',
+    'how do i generate my daily activity (da) report':
+      'After entering all DCRs, visit logs, and activity records, the DA report is automatically generated and can be submitted for manager review.',
+    'can i use the crm app offline':
+      'Yes. All modules (DCR, Orders, Expenses, Tour Program) work offline. Data syncs automatically when you regain internet access.',
+    'what happens after i submit a dcr':
+      'It is stored locally (offline) and will be synchronized with the CRM backend when online. Managers can then review it for compliance and reporting.',
+    'what is the purpose of the doctor product stage interface':
+      'It allows you to track the stage of discussion for each product (TG, CVT, SCT, RX) during doctor visits for better targeting and reporting.',
+    'how do i know if my data is synchronized':
+      'Open the Settings module and check the Sync Status. You can also initiate manual sync for DCRs, Orders, and Expenses.',
+    'how do managers review field activities':
+      'Once data is synced, managers can access real-time reports on visits, expenses, orders, and activities for performance tracking.',
+    'what analytics can i see in reports':
+      'Reports show doctor visit frequency, order trends, expense summaries, RCPA analytics, and regional activity insights.',
+  };
+
+  const GEMINI_API_KEY = 'AIzaSyCeD80CDM501fhJuWrO7ddNSqyupEKDQlI'; // Replace with your real Gemini API Key
+
+  const handleSendChat = async () => {
+    try {
+      if (!chatInput || chatInput.trim() === '') return;
+
+      const userInput = chatInput.trim();
+      const cleaned = userInput.toLowerCase();
+      const userMsg = {sender: 'user', text: userInput};
+      setChatMessages(prev => [...prev, userMsg]);
+      setIsTyping(true);
+      setChatInput('');
+
+      const net = await NetInfo.fetch();
+
+      // ✅ Try to get response from predefined botResponses first
+      if (botResponses[cleaned]) {
+        const botMsg = {sender: 'bot', text: botResponses[cleaned]};
+        setIsTyping(false);
+        setChatMessages(prev => [...prev, botMsg]);
+        return;
+      }
+
+      // 🌐 If online and not in botResponses → call Gemini API
+      if (net.isConnected) {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [{text: userInput}],
+                },
+              ],
+            }),
+          },
+        );
+
+        const data = await response.json();
+
+        const botText =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+          "Sorry, I couldn't generate a response.";
+
+        const botMsg = {sender: 'bot', text: botText};
+        setIsTyping(false);
+        setChatMessages(prev => [...prev, botMsg]);
+      } else {
+        // 🔴 Offline and not in predefined list
+        const botMsg = {
+          sender: 'bot',
+          text: "I'm offline and can't answer this question right now.",
+        };
+        setIsTyping(false);
+        setChatMessages(prev => [...prev, botMsg]);
+      }
+    } catch (error) {
+      console.log('Gemini Chat Error:', error);
+      const botMsg = {
+        sender: 'bot',
+        text: 'Oops! Something went wrong while connecting to Gemini.',
+      };
+      setIsTyping(false);
+      setChatMessages(prev => [...prev, botMsg]);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const startListening = async () => {
+    try {
+      setIsListening(true);
+
+      Voice.onSpeechResults = e => {
+        const speech = e.value[0];
+        setChatInput(speech);
+        setIsListening(false);
+        Voice.stop();
+      };
+
+      await Voice.start('en-US');
+
+      // ⏳ Auto stop after 5 seconds
+      setTimeout(() => {
+        if (isListening) {
+          Voice.stop();
+          setIsListening(false);
+        }
+      }, 5000); // 5 seconds
+    } catch (error) {
+      console.error('Voice Error:', error);
+      setIsListening(false);
+    }
+  };
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const createTable = () => {
     db.transaction(tx => {
       tx.executeSql(
@@ -424,10 +614,13 @@ const DashBoardNew = ({navigation}) => {
       });
 
       // Optional: Update state
-      setData(dashBoardJsonArray);
+      // setData(dashBoardJsonArray);
     } catch (error) {
       console.error(' API fetch/save error:', error);
-      Alert.alert('Error', 'Failed to fetch or store dashboard modules.');
+      Alert.alert(
+        'Error',
+        `Failed to fetch or store dashboard modules.${error}`,
+      );
     }
   };
 
@@ -496,7 +689,8 @@ const DashBoardNew = ({navigation}) => {
       //     Alert.alert('Internet Is Required!');
       //   }
       // }, []);
-    } else if (item.ModuleName === 'ORDER ') {
+      //} else if (item.ModuleName === 'ORDER ') {
+    } else if (item.ModuleName === 'ORDER') {
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
@@ -3123,8 +3317,11 @@ const DashBoardNew = ({navigation}) => {
         source={require('../images/bg2.png')}
         style={{height: Dimensions.get('window').height}}> */}
       <View style={styles.container}>
-        {isPoorConnection && (
-          <Text style={styles.warningText}>Poor Internet connection !</Text>
+        {!netState.isConnected && (
+          <Text style={styles.warningText}>No Internet connection!</Text>
+        )}
+        {netState.isConnected && isPoorConnection && (
+          <Text style={styles.warningText}>Poor Internet connection!</Text>
         )}
         <CRMImg height={100} width={100} />
         <FlatList
@@ -3168,6 +3365,93 @@ const DashBoardNew = ({navigation}) => {
       </Modal>
       <ProgressDialog visible={loading} message="Please Wait..." />
       {/* </ImageBackground> */}
+
+      {/* 🟢 ChatBot Icon Floating */}
+      <TouchableOpacity
+        style={styles.chatIcon}
+        onPress={() => setChatVisible(true)}>
+        <AntDesign name="message1" size={28} color="white" />
+      </TouchableOpacity>
+
+      {/* 💬 ChatBot Modal */}
+      <Modal
+        visible={chatVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setChatVisible(false)}>
+        <View style={styles.chatModalWrapper}>
+          <View
+            style={[
+              styles.chatModal,
+              {height: isKeyboardVisible ? '80%' : '50%'},
+            ]}>
+            {/* Header */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 10,
+              }}>
+              <Text style={{fontWeight: 'bold', fontSize: 16}}>
+                🤖 H.A.R.U.
+              </Text>
+              <TouchableOpacity onPress={() => setChatVisible(false)}>
+                <Text style={{fontSize: 18, color: 'red'}}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Messages */}
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.chatBox}
+              contentContainerStyle={{paddingBottom: 10}}
+              showsVerticalScrollIndicator={false}
+              onContentSizeChange={() =>
+                scrollViewRef.current?.scrollToEnd({animated: true})
+              }>
+              {chatMessages.map((msg, i) => (
+                <Text
+                  key={i}
+                  style={
+                    msg.sender === 'user' ? styles.userMsg : styles.botMsg
+                  }>
+                  {msg.sender === 'user' ? '🧑: ' : '🤖: '}
+                  {msg.text}
+                </Text>
+              ))}
+              {isTyping && (
+                <Text
+                  style={{
+                    color: 'gray',
+                    fontStyle: 'italic',
+                    marginVertical: 8,
+                  }}>
+                  🤖 Bot is typing...
+                </Text>
+              )}
+            </ScrollView>
+
+            {/* Input Row */}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.chatInput}
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Type a message"
+              />
+              <TouchableOpacity onPress={handleSendChat} style={styles.sendBtn}>
+                <Text style={{color: 'white'}}>Send</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={startListening} style={styles.micBtn}>
+                <Text style={{color: 'white'}}>
+                  {isListening ? '🎙️' : '🎤'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -3304,6 +3588,75 @@ const styles = StyleSheet.create({
   okButtonText: {
     color: '#ffffff',
     fontSize: 16,
+  },
+  chatIcon: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#007aff',
+    padding: 15,
+    borderRadius: 30,
+    elevation: 5,
+    zIndex: 1000,
+  },
+
+  chatModalWrapper: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',
+  },
+
+  chatModal: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 15,
+    //height: '50%',
+  },
+
+  chatBox: {
+    flex: 1,
+    marginVertical: 5,
+  },
+
+  userMsg: {
+    textAlign: 'right',
+    color: '#007aff',
+    marginVertical: 4,
+  },
+
+  botMsg: {
+    textAlign: 'left',
+    color: '#34c759',
+    marginVertical: 4,
+  },
+
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  chatInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+  },
+
+  sendBtn: {
+    backgroundColor: '#007aff',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  micBtn: {
+    backgroundColor: '#ff8c00',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginLeft: 5,
   },
 });
 
