@@ -8,8 +8,10 @@ import {
   StyleSheet,
   Alert,
   TouchableWithoutFeedback,
+  BackHandler,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import CRMImg from '../images/CRMNEW.svg';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import NetInfo from '@react-native-community/netinfo';
@@ -17,6 +19,7 @@ import { openDatabase } from 'react-native-sqlite-storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
 import ProgressDialog from '../components/custom/ProgressDialog';
+import { useFocusEffect } from '@react-navigation/native';
 
 //database connection
 const db = openDatabase(
@@ -74,24 +77,61 @@ const SettingScreen = ({ navigation }) => {
   const [useOrderData, setOrderData] = useState('');
   const [useExpenseData, setExpenseData] = useState('');
   const [useExpenseRequestData, setExpenseRequestData] = useState('');
-  const [loading, setLoading] = useState(false);
+  // loaders
+  const [initialLoading, setInitialLoading] = useState(true); // 🔴 gate for showing buttons
+  const [loading, setLoading] = useState(false); // existing action loader
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
+  // useEffect(() => {
+  //   try {
+  //     AsyncStorage.getItem('UserData').then(value => {
+  //       if (value != null) {
+  //         let user = JSON.parse(value);
+  //         setBusinessID(user.BusinessID);
+  //         setIDEmployee(user.IDEmployee);
+  //         setuseManagerAccess(user.ManagerAccess);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+
+  //   fetchJsonDataFromSQLite();
+  // }, []);
 
   useEffect(() => {
-    try {
-      AsyncStorage.getItem('UserData').then(value => {
-        if (value != null) {
-          let user = JSON.parse(value);
+    (async () => {
+      try {
+        const value = await AsyncStorage.getItem('UserData');
+        if (value) {
+          const user = JSON.parse(value);
           setBusinessID(user.BusinessID);
           setIDEmployee(user.IDEmployee);
-          setuseManagerAccess(user.ManagerAccess);
+          setuseManagerAccess(!!user.ManagerAccess);
         }
-      });
-    } catch (error) {
-      console.log(error);
-    }
+      } catch (e) {
+        console.log(e);
+      }
 
-    fetchJsonDataFromSQLite();
+      // run the full table load and keep the UI gated
+      await fetchJsonDataFromSQLite();
+      setInitialLoading(false);
+    })();
   }, []);
+
 
   // Function to fetch JSON data from SQLite
   // const fetchJsonDataFromSQLite = () => {
@@ -522,8 +562,26 @@ const SettingScreen = ({ navigation }) => {
   //   });
   // };
 
+  //Suman Jana to  Fetch the Data from The Sqlite Database
 
-  //Suman Jana to  Fetch the Data from The Sqlite Database 
+
+  // ---------- SQLite helpers ----------
+
+
+  const extractRows = (result) => {
+    // Works whether rows.raw() exists or not
+    try {
+      const list = result?.rows;
+      if (!list) return [];
+      if (typeof list.raw === 'function') return list.raw();
+      const arr = [];
+      for (let i = 0; i < list.length; i++) arr.push(list.item(i));
+      return arr;
+    } catch {
+      return [];
+    }
+  };
+
   const fetchTableData = (tableName, parser = JSON.parse) => {
     return new Promise((resolve) => {
       try {
@@ -532,21 +590,22 @@ const SettingScreen = ({ navigation }) => {
             `SELECT * FROM ${tableName}`,
             [],
             (_, result) => {
-              const rows = result.rows.raw?.() || [];
-              if (rows.length === 0) {
+              const rows = extractRows(result);
+              if (!rows.length) {
                 console.warn(`⚠️ No data in table: ${tableName}`);
                 resolve([]);
                 return;
               }
-  
-              const parsed = parser ? rows.map(row => parser(row.data || row)) : rows;
-              console.log(`Fetched from ${tableName}:`, parsed);
+              const parsed = parser
+                ? rows.map(row => parser(row.data ?? row))
+                : rows;
+              // console.log(`Fetched from ${tableName}:`, parsed);
               resolve(parsed);
             },
             (_, error) => {
-              console.warn(`Skipped ${tableName}:`, error?.message || "No details available");
-              resolve([]); // Don’t throw — resolve safely with empty array
-            }
+              console.warn(`Skipped ${tableName}:`, error?.message || 'No details');
+              resolve([]);
+            },
           );
         });
       } catch (e) {
@@ -555,8 +614,90 @@ const SettingScreen = ({ navigation }) => {
       }
     });
   };
-  
-  
+
+  // const fetchJsonDataFromSQLite = async () => {
+  //   try {
+  //     const [
+  //       startDayData,
+  //       managerStartDayData,
+  //       doctorDCRData,
+  //       managerDoctorDCRData,
+  //       retailerDCRData,
+  //       managerRetailerDCRData,
+  //       doctorMasterData,
+  //       retailerMasterData,
+  //       othersData,
+  //       unlistedDoctor,
+  //       unlistedRetailer,
+  //       managerUnlistedDoctor,
+  //       managerUnlistedRetailer,
+  //       doctorUnlistedData,
+  //       retailerUnlistedData,
+  //       unlistedMDocData,
+  //       unlistedMRetData,
+  //       stayData,
+  //       orderDataRaw,
+  //       expenseDataRaw,
+  //       expenseRequestRaw,
+  //     ] = await Promise.all([
+  //       fetchTableData('CRM_StartDay', null),
+  //       fetchTableData('CRM_ManagerStartDay', null),
+  //       fetchTableData('CRM_DoctorDataSave'),
+  //       fetchTableData('CRM_ManagerDoctorDataSave'),
+  //       fetchTableData('CRM_RetailerDataSave'),
+  //       fetchTableData('CRM_MangerRetailerDataSave'),
+  //       fetchTableData('CRM_MasterDoctorDataSave'),
+  //       fetchTableData('CRM_MasterRetailerDataSave'),
+  //       fetchTableData('CRM_Others'),
+  //       fetchTableData('CRM_UnlistedDoctor', null),
+  //       fetchTableData('CRM_UnlistedRetailer', null),
+  //       fetchTableData('CRM_ManagerUnlistedDoctor', null),
+  //       fetchTableData('CRM_ManagerUnlistedRetailer', null),
+  //       fetchTableData('CRM_DoctorUnlistedDataSave'),
+  //       fetchTableData('CRM_RetailerUnlistedDataSave'),
+  //       fetchTableData('CRM_ManagerDoctorUnlistedDataSave'),
+  //       fetchTableData('CRM_ManagerRetailerUnlistedDataSave'),
+  //       fetchTableData('CRM_StayDataSave'),
+  //       fetchTableData('OrderBookingDataSave'),
+  //       fetchTableData('CRM_ExpenseDataSave'),
+  //       fetchTableData('CRM_ExpenseRequestSave'),
+  //     ]);
+
+  //     // Flatten where needed
+  //     setStartDay(startDayData);
+  //     setMStartDay(managerStartDayData);
+  //     setDoctorDCR(doctorDCRData);
+  //     setMangerDoctorDCR(managerDoctorDCRData);
+  //     setRetailerDCR(retailerDCRData);
+  //     setmanagerRetailerDCR(managerRetailerDCRData);
+  //     setDoctorMaster(doctorMasterData);
+  //     setRetailerMaster(retailerMasterData);
+  //     setOthers(othersData);
+  //     setUnlistedDlist(unlistedDoctor);
+  //     setUnlistedRlist(unlistedRetailer);
+  //     setMUnlistedDlist(managerUnlistedDoctor);
+  //     setMUnlistedRlist(managerUnlistedRetailer);
+  //     setDoctorUnlisted(doctorUnlistedData);
+  //     setRetailerUnlisted(retailerUnlistedData);
+  //     setUnlistedMDocData(unlistedMDocData);
+  //     setUnlistedMRetData(unlistedMRetData);
+  //     setStayData(stayData);
+
+  //     setOrderData(orderDataRaw.flat());
+  //     setExpenseData(expenseDataRaw.flat());
+
+  //     const uniqueExpenses = expenseRequestRaw
+  //       .flat()
+  //       .filter(
+  //         (item, index, self) =>
+  //           index === self.findIndex(i => i.IDBooking === item.IDBooking),
+  //       );
+  //     setExpenseRequestData(uniqueExpenses);
+  //   } catch (err) {
+  //     console.error('Error fetching data:', err);
+  //   }
+  // };
+
 
   const fetchJsonDataFromSQLite = async () => {
     try {
@@ -576,37 +717,37 @@ const SettingScreen = ({ navigation }) => {
         managerUnlistedRetailer,
         doctorUnlistedData,
         retailerUnlistedData,
-        unlistedMDocData,
-        unlistedMRetData,
+        unlistedMDocDataRaw,
+        unlistedMRetDataRaw,
         stayData,
         orderDataRaw,
         expenseDataRaw,
-        expenseRequestRaw
+        expenseRequestRaw,
       ] = await Promise.all([
-        fetchTableData("CRM_StartDay", null),
-        fetchTableData("CRM_ManagerStartDay", null),
-        fetchTableData("CRM_DoctorDataSave"),
-        fetchTableData("CRM_ManagerDoctorDataSave"),
-        fetchTableData("CRM_RetailerDataSave"),
-        fetchTableData("CRM_MangerRetailerDataSave"),
-        fetchTableData("CRM_MasterDoctorDataSave"),
-        fetchTableData("CRM_MasterRetailerDataSave"),
-        fetchTableData("CRM_Others"),
-        fetchTableData("CRM_UnlistedDoctor", null),
-        fetchTableData("CRM_UnlistedRetailer", null),
-        fetchTableData("CRM_ManagerUnlistedDoctor", null),
-        fetchTableData("CRM_ManagerUnlistedRetailer", null),
-        fetchTableData("CRM_DoctorUnlistedDataSave"),
-        fetchTableData("CRM_RetailerUnlistedDataSave"),
-        fetchTableData("CRM_ManagerDoctorUnlistedDataSave"),
-        fetchTableData("CRM_ManagerRetailerUnlistedDataSave"),
-        fetchTableData("CRM_StayDataSave"),
-        fetchTableData("OrderBookingDataSave"),
-        fetchTableData("CRM_ExpenseDataSave"),
-        fetchTableData("CRM_ExpenseRequestSave")
+        fetchTableData('CRM_StartDay', null),
+        fetchTableData('CRM_ManagerStartDay', null),
+        fetchTableData('CRM_DoctorDataSave'),
+        fetchTableData('CRM_ManagerDoctorDataSave'),
+        fetchTableData('CRM_RetailerDataSave'),
+        fetchTableData('CRM_MangerRetailerDataSave'),
+        fetchTableData('CRM_MasterDoctorDataSave'),
+        fetchTableData('CRM_MasterRetailerDataSave'),
+        fetchTableData('CRM_Others'),
+        fetchTableData('CRM_UnlistedDoctor', null),
+        fetchTableData('CRM_UnlistedRetailer', null),
+        fetchTableData('CRM_ManagerUnlistedDoctor', null),
+        fetchTableData('CRM_ManagerUnlistedRetailer', null),
+        fetchTableData('CRM_DoctorUnlistedDataSave'),
+        fetchTableData('CRM_RetailerUnlistedDataSave'),
+        fetchTableData('CRM_ManagerDoctorUnlistedDataSave'),
+        fetchTableData('CRM_ManagerRetailerUnlistedDataSave'),
+        fetchTableData('CRM_StayDataSave'),
+        fetchTableData('OrderBookingDataSave'),
+        fetchTableData('CRM_ExpenseDataSave'),
+        fetchTableData('CRM_ExpenseRequestSave'),
       ]);
 
-      // Flatten where needed
+      // set state once all are loaded
       setStartDay(startDayData);
       setMStartDay(managerStartDayData);
       setDoctorDCR(doctorDCRData);
@@ -622,26 +763,23 @@ const SettingScreen = ({ navigation }) => {
       setMUnlistedRlist(managerUnlistedRetailer);
       setDoctorUnlisted(doctorUnlistedData);
       setRetailerUnlisted(retailerUnlistedData);
-      setUnlistedMDocData(unlistedMDocData);
-      setUnlistedMRetData(unlistedMRetData);
+      setUnlistedMDocData(unlistedMDocDataRaw);
+      setUnlistedMRetData(unlistedMRetDataRaw);
       setStayData(stayData);
 
-      setOrderData(orderDataRaw.flat());
-      setExpenseData(expenseDataRaw.flat());
+      setOrderData((orderDataRaw || []).flat());
+      setExpenseData((expenseDataRaw || []).flat());
 
-      const uniqueExpenses = expenseRequestRaw.flat().filter((item, index, self) =>
-        index === self.findIndex(i => i.IDBooking === item.IDBooking)
-      );
+      const uniqueExpenses = (expenseRequestRaw || [])
+        .flat()
+        .filter((item, idx, self) => idx === self.findIndex(i => i.IDBooking === item.IDBooking));
       setExpenseRequestData(uniqueExpenses);
-
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error('Error fetching data:', err);
     }
   };
 
-//Suman Jana End for fetching the Data
-
-
+  //Suman Jana End for fetching the Data
 
   const syncData = async item => {
     // console.log(data);
@@ -1742,75 +1880,116 @@ const SettingScreen = ({ navigation }) => {
     }
   };
 
+  // return (
+  //   <SafeAreaView style={{ flex: 1 }}>
+  //     <ImageBackground
+  //       source={require('../images/bg2.png')}
+  //       style={{ height: Dimensions.get('window').height }}>
+  //       <SafeAreaView style={{ alignItems: 'center' }}>
+  //         <CRMImg
+  //           height={150}
+  //           width={200}
+  //         // style={{transform: [{rotate: '-5deg'}]}}
+  //         />
+  //       </SafeAreaView>
+  //       <SafeAreaView style={{ marginTop: 100, marginLeft: 10, marginRight: 10 }}>
+  //         <FlatList
+  //           data={DATA}
+  //           renderItem={({ item }) => (
+  //             <TouchableWithoutFeedback onPress={() => syncData(item)}>
+  //               <View style={[style.menu, { backgroundColor: '#FFA500' }]}>
+  //                 <View
+  //                   style={{
+  //                     flexDirection: 'row',
+  //                     justifyContent: 'flex-start',
+  //                     marginLeft: 50,
+  //                   }}>
+  //                   <AntDesign
+  //                     name="sync"
+  //                     size={25}
+  //                     color="#0048a7"
+  //                     style={{ marginTop: 10 }}
+  //                   />
+  //                   <Text
+  //                     style={[
+  //                       style.menuItem,
+  //                       {
+  //                         color: '#fff',
+  //                         marginLeft: 10,
+  //                         fontFamily: 'Lato-Bold',
+  //                       },
+  //                     ]}>
+  //                     {item.title}
+  //                   </Text>
+  //                 </View>
+  //               </View>
+  //             </TouchableWithoutFeedback>
+  //           )}
+  //           keyExtractor={item => item.id}
+  //         />
+  //       </SafeAreaView>
+  //       <ProgressDialog visible={loading} message="Loading, please wait..." />
+  //     </ImageBackground>
+  //   </SafeAreaView>
+  // );
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ImageBackground
         source={require('../images/bg2.png')}
-        style={{ height: Dimensions.get('window').height }}>
+        style={{ height: Dimensions.get('window').height }}
+      >
         <SafeAreaView style={{ alignItems: 'center' }}>
-          <CRMImg
-            height={150}
-            width={200}
-          // style={{transform: [{rotate: '-5deg'}]}}
-          />
+          <CRMImg height={150} width={200} />
         </SafeAreaView>
-        <SafeAreaView style={{ marginTop: 100, marginLeft: 10, marginRight: 10 }}>
-          <FlatList
-            data={DATA}
-            renderItem={({ item }) => (
-              <TouchableWithoutFeedback onPress={() => syncData(item)}>
-                <View style={[style.menu, { backgroundColor: '#FFA500' }]}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'flex-start',
-                      marginLeft: 50,
-                    }}>
-                    <AntDesign
-                      name="sync"
-                      size={25}
-                      color="#0048a7"
-                      style={{ marginTop: 10 }}
-                    />
-                    <Text
-                      style={[
-                        style.menuItem,
-                        {
-                          color: '#fff',
-                          marginLeft: 10,
-                          fontFamily: 'Lato-Bold',
-                        },
-                      ]}>
-                      {item.title}
-                    </Text>
+
+        {/* Initial loader gate – DO NOT render buttons until all tables are loaded */}
+        {initialLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            {/* You can use your ProgressDialog or a simple ActivityIndicator */}
+            <ActivityIndicator size="large" />
+            <Text style={{ marginTop: 12, fontSize: 16 }}>Loading data, please wait...</Text>
+          </View>
+        ) : (
+          <SafeAreaView style={{ marginTop: 100, marginLeft: 10, marginRight: 10 }}>
+            <FlatList
+              data={DATA}
+              renderItem={({ item }) => (
+                <TouchableWithoutFeedback onPress={() => syncData(item)}>
+                  <View style={[style.menu, { backgroundColor: '#FFA500' }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginLeft: 50 }}>
+                      <AntDesign name="sync" size={25} color="#0048a7" style={{ marginTop: 10 }} />
+                      <Text
+                        style={[
+                          style.menuItem,
+                          { color: '#fff', marginLeft: 10, fontFamily: 'Lato-Bold' },
+                        ]}
+                      >
+                        {item.title}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableWithoutFeedback>
-            )}
-            keyExtractor={item => item.id}
-          />
-        </SafeAreaView>
-        <ProgressDialog visible={loading} message="Loading, please wait..." />
+                </TouchableWithoutFeedback>
+              )}
+              keyExtractor={(item) => item.id}
+            />
+          </SafeAreaView>
+        )}
+
+        {/* Action loader (during sync calls) */}
+        <ProgressDialog visible={loading || initialLoading} message="Loading, please wait..." />
       </ImageBackground>
     </SafeAreaView>
   );
+
+
 };
 
 export default SettingScreen;
 
 const style = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  menu: {
-    margin: 10,
-    padding: 5,
-    //width: 140,
-    //height: 135,
-    elevation: 5,
-    borderRadius: 5,
-  },
+  container: { flex: 1, alignItems: 'center' },
+  menu: { margin: 10, padding: 5, elevation: 5, borderRadius: 5 },
   menuItem: {
     fontSize: 18,
     fontFamily: 'Lato-Regular',
@@ -1819,13 +1998,13 @@ const style = StyleSheet.create({
     padding: 5,
     textAlignVertical: 'center',
     textAlign: 'center',
-    alignItems: 'center', // Centered horizontally
+    alignItems: 'center',
   },
   imageDesign: {
     width: 20,
     height: 20,
     padding: 20,
-    justifyContent: 'center', //Centered vertically
-    alignSelf: 'center', // Centered horizontally
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 });

@@ -370,15 +370,30 @@ const DoctorUScreen = props => {
             //Mvisitwith.push(value);
           });
 
+          // if (sampleQtyData.length === 0) {
+          //   samples = [];
+          // } else {
+          //   sampleQtyData.map(function (value) {
+          //     samples.push({
+          //       IDProduct: value.IDProduct,
+          //       Qty: value.Qty,
+          //     });
+          //   });
+          // }
+
           if (sampleQtyData.length === 0) {
             samples = [];
           } else {
-            sampleQtyData.map(function (value) {
-              samples.push({
-                IDProduct: value.IDProduct,
-                Qty: value.Qty,
-              });
-            });
+            // sampleQtyData.map(function (value) {
+            //   samples.push({
+            //     IDProduct: value.IDProduct,
+            //     Qty: value.Qty,
+            //   });
+            // });
+            samples = sampleQtyData.map(item => ({
+              IDProduct: String(parseInt(item.IDProduct)), // removes .0
+              Qty: item.Qty,
+            }));
           }
           if (giftQtyData.length === 0) {
             gifts = [];
@@ -519,16 +534,32 @@ const DoctorUScreen = props => {
             //Mvisitwith.push(value);
           });
 
+          // if (sampleQtyData.length === 0) {
+          //   samples = [];
+          // } else {
+          //   sampleQtyData.map(function (value) {
+          //     samples.push({
+          //       IDProduct: value.IDProduct,
+          //       Qty: value.Qty,
+          //     });
+          //   });
+          // }
+
           if (sampleQtyData.length === 0) {
             samples = [];
           } else {
-            sampleQtyData.map(function (value) {
-              samples.push({
-                IDProduct: value.IDProduct,
-                Qty: value.Qty,
-              });
-            });
+            // sampleQtyData.map(function (value) {
+            //   samples.push({
+            //     IDProduct: value.IDProduct,
+            //     Qty: value.Qty,
+            //   });
+            // });
+            samples = sampleQtyData.map(item => ({
+              IDProduct: String(parseInt(item.IDProduct)), // removes .0
+              Qty: item.Qty,
+            }));
           }
+
           if (giftQtyData.length === 0) {
             gifts = [];
           } else {
@@ -563,7 +594,7 @@ const DoctorUScreen = props => {
               //Visitwiths: Mvisitwith,
               Visitwiths: useMVWTIDEmployee,
             };
-            //console.log(data_api);
+            console.log(data_api);
             let result = await fetch(BASE_URL + 'Manager/DCR/Mobile/Save', {
               method: 'POST',
               headers: {
@@ -619,7 +650,7 @@ const DoctorUScreen = props => {
               Gifts: gifts,
               SentApproval: props.route.params.apprv_value,
             };
-            //console.log(data_api);
+            console.log(data_api);
             let result = await fetch(BASE_URL + 'DCR/Unlisted', {
               method: 'POST',
               headers: {
@@ -1003,7 +1034,7 @@ const DoctorUScreen = props => {
         </View>
         <TouchableOpacity
           style={{
-            backgroundColor: '#33767C',
+            backgroundColor: '#005696',
             width: '30%',
             padding: 5,
             margin: 5,
@@ -1168,7 +1199,7 @@ const DoctorUScreen = props => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   width: '25%',
 
                   margin: 5,
@@ -1333,7 +1364,7 @@ const DoctorUScreen = props => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   width: '25%',
 
                   margin: 5,

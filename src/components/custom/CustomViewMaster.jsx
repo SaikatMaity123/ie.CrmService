@@ -19,7 +19,7 @@ const CustomViewMaster = ({
         width: '100%',
         backgroundColor: '#e4e4e4',
         borderRadius: 10,
-        borderColor: '#AD40AF',
+        borderColor: '#005696',
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
@@ -28,14 +28,14 @@ const CustomViewMaster = ({
         onPress={() => updateSwitchData(1)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 1 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 1 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 1 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 1 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
@@ -47,14 +47,14 @@ const CustomViewMaster = ({
         onPress={() => updateSwitchData(2)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 2 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 2 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 2 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 2 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>

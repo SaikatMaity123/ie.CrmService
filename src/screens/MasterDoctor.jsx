@@ -7,8 +7,14 @@ import {
   TouchableWithoutFeedback,
   SafeAreaView,
   Alert,
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {TextInput} from 'react-native-paper';
 import {Dropdown} from 'react-native-element-dropdown';
 import {MultipleSelectList} from 'react-native-dropdown-select-list';
@@ -28,6 +34,10 @@ import {FlatList} from 'react-native-gesture-handler';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import DeviceInfo from 'react-native-device-info';
 import ProgressDialog from '../components/custom/ProgressDialog';
+import {useFocusEffect} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
+import Icon from 'react-native-vector-icons/Feather';
 
 // Initialize Geocoder with your Google API Key
 Geocoder.init('AIzaSyAK6U3-x1ro826D0T0P1_gShb4rst_ka2c'); // Replace with your API Key
@@ -45,6 +55,7 @@ const db = openDatabase(
 );
 
 const MasterDoctor = ({navigation}) => {
+  const insets = useSafeAreaInsets();
   const [useCode, setCode] = useState('');
   const [docCode, setDocCode] = useState('');
   const [useName, setName] = useState('');
@@ -54,6 +65,7 @@ const MasterDoctor = ({navigation}) => {
   const [useempEmail, setempEmail] = useState('');
   const [useMobile, setMobile] = useState('');
   const [selectedMArea, setSelectedMArea] = useState([]);
+  const [useType, setType] = useState([]);
   const [useData, setData] = useState([]);
   const [useQData, setQData] = useState([]);
   const [useQValue, setQValue] = useState('');
@@ -71,6 +83,7 @@ const MasterDoctor = ({navigation}) => {
   const [usePValue, setPValue] = useState('');
   const [usePLabel, setPLabel] = useState('');
   const [useAreaSelected, setAreaSelected] = useState('');
+  const [useTypeSelected, setTypeSelected] = useState('');
   const [useBusinessID, setBusinessID] = useState('');
   const [locationStatus, setLocationStatus] = useState('');
   const [currentLongitude, setCurrentLongitude] = useState('0.00');
@@ -89,7 +102,6 @@ const MasterDoctor = ({navigation}) => {
     handleCheckPressed();
     //getAddress();
     //AIzaSyCom4hOSUuk0f1RE6w1C_HDMhpwH70nr8A
-
     try {
       AsyncStorage.getItem('UserData').then(value => {
         if (value != null) {
@@ -142,6 +154,20 @@ const MasterDoctor = ({navigation}) => {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavMaster'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const handleCheckPressed = async () => {
     if (Platform.OS === 'android') {
@@ -411,6 +437,30 @@ const MasterDoctor = ({navigation}) => {
       .catch(function (error) {
         Alert.alert(error);
       });
+
+    const empurl =
+      BASE_URL + 'Misc/List?Businessid=' + businessID + '&Type=DOCTORTYPE';
+    console.log(empurl);
+    var config = {
+      method: 'get',
+      url: empurl,
+    };
+    axios(config)
+      .then(function (response) {
+        //CREATE TABLE for MangerVisitWithTBL
+        var count = Object.keys(response.data).length;
+        let wtNameArray = [];
+        for (var i = 0; i < count; i++) {
+          wtNameArray.push({
+            value: response.data[i].Name,
+            key: response.data[i].IDMisc,
+          });
+        }
+        setTypeSelected(wtNameArray);
+      })
+      .catch(function (error) {
+        Alert.alert(error);
+      });
   };
 
   const fetchOfflineTableData = () => {
@@ -470,19 +520,19 @@ const MasterDoctor = ({navigation}) => {
 
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM CRM_Category',
+        'SELECT * FROM MasterDoctorType',
         [],
         (tx, results) => {
           if (results.rows.length > 0) {
             var temp = [];
             for (let i = 0; i < results.rows.length; ++i) {
               temp.push({
-                value: results.rows.item(i).IDMisc,
-                label: results.rows.item(i).Name,
+                value: results.rows.item(i).Name,
+                key: results.rows.item(i).IDMisc,
               });
             }
             //temp.shift();
-            setCData(temp);
+            setTypeSelected(temp);
             //console.log('Data is inserted:', temp);
           } else {
             console.log('No data found');
@@ -720,10 +770,16 @@ const MasterDoctor = ({navigation}) => {
         NetInfo.fetch().then(async state => {
           if (state.isConnected) {
             let productsID = [];
+            let doctorType = [];
             useData.map(function (value) {
               productsID.push({
                 IDProduct: value.ProductValue,
                 IDSatge: value.StageValue,
+              });
+            });
+            useType.map(function (value) {
+              doctorType.push({
+                IDType: value.IDMisc,
               });
             });
 
@@ -758,8 +814,9 @@ const MasterDoctor = ({navigation}) => {
               CreatedBy: useempEmail,
               Businessid: useBusinessID,
               Products: productsID,
+              DoctorType: doctorType,
             };
-            console.log(data);
+            console.log('data,', data);
 
             let result = await fetch(BASE_URL + 'Doctor/MobileDoctorAddEdit', {
               method: 'POST',
@@ -817,13 +874,25 @@ const MasterDoctor = ({navigation}) => {
         NetInfo.fetch().then(async state => {
           if (state.isConnected) {
             let productsID = [];
-            useData.map(function (value) {
-              productsID.push({
-                IDProduct: value.ProductValue,
-                IDSatge: value.StageValue,
-              });
-            });
+            let doctorType = [];
+            // useData.map(function (value) {
+            //   productsID.push({
+            //     IDProduct: value.ProductValue,
+            //     IDSatge: value.StageValue,
+            //   });
+            // });
 
+            productsID = useData.map(item => ({
+              IDProduct: String(parseInt(item.ProductValue)), // removes .0
+              IDSatge: String(parseInt(item.StageValue)),
+            }));
+
+            useType.map(function (value) {
+              doctorType.push({
+                IDType: value,
+              });
+              //console.log('value.IDMisc', value);
+            });
             const data = {
               IDDoctor: 0,
               //Code: 'MDOC'+useIDEmployee + useCode,
@@ -854,8 +923,9 @@ const MasterDoctor = ({navigation}) => {
               CreatedBy: useempEmail,
               Businessid: useBusinessID,
               Products: productsID,
+              DoctorType: doctorType,
             };
-            console.log(data);
+            console.log('data', data);
 
             let result = await fetch(BASE_URL + 'Doctor/MobileDoctorAddEdit', {
               method: 'POST',
@@ -912,6 +982,12 @@ const MasterDoctor = ({navigation}) => {
               stageID.push(value.StageValue);
             });
 
+            let doctorType = [];
+            useType.map(function (value) {
+              doctorType.push(value);
+              console.log('value.IDMisc', value);
+            });
+
             const data = {
               IDDoctor: 0,
               //Code: 'MDOC'+useIDEmployee + useCode,
@@ -943,8 +1019,9 @@ const MasterDoctor = ({navigation}) => {
               Businessid: useBusinessID,
               IDProducts: productsID,
               IDStage: stageID,
+              DoctorType: doctorType,
             };
-            console.log(data);
+            console.log(' data for offline', data);
 
             db.transaction(txn => {
               txn.executeSql(
@@ -998,143 +1075,187 @@ const MasterDoctor = ({navigation}) => {
       }
     }
   };
+
+  const renderItem = ({item}) => (
+    <View style={styles.row}>
+      <Text style={styles.cellDate}>{item.date}</Text>
+
+      <Text style={styles.cellLead}>{item.leadNo}</Text>
+
+      <Text style={styles.cellCustomer}>{item.customer}</Text>
+
+      <Text style={styles.cellPhone}>{item.phone}</Text>
+
+      <Text style={styles.cellEmail}>{item.email}</Text>
+
+      <Text style={styles.cellProduct}>{item.product}</Text>
+
+      <View style={styles.cellAction}>
+        <TouchableOpacity>
+          <Icon name="bar-chart-2" size={18} color="#0ea5e9" />
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Icon name="share-2" size={18} color="#0ea5e9" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: false}}>
-      <ScrollView>
-        {shouldShowMD ? (
-          <View style={{padding: 5, margin: 5}}>
-            <View>
+    <KeyboardAwareLayout>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+      {shouldShowMD ? (
+        <View
+          style={{
+            padding: 8,
+            margin: 5,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: 'lightgrey',
+            backgroundColor: 'white',
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.8,
+            shadowRadius: 2,
+            elevation: 5,
+          }}>
+          <Text style={{fontWeight: 'bold', marginBottom: 5, fontSize: 16}}>
+            Doctor Information
+          </Text>
+          <View>
+            <TextInput
+              label="Name"
+              mode="outlined"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={useName}
+              onChangeText={text => setName(text)}
+            />
+            <View
+              style={{
+                marginTop: 5,
+              }}>
               <TextInput
-                label="Name"
+                label="Code"
                 mode="outlined"
                 autoCapitalize="none"
                 autoCorrect={false}
-                value={useName}
-                onChangeText={text => setName(text)}
+                style={{marginBottom: 5}}
+                value={docCode}
+                editable={false}
+                // onChangeText={text => setDocCode(text)}
               />
-              <View
-                style={{
-                  marginTop: 5,
-                }}>
-                <TextInput
-                  label="Code"
-                  mode="outlined"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  style={{marginBottom: 5}}
-                  value={docCode}
-                  editable={false}
-                  // onChangeText={text => setDocCode(text)}
-                />
-              </View>
-              <View
-                style={{
-                  marginTop: 5,
-                  // marginBottom: 2,
-                  // paddingBottom: 2,
-                  paddingTop: 5,
-                }}>
-                <Dropdown
-                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                  placeholderStyle={style.placeholderStyle}
-                  selectedTextStyle={style.selectedTextStyle}
-                  inputSearchStyle={style.inputSearchStyle}
-                  iconStyle={style.iconStyle}
-                  data={useQData}
-                  search
-                  maxHeight={300}
-                  labelField="label"
-                  valueField="value"
-                  placeholder={!isFocus ? 'Qualification' : '...'}
-                  searchPlaceholder="Search"
-                  onFocus={() => setIsFocus(true)}
-                  onBlur={() => setIsFocus(false)}
-                  onChange={item => {
-                    console.log(item.label);
-                    setQLabel(item.label);
-                    setQValue(item.value);
-                    // handleState(item.value);
-                    setIsFocus(false);
-                  }}
-                />
-              </View>
-              <View
-                style={{
-                  marginTop: 5,
-                  // marginBottom: 2,
-                  // paddingBottom: 2,
-                  paddingTop: 5,
-                }}>
-                <Dropdown
-                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                  placeholderStyle={style.placeholderStyle}
-                  selectedTextStyle={style.selectedTextStyle}
-                  inputSearchStyle={style.inputSearchStyle}
-                  iconStyle={style.iconStyle}
-                  data={useSData}
-                  search
-                  maxHeight={300}
-                  labelField="label"
-                  valueField="value"
-                  placeholder={!isFocus ? 'Speciality' : '...'}
-                  searchPlaceholder="Search"
-                  onFocus={() => setIsFocus(true)}
-                  onBlur={() => setIsFocus(false)}
-                  onChange={item => {
-                    console.log(item.label);
-                    console.log(item.value);
-                    setSLabel(item.label);
-                    setSValue(item.value);
-                    setIsFocus(false);
-                  }}
-                />
-              </View>
-              <View
-                style={{
-                  marginTop: 5,
-                  // marginBottom: 2,
-                  // paddingBottom: 2,
-                  paddingTop: 5,
-                }}>
-                <Dropdown
-                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                  placeholderStyle={style.placeholderStyle}
-                  selectedTextStyle={style.selectedTextStyle}
-                  inputSearchStyle={style.inputSearchStyle}
-                  iconStyle={style.iconStyle}
-                  data={useCData}
-                  search
-                  maxHeight={300}
-                  labelField="label"
-                  valueField="value"
-                  placeholder={!isFocus ? 'Category' : '...'}
-                  searchPlaceholder="Search"
-                  onFocus={() => setIsFocus(true)}
-                  onBlur={() => setIsFocus(false)}
-                  onChange={item => {
-                    console.log(item.label);
-                    setCLabel(item.label);
-                    setCValue(item.value);
-                    setIsFocus(false);
-                  }}
-                />
-              </View>
-              <View
-                style={{
-                  marginTop: 5,
-                  // marginBottom: 2,
-                  // paddingBottom: 2,
-                  paddingTop: 5,
-                }}>
-                {/* <MultipleSelectList
-                setSelected={val => setSelectedMArea(val)}
-                data={useAreaSelected}
-                placeholder="Select Area"
-                label="Area"
+            </View>
+            <View
+              style={{
+                marginTop: 5,
+                // marginBottom: 2,
+                // paddingBottom: 2,
+                paddingTop: 5,
+              }}>
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useQData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Qualification' : '...'}
+                searchPlaceholder="Search"
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  setQLabel(item.label);
+                  setQValue(item.value);
+                  // handleState(item.value);
+                  setIsFocus(false);
+                }}
+              />
+            </View>
+            <View
+              style={{
+                marginTop: 5,
+                // marginBottom: 2,
+                // paddingBottom: 2,
+                paddingTop: 5,
+              }}>
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useSData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Speciality' : '...'}
+                searchPlaceholder="Search"
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  console.log(item.value);
+                  setSLabel(item.label);
+                  setSValue(item.value);
+                  setIsFocus(false);
+                }}
+              />
+            </View>
+            <View
+              style={{
+                marginTop: 5,
+                // marginBottom: 2,
+                // paddingBottom: 2,
+                paddingTop: 5,
+              }}>
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useCData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Category' : '...'}
+                searchPlaceholder="Search"
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  setCLabel(item.label);
+                  setCValue(item.value);
+                  setIsFocus(false);
+                }}
+              />
+            </View>
+            <View
+              style={{
+                marginTop: 5,
+                // marginBottom: 2,
+                // paddingBottom: 2,
+                paddingTop: 5,
+              }}>
+              {/* {useBusinessID === 'MEND-PVTL-890' ? ( */}
+              <MultipleSelectList
+                setSelected={val => setType(val)}
+                data={useTypeSelected}
+                placeholder="Type"
+                label="Type"
                 //save="value"
                 save="key"
                 onSelect={
-                  () => console.log(selectedMArea)
+                  () => console.log(useType)
                   //multiSelectAreaList()
                 }
                 fontFamily="Roboto-Bold"
@@ -1142,221 +1263,304 @@ const MasterDoctor = ({navigation}) => {
                 //badgeTextStyles={{color:'red'}}
                 badgeStyles={{backgroundColor: 'green'}}
                 labelStyles={{fontWeight: '800', color: 'black'}}
-              /> */}
-                <Dropdown
-                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                  placeholderStyle={style.placeholderStyle}
-                  selectedTextStyle={style.selectedTextStyle}
-                  inputSearchStyle={style.inputSearchStyle}
-                  iconStyle={style.iconStyle}
-                  data={useAData}
-                  search
-                  maxHeight={300}
-                  labelField="label"
-                  valueField="value"
-                  placeholder={!isFocus ? 'Area' : '...'}
-                  searchPlaceholder="Search"
-                  onFocus={() => setIsFocus(true)}
-                  onBlur={() => setIsFocus(false)}
-                  onChange={item => {
-                    console.log(item.label);
-                    setALabel(item.label);
-                    setAValue(item.value);
-                    setIsFocus(false);
-                  }}
-                />
-              </View>
-              <TextInput
-                label="Mobile"
-                mode="outlined"
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={10}
-                value={useMobile}
-                keyboardType="numeric"
-                onChangeText={text => setMobile(text)}
+              />
+              {/* ) : null} */}
+
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useAData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                dropdownPosition="top"
+                placeholder={!isFocus ? 'Area' : '...'}
+                searchPlaceholder="Search"
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  setALabel(item.label);
+                  setAValue(item.value);
+                  setIsFocus(false);
+                }}
               />
             </View>
-            <View style={{margin: 2, padding: 2}}>
-              <CustomButton label={'Next'} onPress={() => next()} />
-            </View>
+            <TextInput
+              label="Mobile"
+              mode="outlined"
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={10}
+              value={useMobile}
+              keyboardType="numeric"
+              onChangeText={text => setMobile(text)}
+            />
           </View>
-        ) : (
-          <ScrollView style={{padding: 5, margin: 5}}>
-            <View
-              style={{
-                marginTop: 5,
-                // marginBottom: 2,
-                // paddingBottom: 2,
-                paddingTop: 5,
-              }}>
-              <Dropdown
-                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                placeholderStyle={style.placeholderStyle}
-                selectedTextStyle={style.selectedTextStyle}
-                inputSearchStyle={style.inputSearchStyle}
-                iconStyle={style.iconStyle}
-                data={usePData}
-                search
-                maxHeight={300}
-                labelField="label"
-                valueField="value"
-                placeholder={!isFocus ? 'Product' : '...'}
-                searchPlaceholder="Search"
-                onFocus={() => setIsFocus(true)}
-                onBlur={() => setIsFocus(false)}
-                onChange={item => {
-                  console.log(item.label);
-                  setPLabel(item.label);
-                  setPValue(item.value);
-                  setIsFocus(false);
-                }}
-              />
+          <View style={{margin: 2, padding: 2}}>
+            <CustomButton label={'Next'} onPress={() => next()} />
+          </View>
+        </View>
+      ) : (
+        <ScrollView
+          style={{
+            padding: 8,
+            margin: 5,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: 'lightgrey',
+            backgroundColor: 'white',
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.8,
+            shadowRadius: 2,
+            elevation: 5,
+          }}>
+          <Text style={{fontWeight: 'bold', marginBottom: 5, fontSize: 16}}>
+            Doctor Information
+          </Text>
+          <View
+            style={{
+              marginTop: 5,
+              // marginBottom: 2,
+              // paddingBottom: 2,
+              paddingTop: 5,
+            }}>
+            <Dropdown
+              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+              placeholderStyle={style.placeholderStyle}
+              selectedTextStyle={style.selectedTextStyle}
+              inputSearchStyle={style.inputSearchStyle}
+              iconStyle={style.iconStyle}
+              data={usePData}
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              placeholder={!isFocus ? 'Product' : '...'}
+              searchPlaceholder="Search"
+              onFocus={() => setIsFocus(true)}
+              onBlur={() => setIsFocus(false)}
+              onChange={item => {
+                console.log(item.label);
+                setPLabel(item.label);
+                setPValue(item.value);
+                setIsFocus(false);
+              }}
+            />
+          </View>
+          <View
+            style={{
+              marginTop: 5,
+              // marginBottom: 2,
+              // paddingBottom: 2,
+              paddingTop: 5,
+            }}>
+            <Dropdown
+              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+              placeholderStyle={style.placeholderStyle}
+              selectedTextStyle={style.selectedTextStyle}
+              inputSearchStyle={style.inputSearchStyle}
+              iconStyle={style.iconStyle}
+              data={fStageData}
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              placeholder={!isFocus ? 'Stage' : '...'}
+              searchPlaceholder="Search"
+              onFocus={() => setIsFocus(true)}
+              onBlur={() => setIsFocus(false)}
+              onChange={item => {
+                console.log(item.label);
+                setfStageLabel(item.label);
+                setfStageValue(item.value);
+                setIsFocus(false);
+              }}
+            />
+          </View>
+          <View style={{margin: 2, padding: 2}}>
+            <CustomButton label={'Add'} onPress={() => addData()} />
+          </View>
+          {/* <View>
+            {useData.length
+              ? useData.map(function (dataItem, index) {
+                return (
+                  // <ScrollView>
+                  <TouchableWithoutFeedback>
+                    <View
+                      style={[
+                        style.menu,
+                        {
+                          backgroundColor: '#ecf0f1',
+                          flexDirection: 'row',
+                        },
+                      ]}>
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 20,
+                        }}>
+                        <AntDesign
+                          name="delete"
+                          size={30}
+                          color="red"
+                          onPress={() => {
+                            onDelete(dataItem.id);
+                          }}
+                        />
+                      </View>
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 20,
+                        }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                          }}>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              fontFamily: 'Lato-Regular',
+                              color: '#000',
+                              marginTop: 5,
+                              paddingTop: 5,
+                              textAlignVertical: 'center',
+                            }}>
+                            Product :{' '}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontFamily: 'Lato-Bold',
+                              color: '#000',
+                              marginTop: 5,
+                              paddingTop: 5,
+                              textAlignVertical: 'center',
+                            }}>
+                            {dataItem.ProductLabel}
+                          </Text>
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                          }}>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              fontFamily: 'Lato-Regular',
+                              color: '#000',
+                              marginTop: 5,
+                              paddingTop: 5,
+                              textAlignVertical: 'center',
+                            }}>
+                            Stage :{' '}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontFamily: 'Lato-Bold',
+                              color: '#000',
+                              marginTop: 5,
+                              paddingTop: 5,
+                              textAlignVertical: 'center',
+                            }}>
+                            {dataItem.StageLabel}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableWithoutFeedback>
+                  //</ScrollView>
+                );
+              })
+              : null}
+          </View> */}
+
+          {useData && useData.length > 0 ? (
+            <View style={{margin: 10}}>
+              {/* Header */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  backgroundColor: '#005696',
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                  paddingVertical: 10,
+                  paddingHorizontal: 15,
+                }}>
+                <Text style={{flex: 0.2, color: '#fff', fontWeight: 'bold'}}>
+                  No
+                </Text>
+                <Text style={{flex: 0.4, color: '#fff', fontWeight: 'bold'}}>
+                  Product
+                </Text>
+                <Text style={{flex: 0.3, color: '#fff', fontWeight: 'bold'}}>
+                  Stage
+                </Text>
+                <Text
+                  style={{
+                    flex: 0.1,
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                  }}>
+                  Del
+                </Text>
+              </View>
+
+              {/* Body */}
+              <ScrollView style={{maxHeight: 400}}>
+                {useData.map((dataItem, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      flexDirection: 'row',
+                      backgroundColor: index % 2 === 0 ? '#f7f9f9' : '#ecf0f1',
+                      paddingVertical: 10,
+                      paddingHorizontal: 15,
+                      borderBottomWidth: 1,
+                      borderColor: '#ddd',
+                      alignItems: 'center',
+                    }}>
+                    <Text style={{flex: 0.2, color: '#000'}}>{index + 1}</Text>
+                    <Text style={{flex: 0.4, color: '#000', fontWeight: '600'}}>
+                      {dataItem.ProductLabel}
+                    </Text>
+                    <Text style={{flex: 0.3, color: '#000'}}>
+                      {dataItem.StageLabel}
+                    </Text>
+                    <TouchableOpacity
+                      style={{flex: 0.1, alignItems: 'center'}}
+                      onPress={() => onDelete(dataItem.id)}>
+                      <AntDesign name="delete" size={20} color="red" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
             </View>
-            <View
-              style={{
-                marginTop: 5,
-                // marginBottom: 2,
-                // paddingBottom: 2,
-                paddingTop: 5,
-              }}>
-              <Dropdown
-                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                placeholderStyle={style.placeholderStyle}
-                selectedTextStyle={style.selectedTextStyle}
-                inputSearchStyle={style.inputSearchStyle}
-                iconStyle={style.iconStyle}
-                data={fStageData}
-                search
-                maxHeight={300}
-                labelField="label"
-                valueField="value"
-                placeholder={!isFocus ? 'Stage' : '...'}
-                searchPlaceholder="Search"
-                onFocus={() => setIsFocus(true)}
-                onBlur={() => setIsFocus(false)}
-                onChange={item => {
-                  console.log(item.label);
-                  setfStageLabel(item.label);
-                  setfStageValue(item.value);
-                  setIsFocus(false);
-                }}
-              />
-            </View>
-            <View style={{margin: 2, padding: 2}}>
-              <CustomButton label={'Add'} onPress={() => addData()} />
-            </View>
-            <View>
-              {useData.length
-                ? useData.map(function (dataItem, index) {
-                    return (
-                      <ScrollView>
-                        <TouchableWithoutFeedback>
-                          <View
-                            style={[
-                              style.menu,
-                              {
-                                backgroundColor: '#ecf0f1',
-                                flexDirection: 'row',
-                              },
-                            ]}>
-                            <View
-                              style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginLeft: 20,
-                              }}>
-                              <AntDesign
-                                name="delete"
-                                size={30}
-                                color="red"
-                                onPress={() => {
-                                  onDelete(dataItem.id);
-                                }}
-                              />
-                            </View>
-                            <View
-                              style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginLeft: 20,
-                              }}>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                }}>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    marginTop: 5,
-                                    paddingTop: 5,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Product :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 16,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    marginTop: 5,
-                                    paddingTop: 5,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {dataItem.ProductLabel}
-                                </Text>
-                              </View>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                }}>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    marginTop: 5,
-                                    paddingTop: 5,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Stage :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 16,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    marginTop: 5,
-                                    paddingTop: 5,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {dataItem.StageLabel}
-                                </Text>
-                              </View>
-                            </View>
-                          </View>
-                        </TouchableWithoutFeedback>
-                      </ScrollView>
-                    );
-                  })
-                : null}
-            </View>
-            <View
-              style={{
-                marginLeft: 5,
-                marginRight: 5,
-                paddingLeft: 5,
-                paddingRight: 5,
-              }}>
-              <CustomButton label={'Save'} onPress={() => saveData()} />
-            </View>
-            <ProgressDialog visible={loading} message="Please Wait..." />
-          </ScrollView>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          ) : null}
+
+          <View
+            style={{
+              marginLeft: 5,
+              marginRight: 5,
+              paddingLeft: 5,
+              paddingRight: 5,
+            }}>
+            <CustomButton label={'Save'} onPress={() => saveData()} />
+          </View>
+          <ProgressDialog visible={loading} message="Please Wait..." />
+        </ScrollView>
+      )}
+    </KeyboardAwareLayout>
   );
 };
 

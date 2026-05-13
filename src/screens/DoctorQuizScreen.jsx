@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,21 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  BackHandler,
+  StatusBar,
+  Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
+import {Dropdown} from 'react-native-element-dropdown';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ActivityIndicator } from 'react-native';
+import {ActivityIndicator} from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import { BASE_URL } from '@env';
+import {BASE_URL} from '@env';
+import {useFocusEffect} from '@react-navigation/native';
 
-const DoctorQuizScreen = () => {
-  const [form, setForm] = useState({ area: '', doctor: '', contact: '' });
+const DoctorQuizScreen = ({navigation}) => {
+  const [form, setForm] = useState({area: '', doctor: '', contact: ''});
   const [areaList, setAreaList] = useState([]);
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -34,10 +39,34 @@ const DoctorQuizScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [useBusinessID, setBusinessID] = useState('');
+  const [countdown, setCountdown] = useState(0);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const hasAutoStartedRef = useRef(false);
 
   useEffect(() => {
     DeviceInfo.getDeviceName().then(setDevice);
-  }, []);
+
+    if (showCountdown && countdown > 0) {
+      const interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setShowCountdown(false);
+
+            if (!hasAutoStartedRef.current) {
+              hasAutoStartedRef.current = true;
+              proceedToSurvey(); // auto-start quiz when timer hits zero
+            }
+
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [countdown, showCountdown]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
@@ -58,6 +87,20 @@ const DoctorQuizScreen = () => {
       }
     });
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavQuiz'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const fetchAreas = async (IDEmployee, BusinessID) => {
     setLoadingAreas(true); // Show loader
@@ -94,6 +137,136 @@ const DoctorQuizScreen = () => {
     setDoctorList(data);
   };
 
+  // const handleStart = async () => {
+  //   if (
+  //     !form.area ||
+  //     !form.doctor ||
+  //     !form.contact ||
+  //     !/^\d{10}$/.test(form.contact)
+  //   ) {
+  //     Alert.alert('Invalid input', 'Please fill all fields with valid data.');
+  //     return;
+  //   }
+
+  //   setIsLoading(true); // Show loader
+
+  //   try {
+  //     // Step 1: Check if the quiz has already been submitted
+  //     const checkQuizResponse = await fetch(
+  //       `${BASE_URL}Survey/CheckDoctorQuiz?Businessid=MEND-PVTL-890&IDDoctor=${form.doctor}&IDArea=${form.area}&SurveyType=DOCTOR`
+  //     );
+  //     const checkQuizData = await checkQuizResponse.json();
+
+  //     if (checkQuizData.d !== "") {
+  //       Alert.alert('Quiz Already Submitted', 'This doctor Quiz has already submitted.');
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // ✅ Step 1.5: Check timer scheduling
+  //     const scheduleResponse = await fetch(
+  //       `${BASE_URL}Survey/SurveyScheduling?Businessid=MEND-PVTL-890&IDParticipants=${form.doctor}&SurveyType=DOCTOR`
+  //     );
+  //     const scheduleData = await scheduleResponse.json();
+  //     const timerValue = scheduleData?.d;
+
+  //     if (timerValue && timerValue !== "") {
+  //       // Timer exists → show countdown screen instead of starting quiz
+  //       const [hours, minutes, seconds] = timerValue.split(':').map(Number);
+  //       const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+  //       setIsLoading(false);
+  //       setCountdown(totalSeconds); // <- useState for countdown
+  //       setShowCountdown(true); // <- useState for showing countdown screen
+  //       return;
+  //     }
+
+  //     // Step 2: Submit doctor details
+  //     const StartBody = {
+  //       IDParticipants: form.doctor,
+  //       IDEmployee: encodeURIComponent(IDEmployee),
+  //       Mobile: form.contact,
+  //       IDArea: form.area,
+  //       EntryUser: empEmail,
+  //       EntryDevice: `Mobile - ${device}`,
+  //       Businessid: 'MEND-PVTL-890',
+  //       SurveyType: 'DOCTOR',
+  //     };
+
+  //     const submitResponse = await fetch(`${BASE_URL}Survey/ParticipantsStart/Save`, {
+  //       method: 'POST',
+  //       headers: {
+  //         Accept: 'application/json',
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(StartBody),
+  //     });
+
+  //     console.log('Submitted Doctor Details:', JSON.stringify(StartBody));
+  //     const submitData = await submitResponse.json();
+
+  //     // if (submitData.result !== "") {
+  //     //   Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
+  //     //   setIsLoading(false);
+  //     //   return;
+  //     // }
+  //     if (submitData.result && submitData.result !== "") {
+  //       const errorMsg = submitData.result;
+
+  //       // Check if backend error contains FK constraint or delete conflict keywords
+  //       if (
+  //         errorMsg.includes("FK_Survey_Answer") ||
+  //         errorMsg.includes("DELETE statement conflicted")
+  //       ) {
+  //         Alert.alert("Notice", "Please activate any quiz to attempt this.");
+  //       } else {
+  //         Alert.alert("Error", errorMsg || "Unexpected error occurred.");
+  //       }
+
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // Step 3: Fetch quiz questions
+  //     const questionsResponse = await fetch(
+  //       `${BASE_URL}Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}&SurveyType=DOCTOR`
+  //     );
+  //     const questionsData = await questionsResponse.json();
+
+  //     if (questionsData.result?.length > 0) {
+  //       const formatted = questionsData.result.map(q => ({
+  //         id: q.IDQuestion.toString(),
+  //         IDQuestion: q.IDQuestion,
+  //         IDSurvey: q.IDSurvey,
+  //         question: q.Question,
+  //         options: [
+  //           q.Option1,
+  //           q.Option2,
+  //           q.Option3,
+  //           q.Option4,
+  //           q.Option5,
+  //         ].filter(Boolean),
+  //         type: q.QuestionType.includes('MULTIPLE')
+  //           ? 'multiple'
+  //           : q.QuestionType === 'SHORT-TEXT' || q.QuestionType === 'LONG-TEXT'
+  //             ? 'TEXT'
+  //             : 'single',
+  //         textType: q.QuestionType, // <-- Add this line to track original text type
+  //       }));
+
+  //       setQuizQuestions(formatted);
+  //       setQuizStarted(true);
+  //     } else {
+  //       Alert.alert('No quiz available.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching quiz:', error);
+  //     Alert.alert('Error', 'Something went wrong. Please try again.');
+  //   } finally {
+  //     setIsLoading(false); // Hide loader
+  //   }
+  // };
+
   const handleStart = async () => {
     if (
       !form.area ||
@@ -105,21 +278,59 @@ const DoctorQuizScreen = () => {
       return;
     }
 
-    setIsLoading(true); // Show loader
+    setIsLoading(true);
 
     try {
-      // Step 1: Check if the quiz has already been submitted
+      // Step 1: Already submitted?
       const checkQuizResponse = await fetch(
-        `${BASE_URL}Survey/CheckDoctorQuiz?Businessid=MEND-PVTL-890&IDDoctor=${form.doctor}&IDArea=${form.area}&SurveyType=DOCTOR`
+        `${BASE_URL}Survey/CheckDoctorQuiz?Businessid=MEND-PVTL-890&IDDoctor=${form.doctor}&IDArea=${form.area}&SurveyType=DOCTOR`,
       );
       const checkQuizData = await checkQuizResponse.json();
 
-      if (checkQuizData.d !== "") {
-        Alert.alert('Quiz Already Submitted', 'This doctor Quiz has already submitted.');
+      if (checkQuizData.d !== '') {
+        Alert.alert(
+          'Quiz Already Submitted',
+          'This doctor quiz has already been submitted.',
+        );
         setIsLoading(false);
         return;
       }
 
+      // Step 1.5: Scheduling check
+      const scheduleResponse = await fetch(
+        `${BASE_URL}Survey/SurveyScheduling?Businessid=MEND-PVTL-890&IDParticipants=${form.doctor}&SurveyType=DOCTOR`,
+      );
+      const scheduleData = await scheduleResponse.json();
+      const timerValue = scheduleData?.d; // "HH:MM:SS" or null/empty
+
+      if (timerValue && timerValue !== '') {
+        // Countdown required
+        const [h, m, s] = timerValue.split(':').map(Number);
+        const totalSeconds = h * 3600 + m * 60 + s;
+
+        hasAutoStartedRef.current = false;
+        setCountdown(totalSeconds);
+        setShowCountdown(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // No timer restriction -> go ahead
+      await proceedToSurvey();
+    } catch (error) {
+      console.error('Error in handleStart:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      // If countdown is showing, do not hide loader here (already hidden above)
+      if (!showCountdown) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const proceedToSurvey = async () => {
+    try {
+      setIsLoading(true);
 
       // Step 2: Submit doctor details
       const StartBody = {
@@ -133,26 +344,39 @@ const DoctorQuizScreen = () => {
         SurveyType: 'DOCTOR',
       };
 
-      const submitResponse = await fetch(`${BASE_URL}Survey/ParticipantsStart/Save`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+      const submitResponse = await fetch(
+        `${BASE_URL}Survey/ParticipantsStart/Save`,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(StartBody),
         },
-        body: JSON.stringify(StartBody),
-      });
+      );
 
+      console.log('Submitted Doctor Details:', JSON.stringify(StartBody));
       const submitData = await submitResponse.json();
 
-      if (submitData.result !== "") {
-        Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
-        setIsLoading(false);
+      if (submitData.result && submitData.result !== '') {
+        const errorMsg = submitData.result;
+
+        if (
+          errorMsg.includes('FK_Survey_Answer') ||
+          errorMsg.includes('DELETE statement conflicted')
+        ) {
+          Alert.alert('Notice', 'Please activate any quiz to attempt this.');
+        } else {
+          Alert.alert('Error', errorMsg || 'Unexpected error occurred.');
+        }
+
         return;
       }
 
       // Step 3: Fetch quiz questions
       const questionsResponse = await fetch(
-        `${BASE_URL}Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}&SurveyType=DOCTOR`
+        `${BASE_URL}Survey/QuestionList?Businessid=DEMO-PVTL-890&IDDoctor=${form.doctor}&SurveyType=DOCTOR`,
       );
       const questionsData = await questionsResponse.json();
 
@@ -172,9 +396,9 @@ const DoctorQuizScreen = () => {
           type: q.QuestionType.includes('MULTIPLE')
             ? 'multiple'
             : q.QuestionType === 'SHORT-TEXT' || q.QuestionType === 'LONG-TEXT'
-              ? 'TEXT'
-              : 'single',
-          textType: q.QuestionType, // <-- Add this line to track original text type
+            ? 'TEXT'
+            : 'single',
+          textType: q.QuestionType,
         }));
 
         setQuizQuestions(formatted);
@@ -183,10 +407,10 @@ const DoctorQuizScreen = () => {
         Alert.alert('No quiz available.');
       }
     } catch (error) {
-      console.error('Error fetching quiz:', error);
+      console.error('Error starting survey:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
-      setIsLoading(false); // Hide loader
+      setIsLoading(false);
     }
   };
 
@@ -209,7 +433,7 @@ const DoctorQuizScreen = () => {
     q.options.forEach((_, idx) => {
       answerObj[`Answer${idx + 1}`] = selected.includes(idx);
     });
-    setAnswersMap(prev => ({ ...prev, [q.id]: answerObj }));
+    setAnswersMap(prev => ({...prev, [q.id]: answerObj}));
   };
 
   const handleTextAnswerChange = text => {
@@ -218,7 +442,7 @@ const DoctorQuizScreen = () => {
     setAnswersMap(prev => ({
       ...prev,
       [q.id]: {
-       // IDEmployee:IDEmployee,
+        // IDEmployee:IDEmployee,
         IDQuestion: q.IDQuestion,
         IDSurvey: q.IDSurvey,
         AnswerShortText: q.type === 'TEXT' ? text : '',
@@ -289,17 +513,16 @@ const DoctorQuizScreen = () => {
 
   const SubmitDocQuiz = async () => {
     const requestBody = {
-      IDParticipants :form.doctor,
+      IDParticipants: form.doctor,
       IDDoctor: form.doctor,
       Mobile: form.contact,
       IDArea: form.area,
       EntryUser: empEmail,
       EntryDevice: `Mobile - ${device}`,
       Businessid: 'MEND-PVTL-890',
-      SurveyType:'DOCTOR', 
+      SurveyType: 'DOCTOR',
       Answers: Object.values(answersMap),
     };
-
 
     // Construct API URL
     const apiUrl = BASE_URL + 'Survey/Doctor/SubmitAnswer';
@@ -325,20 +548,20 @@ const DoctorQuizScreen = () => {
       // ✅ Check if response is {"result":""}
       if (responseData.result === '') {
         Alert.alert('Success', 'Your Quiz Submitted Successfully.', [
-          { text: 'OK' },
+          {text: 'OK'},
         ]);
         handleNext();
       } else {
         Alert.alert(
           'Error',
           responseData.result || 'Unexpected error occurred.',
-          [{ text: 'OK' }],
+          [{text: 'OK'}],
         );
       }
     } catch (error) {
       console.error('Error submitting Quiz:', error);
       Alert.alert('Error', 'Failed to submit Quiz request. Please try again.', [
-        { text: 'OK' },
+        {text: 'OK'},
       ]);
     }
   };
@@ -349,65 +572,118 @@ const DoctorQuizScreen = () => {
     setCurrentQuestionIndex(0);
     setSelectedAnswers([]);
     setShortAnswer('');
-    setForm({ area: '', doctor: '', contact: '' });
+    setForm({area: '', doctor: '', contact: ''});
   };
+
+  // if (showCountdown) {
+  //   const hours = Math.floor(countdown / 3600);
+  //   const minutes = Math.floor((countdown % 3600) / 60);
+  //   const seconds = countdown % 60;
+
+  //   return (
+  //     <>
+  //       <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+  //       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+  //         <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#005696' }}>
+  //           You will start your Survey After
+  //         </Text>
+  //         <Text style={{ fontSize: 36, marginTop: 20 }}>
+  //           {`${hours.toString().padStart(2, '0')}:${minutes
+  //             .toString()
+  //             .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+  //         </Text>
+  //       </View>
+  //     </>
+  //   );
+  // }
+
+  if (showCountdown) {
+    const hours = Math.floor(countdown / 3600);
+    const minutes = Math.floor((countdown % 3600) / 60);
+    const seconds = countdown % 60;
+
+    return (
+      <>
+        <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 16,
+            backgroundColor: '#ffffff',
+          }}>
+          <Text style={{fontSize: 18, color: '#444', marginBottom: 8}}>
+            You will start your Survey After
+          </Text>
+          <Text style={{fontSize: 40, fontWeight: 'bold', color: '#005696'}}>
+            {`${hours.toString().padStart(2, '0')}:${minutes
+              .toString()
+              .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+          </Text>
+          <Text style={{fontSize: 14, color: '#777', marginTop: 12}}>
+            Please keep this screen open.
+          </Text>
+        </View>
+      </>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       {!quizStarted ? (
         <>
-          {loadingAreas ? (
-            <ActivityIndicator
-              size="small"
-              color="#33767C"
-              style={{ marginVertical: 10 }}
-            />
-          ) : (
-            <Picker
-              selectedValue={form.area}
-              onValueChange={val => {
-                setForm({ ...form, area: val });
-                console.log('Selected Area', val);
-                fetchDoctors(val || 0);
-              }}
-              style={styles.picker}>
-              <Picker.Item label="Select Area" value="" />
-              {areaList.map(item => (
-                <Picker.Item
-                  key={item.IDArea}
-                  label={item.Name}
-                  value={item.IDArea}
-                />
-              ))}
-            </Picker>
-          )}
-
-          <Picker
-            selectedValue={form.doctor}
-            onValueChange={val => {
-              setForm({ ...form, doctor: val });
-              console.log('Selected DoctorId', val);
-              const doc = doctorList.find(d => d.IDDoctor === val);
-              setSelectedDoctorName(doc?.Name || '');
-              // If no area is selected, fetch doctors with IDArea 0
-              if (!form.area) {
-                fetchDoctors(0);
-              }
-            }}
-            style={styles.picker}>
-            <Picker.Item label="Select Doctor" value="" />
-            {doctorList && doctorList.length > 0 ? (
-              doctorList.map(doc => (
-                <Picker.Item
-                  key={doc.IDDoctor}
-                  label={doc.Name}
-                  value={doc.IDDoctor}
-                />
-              ))
+          <View style={styles.dropdownWrapper}>
+            {loadingAreas ? (
+              <ActivityIndicator size="small" color="#005696" />
             ) : (
-              <Picker.Item label="No Doctors Available" value="" />
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                search
+                maxHeight={250}
+                data={areaList.map(a => ({label: a.Name, value: a.IDArea}))}
+                labelField="label"
+                valueField="value"
+                placeholder="Select Area"
+                searchPlaceholder="Search..."
+                value={form.area}
+                onChange={item => {
+                  setForm({...form, area: item.value});
+                  fetchDoctors(item.value);
+                }}
+              />
             )}
-          </Picker>
+          </View>
+
+          <View style={styles.dropdownWrapper}>
+            <Dropdown
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              search
+              maxHeight={250}
+              data={
+                doctorList.length > 0
+                  ? doctorList.map(d => ({label: d.Name, value: d.IDDoctor}))
+                  : [{label: 'No Doctors Available', value: ''}]
+              }
+              labelField="label"
+              valueField="value"
+              placeholder="Select Doctor"
+              searchPlaceholder="Search..."
+              value={form.doctor}
+              onChange={item => {
+                setForm({...form, doctor: item.value});
+                const doc = doctorList.find(d => d.IDDoctor === item.value);
+                setSelectedDoctorName(doc?.Name ?? '');
+              }}
+            />
+          </View>
 
           <TextInput
             placeholder="Enter Mobile number"
@@ -415,14 +691,14 @@ const DoctorQuizScreen = () => {
             style={styles.input}
             value={form.contact}
             maxLength={10}
-            onChangeText={val => setForm({ ...form, contact: val })}
+            onChangeText={val => setForm({...form, contact: val})}
           />
 
           {isLoading ? (
             <ActivityIndicator
               size="large"
-              color="#33767C"
-              style={{ marginTop: 20 }}
+              color="#005696"
+              style={{marginTop: 20}}
             />
           ) : (
             <TouchableOpacity style={styles.button} onPress={handleStart}>
@@ -461,9 +737,9 @@ const DoctorQuizScreen = () => {
                 style={[
                   styles.input,
                   currentQuestion.textType === 'LONG-TEXT' &&
-                  styles.longTextInput,
+                    styles.longTextInput,
                   currentQuestion.textType === 'SHORT-TEXT' &&
-                  styles.shortTextInput,
+                    styles.shortTextInput,
                 ]}
                 value={shortAnswer}
                 onChangeText={handleTextAnswerChange}
@@ -511,7 +787,7 @@ const DoctorQuizScreen = () => {
                 styles.button,
                 {
                   backgroundColor:
-                    currentQuestionIndex === 0 ? 'gray' : '#33767C',
+                    currentQuestionIndex === 0 ? 'gray' : '#005696',
                 },
               ]}
               onPress={handlePrevious}
@@ -526,7 +802,7 @@ const DoctorQuizScreen = () => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: 'green' }]}
+                style={[styles.button, {backgroundColor: 'green'}]}
                 onPress={() => {
                   SubmitDocQuiz();
                   // handleNext();
@@ -544,7 +820,7 @@ const DoctorQuizScreen = () => {
 export default DoctorQuizScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f2f2f2' },
+  container: {flex: 1, padding: 20, backgroundColor: '#f2f2f2'},
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -553,15 +829,44 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#fff',
   },
-  picker: {
+  dropdownWrapper: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === 'ios' ? 18 : 0,
+    paddingHorizontal: Platform.OS === "ios" ? 18 : 0,
+    marginVertical: 12,
   },
-  questionText: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+
+  dropdown: {
+    height: 55,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  placeholderStyle: {
+    fontSize: 15,
+    color: '#888',
+  },
+
+  selectedTextStyle: {
+    fontSize: 15,
+    color: '#000',
+  },
+
+  inputSearchStyle: {
+    height: 45,
+    fontSize: 14,
+    borderRadius: 8,
+  },
+
+  questionText: {fontSize: 20, fontWeight: 'bold', marginBottom: 20},
   optionButton: {
     backgroundColor: '#fff',
     padding: 15,
@@ -577,15 +882,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#33767C',
+    backgroundColor: '#005696',
     padding: 15,
     borderRadius: 8,
     marginTop: 20,
     alignItems: 'center',
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  resultContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  resultText: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
+  buttonText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
+  resultContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  resultText: {fontSize: 20, fontWeight: 'bold', marginVertical: 10},
   resultText1: {
     fontSize: 20,
     fontWeight: 'bold',

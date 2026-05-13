@@ -10,11 +10,13 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
   LogBox,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {TextInput} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
-import {openDatabase} from 'react-native-sqlite-storage';
+import React, { useEffect, useState, useCallback } from 'react';
+import { TextInput } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown';
+import { openDatabase } from 'react-native-sqlite-storage';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -23,8 +25,9 @@ import {
 } from 'react-native-android-location-enabler';
 import CustomButton from '../components/custom/CustomButton';
 import NetInfo from '@react-native-community/netinfo';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useFocusEffect } from '@react-navigation/native';
 
 //database connection
 const db = openDatabase(
@@ -38,7 +41,7 @@ const db = openDatabase(
   error => console.log('Database error', error), //on error
 );
 
-const UniversalSearch = () => {
+const UniversalSearch = ({ navigation }) => {
   const [isFocus, setIsFocus] = useState(false);
   const [useBusinessID, setBusinessID] = useState('');
   const [useData, setData] = useState([]);
@@ -90,6 +93,20 @@ const UniversalSearch = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavMaster'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const handleCheckPressed = async () => {
     if (Platform.OS === 'android') {
       var checkEnabled = await isLocationEnabled();
@@ -138,7 +155,7 @@ const UniversalSearch = () => {
         setLocationStatus(error.message);
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
-      {enableHighAccuracy: false, timeout: 15000, maximumAge: 1000},
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 1000 },
     );
   };
 
@@ -162,7 +179,7 @@ const UniversalSearch = () => {
         setLocationStatus(error.message);
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
-      {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000},
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 1000 },
       //{ timeout: 15000 } // 15 seconds timeout
     );
   };
@@ -204,42 +221,39 @@ const UniversalSearch = () => {
 
   const fetchData = async searchTerm => {
     try {
-      if(custTLabel==='DOCTOR')
-      {
+      if (custTLabel === 'DOCTOR') {
         const url =
-        //'http://111.93.160.6:2001/api/crm/user/Mobile/Modulelist?Businessid=' +
-        BASE_URL +
-        'Doctor/Search?Businessid=' +
-        useBusinessID +
-        '&Type=' +
-        custTLabel +
-        '&SerachString=' +
-        searchTerm;
-      let result = await fetch(url);
-      result = await result.json();
-      let cType = result.d;
-      //console.log(cType);
-      //console.log(url);
-      setApiData(cType);
-      }
-      else{
+          //'http://111.93.160.6:2001/api/crm/user/Mobile/Modulelist?Businessid=' +
+          BASE_URL +
+          'Doctor/Search?Businessid=' +
+          useBusinessID +
+          '&Type=' +
+          custTLabel +
+          '&SerachString=' +
+          searchTerm;
+        let result = await fetch(url);
+        result = await result.json();
+        let cType = result.d;
+        //console.log(cType);
+        //console.log(url);
+        setApiData(cType);
+      } else {
         const url =
-        //'http://111.93.160.6:2001/api/crm/user/Mobile/Modulelist?Businessid=' +
-        BASE_URL +
-        'Retailer/Search?Businessid=' +
-        useBusinessID +
-        '&Type=' +
-        custTLabel +
-        '&SerachString=' +
-        searchTerm;
-      let result = await fetch(url);
-      result = await result.json();
-      let cType = result.d;
-      //console.log(cType);
-      //console.log(url);
-      setApiData(cType);
+          //'http://111.93.160.6:2001/api/crm/user/Mobile/Modulelist?Businessid=' +
+          BASE_URL +
+          'Retailer/Search?Businessid=' +
+          useBusinessID +
+          '&Type=' +
+          custTLabel +
+          '&SerachString=' +
+          searchTerm;
+        let result = await fetch(url);
+        result = await result.json();
+        let cType = result.d;
+        //console.log(cType);
+        //console.log(url);
+        setApiData(cType);
       }
-      
 
       setLoading(true);
       setTimeout(() => {
@@ -252,12 +266,13 @@ const UniversalSearch = () => {
 
   return (
     <ScrollView
-      style={{flex: 1, backgroundColor: false}}
+      style={{ flex: 1, backgroundColor: false }}
       showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       <View>
-        <View style={{padding: 5, margin: 5}}>
+        <View style={{ padding: 5, margin: 5 }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -289,11 +304,11 @@ const UniversalSearch = () => {
                 mode="outlined"
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={{marginLeft: 10, marginRight: 10,marginBottom:5}}
+                style={{ marginLeft: 10, marginRight: 10, marginBottom: 5 }}
                 value={inputValue}
                 placeholder="Type something..."
                 onChangeText={handleInputChange}
-                // onChangeText={text => setRemarks(text)}
+              // onChangeText={text => setRemarks(text)}
               />
             </View>
           ) : null}
@@ -301,13 +316,21 @@ const UniversalSearch = () => {
         {/* <ActivityIndicator size="large" color="#45747B" animating={loading} /> */}
         <FlatList
           data={apiData}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <TouchableWithoutFeedback>
               <View
                 style={[
                   style.menu,
                   {
-                    backgroundColor: '#ecf0f1',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#b5afe9ff',
+                    borderWidth: .5, 
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 2,
+                    elevation: 5,
+                    borderRadius: 8,
                   },
                 ]}>
                 <Text

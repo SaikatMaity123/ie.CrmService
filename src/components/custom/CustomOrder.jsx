@@ -12,7 +12,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
-import {BASE_URL,url} from '@env';
+import {BASE_URL, url} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import {openDatabase} from 'react-native-sqlite-storage';
 import axios from 'axios';
@@ -127,113 +127,96 @@ const CustomOrder = props => {
 
           NetInfo.fetch().then(state => {
             if (state.isConnected) {
-              Alert.alert('Sync Successful');
-              areaList(user.BusinessID, user.IDHQ);
-              // mangerareaList(user.BusinessID, user.IDEmployee);
-              docList(user.BusinessID, user.IDEmployee);
-              retList(user.BusinessID, user.IDEmployee);
-              visitWithList(user.BusinessID, user.IDEmployee);
-              wtDDOpen(user.BusinessID);
-              //productList(user.BusinessID, user.IDDivision);
-              getfinalSatge(user.BusinessID);
-              doctorProductMappingOfflineList(
-                user.BusinessID,
-                user.Empemail,
-                user.IDEmployee,
-              );
-              // managerDoctorProductMappingOfflineList(
-              //   user.BusinessID,
-              //   user.IDEmployee,
-              // );
-              qualificationDDOpen(user.BusinessID);
-              specialityDDOpen(user.BusinessID);
-              categoryDDOpen(user.BusinessID);
-              productMasterDoctor(user.BusinessID, user.IDDivision);
-              areaMaster(user.BusinessID, user.IDDivision, user.IDHQ);
-              typeAPI(user.BusinessID);
-              unlistedtypeAPI(user.BusinessID);
-              //managerVWTDDOpen(user.BusinessID, user.IDDivision);
-              //managerVWTDDOpen(user.BusinessID, user.IDEmployee);
-              managerEmployeeWiseOfflineAreaList(
-                user.BusinessID,
-                user.IDEmployee,
-              );
-              managerEmployeeWiseOfflineDoctorList(
-                user.BusinessID,
-                user.IDEmployee,
-              );
-              managerEmployeeWiseOfflineRetailerList(
-                user.BusinessID,
-                user.IDEmployee,
-              );
-              viewMasterDocList(
-                user.BusinessID,
-                user.Empemail,
-                user.IDEmployee,
-              );
-              viewMasterRetList(
-                user.BusinessID,
-                user.Empemail,
-                user.IDEmployee,
-              );
-
-              tourdateCheck(user.BusinessID, month, cYear, user.IDEmployee);
-              expenseBookingList(user.BusinessID, user.IDEmployee);
-              orderbookingRetailerList(user.BusinessID, user.IDEmployee);
-              expenseList(user.BusinessID, user.IDEmployee);
-              expenseRequestList(user.BusinessID, user.IDEmployee);
-              orderList(user.BusinessID, user.IDEmployee);
-              orderBookingPrice(user.BusinessID);
-              orderBookingBillingSeries(user.BusinessID);
-              orderBookingProductList(user.BusinessID);
-              productGift(user.BusinessID, user.IDDivision);
-              productSample(user.BusinessID, user.IDDivision);
-              ExpenseHead(user.BusinessID);
-              doctorViewDCR(user.BusinessID, user.IDEmployee);
-              retailerViewDCR(user.BusinessID, user.IDEmployee);
-              unlistedViewDCR(user.BusinessID, user.IDEmployee);
-              employeeWiseAreaList(user.BusinessID, user.IDEmployee);
-              // offlineAreaList(
-              //   user.BusinessID,
-              //   user.IDDivision,
-              //   user.IDEmployee,
-              // );
-              // offlineManagerDoctorList(
-              //   user.BusinessID,
-              //   user.IDDivision,
-              //   user.IDEmployee,
-              // );
-              // offlineManagerRetailerList(
-              //   user.BusinessID,
-              //   user.IDDivision,
-              //   user.IDEmployee,
-              // );
-              offlineOrderBookingCustomerListForManager(
-                user.BusinessID,
-                user.IDDivision,
-                user.IDEmployee,
-              );
-              offlineOrderBookingCustomerList(user.BusinessID, user.IDEmployee);
-              campaignData(user.BusinessID, user.IDEmployee);
-              campaignproductData(user.BusinessID, user.IDEmployee);
-              offlinePendingDCRDate(user.BusinessID, user.IDEmployee);
+              if (user.Designation !== 'DY_ZSM' && user.Designation !== 'ZSM') {
+                if (user.ManagerAccess === true) {
+                  managerEmployeeWiseOfflineAreaList(
+                    user.BusinessID,
+                    user.IDEmployee,
+                  );
+                  managerEmployeeWiseOfflineDoctorList(
+                    user.BusinessID,
+                    user.IDEmployee,
+                  );
+                  managerEmployeeWiseOfflineRetailerList(
+                    user.BusinessID,
+                    user.IDEmployee,
+                  );
+                  offlineOrderBookingCustomerListForManager(
+                    user.BusinessID,
+                    user.IDDivision,
+                    user.IDEmployee,
+                  );
+                } else {
+                  docList(user.BusinessID, user.IDEmployee);
+                  retList(user.BusinessID, user.IDEmployee);
+                  doctorProductMappingOfflineList(
+                    user.BusinessID,
+                    user.Empemail,
+                    user.IDEmployee,
+                  );
+                  productMasterDoctor(user.BusinessID, user.IDDivision);
+                  areaMaster(user.BusinessID, user.IDDivision, user.IDHQ);
+                  typeAPI(user.BusinessID);
+                  employeeWiseAreaList(user.BusinessID, user.IDEmployee);
+                  offlineOrderBookingCustomerList(
+                    user.BusinessID,
+                    user.IDEmployee,
+                  );
+                }
+                areaList(user.BusinessID, user.IDHQ);
+                visitWithList(user.BusinessID, user.IDEmployee);
+                wtDDOpen(user.BusinessID);
+                getfinalSatge(user.BusinessID);
+                qualificationDDOpen(user.BusinessID);
+                specialityDDOpen(user.BusinessID);
+                categoryDDOpen(user.BusinessID);
+                unlistedtypeAPI(user.BusinessID);
+                tourdateCheck(user.BusinessID, month, cYear, user.IDEmployee);
+                expenseRequestList(user.BusinessID, user.IDEmployee);
+                orderBookingPrice(user.BusinessID);
+                orderBookingBillingSeries(user.BusinessID);
+                orderBookingProductList(user.BusinessID);
+                masterDoctorType(user.BusinessID);
+                productGift(user.BusinessID, user.IDDivision);
+                productSample(user.BusinessID, user.IDDivision);
+                ExpenseHead(user.BusinessID);
+                doctorViewDCR(user.BusinessID, user.IDEmployee);
+                retailerViewDCR(user.BusinessID, user.IDEmployee);
+                unlistedViewDCR(user.BusinessID, user.IDEmployee);
+                campaignData(user.BusinessID, user.IDEmployee);
+                campaignproductData(user.BusinessID, user.IDEmployee);
+                offlinePendingDCRDate(user.BusinessID, user.IDEmployee);
+                fetchGeofencingData(user.BusinessID, user.IDEmployee);
+              } else {
+                offlinePendingDCRDate(user.BusinessID, user.IDEmployee);
+                fetchGeofencingData(user.BusinessID, user.IDEmployee);
+                masterDoctorType(user.BusinessID);
+                productGift(user.BusinessID, user.IDDivision);
+                productSample(user.BusinessID, user.IDDivision);
+                campaignData(user.BusinessID, user.IDEmployee);
+                campaignproductData(user.BusinessID, user.IDEmployee);
+                wtDDOpen(user.BusinessID);
+                getfinalSatge(user.BusinessID);
+                qualificationDDOpen(user.BusinessID);
+                specialityDDOpen(user.BusinessID);
+                categoryDDOpen(user.BusinessID);
+                unlistedtypeAPI(user.BusinessID);
+                tourdateCheck(user.BusinessID, month, cYear, user.IDEmployee);
+                expenseRequestList(user.BusinessID, user.IDEmployee);
+                orderBookingPrice(user.BusinessID);
+                orderBookingBillingSeries(user.BusinessID);
+                orderBookingProductList(user.BusinessID);
+                ExpenseHead(user.BusinessID);
+                doctorViewDCR(user.BusinessID, user.IDEmployee);
+                retailerViewDCR(user.BusinessID, user.IDEmployee);
+                unlistedViewDCR(user.BusinessID, user.IDEmployee);
+              }
+              fetchQuizModules(user.BusinessID, user.IDEmployee);
+              fetchMasterModules(user.BusinessID, user.IDEmployee);
+              fetchDCRModules(user.BusinessID, user.IDEmployee);
             } else {
               Alert.alert('No Internet');
-              AsyncStorage.getItem('mainDashBoard')
-                .then(storedValue => {
-                  if (storedValue !== null) {
-                    const retrievedJsonArray = JSON.parse(storedValue);
-                    console.log('Retrieved JSON array:', retrievedJsonArray);
-                    //setData(retrievedJsonArray);
-                  } else {
-                    Alert.alert(
-                      'No data found in AsyncStorage for the specified key.',
-                    );
-                  }
-                })
-                .catch(error => {
-                  Alert.alert('Error retrieving JSON array:', error);
-                });
+              //fetchDashboardFromSQLite(); // fatch the Data From the Sqlite
             }
           }, []);
         }
@@ -281,43 +264,6 @@ const CustomOrder = props => {
         Alert.alert(error);
       });
   };
-  // const mangerareaList = (businessID, IDEmployee) => {
-  //   const aturl =
-  //     BASE_URL +
-  //     'Manager/Area/List?Businessid=' +
-  //     businessID +
-  //     '&IDManager=' +
-  //     IDEmployee;
-  //   console.log('aturl ' + aturl);
-  //   var config = {
-  //     method: 'get',
-  //     url: aturl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //CREATE TABLE for CRM_AreaList
-  //       db.transaction(txn => {
-  //         txn.executeSql('DROP TABLE IF EXISTS CRM_MangerAreaList', []);
-  //         txn.executeSql(
-  //           'CREATE TABLE IF NOT EXISTS CRM_MangerAreaList(IDArea INTEGER,Name VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT AreaListTBL
-  //       var _value = [];
-  //       _value = response.data;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         let sql = 'INSERT INTO CRM_MangerAreaList(IDArea,Name) VALUES (?,?)';
-  //         let params = [array.IDArea, array.Name]; //storing user data in an array
-  //         db.executeSql(sql, params);
-  //       }
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
   const docList = (businessID, empID) => {
     const docurl =
       BASE_URL +
@@ -337,7 +283,7 @@ const CustomOrder = props => {
         db.transaction(txn => {
           txn.executeSql('DROP TABLE IF EXISTS CRM_DocList', []);
           txn.executeSql(
-            'CREATE TABLE IF NOT EXISTS CRM_DocList(IDDoctor INTEGER,Code INTEGER,IDArea INTEGER,Latitude NUMERIC,Longitude NUMERIC,Name TEXT)',
+            'CREATE TABLE IF NOT EXISTS CRM_DocList(IDDoctor INTEGER,Code INTEGER,IDArea INTEGER,Latitude NUMERIC,Longitude NUMERIC,Name VARCHAR)',
             [],
           );
         });
@@ -470,59 +416,6 @@ const CustomOrder = props => {
         Alert.alert(error);
       });
   };
-
-  // const managerDoctorProductMappingOfflineList = (businessID, idemp) => {
-  //   const returl =
-  //     BASE_URL +
-  //     'Doctor/ManagerDoctorProductMappingOfflineList?Businessid=' +
-  //     businessID +
-  //     '&IDManager=' +
-  //     idemp;
-  //   console.log('returl ' + returl);
-  //   var config = {
-  //     method: 'get',
-  //     url: returl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //console.log(response.data.d);
-  //       //CREATE TABLE for CRM_RetList
-  //       db.transaction(txn => {
-  //         txn.executeSql(
-  //           'DROP TABLE IF EXISTS CRM_ManagerDoctorProductMappingOfflineList',
-  //           [],
-  //         );
-  //         txn.executeSql(
-  //           'CREATE TABLE IF NOT EXISTS CRM_ManagerDoctorProductMappingOfflineList(IDDoctor INTEGER,IDProduct INTEGER,IDStage INTEGER,ProductName VARCHAR,StageName VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT CRM_DoctorProductMappingListt
-  //       var _value = [];
-  //       _value = response.data.d;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         //let duplicateData = 'DELETE from CRM_DocList';
-  //         let sql =
-  //           'INSERT INTO CRM_ManagerDoctorProductMappingOfflineList(IDDoctor,IDProduct,IDStage,ProductName,StageName) VALUES (?,?,?,?,?)';
-  //         let params = [
-  //           array.IDDoctor,
-  //           array.IDProduct,
-  //           array.IDStage,
-  //           array.ProductName,
-  //           array.StageName,
-  //         ]; //storing user data in an array
-
-  //         db.executeSql(sql, params);
-  //       }
-  //       //console.log(_value);
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
-
   const visitWithList = (businessID, idemp) => {
     const vwturl =
       BASE_URL +
@@ -563,7 +456,6 @@ const CustomOrder = props => {
         Alert.alert(error);
       });
   };
-
   const employeeWiseAreaList = (businessID, idemp) => {
     const areaurl =
       BASE_URL +
@@ -602,152 +494,6 @@ const CustomOrder = props => {
         Alert.alert(error);
       });
   };
-
-  // const offlineAreaList = (businessID, idDiv, idemp) => {
-  //   const areaurl =
-  //     BASE_URL +
-  //     'Area/OfflineAreaList?Businessid=' +
-  //     businessID +
-  //     '&IDDivision=' +
-  //     idDiv +
-  //     '&IDEmployee=' +
-  //     idemp;
-  //   console.log('returl ' + areaurl);
-  //   var config = {
-  //     method: 'get',
-  //     url: areaurl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //CREATE TABLE for CRM_VisitWithList
-  //       db.transaction(txn => {
-  //         txn.executeSql('DROP TABLE IF EXISTS CRM_offlineAreaList', []);
-  //         txn.executeSql(
-  //           'CREATE TABLE IF NOT EXISTS CRM_offlineAreaList(IDArea INTEGER,IDHQ INTEGER,IDEmployee INTEGER,AreaName VARCHAR,EmployeeName VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT CRM_VisitWithList
-  //       var _value = [];
-  //       _value = response.data;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         let sql =
-  //           'INSERT INTO CRM_offlineAreaList(IDArea,IDHQ,IDEmployee,AreaName,EmployeeName) VALUES (?,?,?,?,?)';
-  //         let params = [
-  //           array.IDArea,
-  //           array.IDHQ,
-  //           array.IDEmployee,
-  //           array.AreaName,
-  //           array.EmployeeName,
-  //         ]; //storing user data in an array
-  //         db.executeSql(sql, params);
-  //       }
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
-
-  // const offlineManagerDoctorList = (businessID, idDiv, idemp) => {
-  //   const areaurl =
-  //     BASE_URL +
-  //     'manager/DCR/OfflineManagerDoctorList?Businessid=' +
-  //     businessID +
-  //     '&IDDivision=' +
-  //     idDiv +
-  //     '&IDEmployee=' +
-  //     idemp;
-  //   console.log('returl ' + areaurl);
-  //   var config = {
-  //     method: 'get',
-  //     url: areaurl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //CREATE TABLE for CRM_VisitWithList
-  //       db.transaction(txn => {
-  //         txn.executeSql(
-  //           'DROP TABLE IF EXISTS CRM_offlineManagerDoctorList',
-  //           [],
-  //         );
-  //         txn.executeSql(
-  //           'CREATE TABLE IF NOT EXISTS CRM_offlineManagerDoctorList(IDDoctor INTEGER,IDEmployee INTEGER,IDArea INTEGER,Name VARCHAR,Latitude VARCHAR,Longitude VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT CRM_VisitWithList
-  //       var _value = [];
-  //       _value = response.data;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         let sql =
-  //           'INSERT INTO CRM_offlineManagerDoctorList(IDDoctor,IDEmployee,IDArea,Name,Latitude,Longitude) VALUES (?,?,?,?,?,?)';
-  //         let params = [
-  //           array.IDDoctor,
-  //           array.IDEmployee,
-  //           array.IDArea,
-  //           array.Name,
-  //           array.Latitude,
-  //           array.Longitude,
-  //         ]; //storing user data in an array
-  //         db.executeSql(sql, params);
-  //       }
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
-  // const offlineManagerRetailerList = (businessID, idDiv, idemp) => {
-  //   const areaurl =
-  //     BASE_URL +
-  //     'manager/DCR/OfflineManagerRetailerList?Businessid=' +
-  //     businessID +
-  //     '&IDDivision=' +
-  //     idDiv +
-  //     '&IDEmployee=' +
-  //     idemp;
-  //   console.log('returl ' + areaurl);
-  //   var config = {
-  //     method: 'get',
-  //     url: areaurl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //CREATE TABLE for CRM_VisitWithList
-  //       db.transaction(txn => {
-  //         txn.executeSql(
-  //           'DROP TABLE IF EXISTS CRM_offlineManagerRetailerList',
-  //           [],
-  //         );
-  //         txn.executeSql(
-  //           'CREATE TABLE IF NOT EXISTS CRM_offlineManagerRetailerList(IDRetailer INTEGER,IDEmployee INTEGER,IDArea INTEGER,Name VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT CRM_VisitWithList
-  //       var _value = [];
-  //       _value = response.data;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         let sql =
-  //           'INSERT INTO CRM_offlineManagerRetailerList(IDRetailer,IDEmployee,IDArea,Name) VALUES (?,?,?,?)';
-  //         let params = [
-  //           array.IDRetailer,
-  //           array.IDEmployee,
-  //           array.IDArea,
-  //           array.Name,
-  //         ]; //storing user data in an array
-  //         db.executeSql(sql, params);
-  //       }
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
 
   const offlineOrderBookingCustomerListForManager = (
     businessID,
@@ -965,6 +711,49 @@ const CustomOrder = props => {
         Alert.alert(error);
       });
   };
+  const fetchGeofencingData = async (businessID, idemp) => {
+    const produrl =
+      BASE_URL +
+      'Configuration/MobileGeofencing?Businessid=' +
+      businessID +
+      '&IDEmployee=' +
+      idemp;
+    console.log(produrl);
+    try {
+      const response = await fetch(produrl);
+      const data = await response.json();
+
+      db.transaction(tx => {
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS Geofencing (
+              IDEmployee INTEGER PRIMARY KEY,
+              Geofencing TEXT,
+              EmployeeName TEXT,
+              DoctorGeoFencing INTEGER,
+              RetailerGeoFencing INTEGER
+            );`,
+        );
+      });
+      // Save to SQLite
+      if (data.length > 0) {
+        const item = data[0];
+        db.transaction(tx => {
+          tx.executeSql(
+            `INSERT OR REPLACE INTO Geofencing (IDEmployee, Geofencing, EmployeeName, DoctorGeoFencing, RetailerGeoFencing) VALUES (?, ?, ?, ?, ?)`,
+            [
+              item.IDEmployee,
+              item.Geofencing,
+              item.EmployeeName,
+              item.DoctorGeoFencing,
+              item.RetailerGeoFencing,
+            ],
+          );
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching geofencing data:', error);
+    }
+  };
 
   const wtDDOpen = businessID => {
     //console.log(useBusinessID);
@@ -1002,6 +791,47 @@ const CustomOrder = props => {
       });
   };
 
+  const masterDoctorType = (businessID) => {
+    const empurl =
+      BASE_URL + 'Misc/List?Businessid=' + businessID + '&Type=DOCTORTYPE';
+    console.log(empurl);
+    var config = {
+      method: 'get',
+      url: empurl,
+    };
+    axios(config)
+      .then(function (response) {
+        db.transaction(tx => {
+          tx.executeSql('DROP TABLE IF EXISTS MasterDoctorType', []);
+          tx.executeSql(
+            'CREATE TABLE IF NOT EXISTS MasterDoctorType(IDMisc INTEGER,Code VARCHAR,Name VARCHAR)',
+            [],
+            (tx, results) => {
+              //console.log('Table created successfully');
+            },
+            error => {
+              Alert.alert('Error creating table:', error);
+            },
+          );
+        });
+
+        //SQLITE INSERT CRM_productList
+        var _value = [];
+        _value = response.data;
+        for (var i = 0; i < _value.length; i++) {
+          const array = _value[i];
+
+          let sql =
+            'INSERT INTO MasterDoctorType(IDMisc,Code,Name) VALUES (?,?,?)';
+          let params = [array.IDMisc, array.Code, array.Name]; //storing user data in an array
+          db.executeSql(sql, params);
+          //console.log(params);
+        }
+      })
+      .catch(function (error) {
+        Alert.alert(error);
+      });
+  };
   const productGift = (businessID, idDiv) => {
     const prdurl =
       BASE_URL +
@@ -1318,12 +1148,6 @@ const CustomOrder = props => {
       });
   };
   const areaMaster = (businessID, empEmail, IDHQ) => {
-    // const surl =
-    //   BASE_URL +
-    //   'Area/DivisionWiseAreaList?Businessid=' +
-    //   businessID +
-    //   '&IDDivision=' +
-    //   empEmail;
     const surl =
       BASE_URL +
       'Area/DivisionAndHQWiseAreaList?Businessid=' +
@@ -1452,55 +1276,6 @@ const CustomOrder = props => {
       });
   };
 
-  // const managerVWTDDOpen = (businessID, IDEmployee) => {
-  //   //console.log(useBusinessID);
-  //   const empurl =
-  //     // BASE_URL +
-  //     // 'Employee/DivisionWiseEmployeeList?Businessid=' +
-  //     // businessID +
-  //     // '&IDDivision=' +
-  //     // IDDivision +
-  //     // '&IDEmployeeDesignation=0';
-
-  //     BASE_URL +
-  //     'Employee/Hierarchy/All?Businessid=' +
-  //     businessID +
-  //     '&IDEmployee=' +
-  //     IDEmployee;
-  //   console.log(empurl);
-  //   var config = {
-  //     method: 'get',
-  //     url: empurl,
-  //   };
-  //   axios(config)
-  //     .then(function (response) {
-  //       //CREATE TABLE for MangerVisitWithTBL
-  //       db.transaction(txn => {
-  //         txn.executeSql('DROP TABLE IF EXISTS MangerVisitWithTBL', []);
-  //         txn.executeSql(
-  //           //'CREATE TABLE IF NOT EXISTS MangerVisitWithTBL(Name VARCHAR,IDEmployee VARCHAR)',
-  //           'CREATE TABLE IF NOT EXISTS MangerVisitWithTBL(EmployeeName VARCHAR,IDEmployee VARCHAR)',
-  //           [],
-  //         );
-  //       });
-
-  //       //SQLITE INSERT MangerVisitWithTBL
-  //       var _value = [];
-  //       _value = response.data;
-  //       for (var j = 0; j < _value.length; j++) {
-  //         const array = _value[j];
-  //         let sql =
-  //           //'INSERT INTO MangerVisitWithTBL(Name,IDEmployee) VALUES (?,?)';
-  //           'INSERT INTO MangerVisitWithTBL(EmployeeName,IDEmployee) VALUES (?,?)';
-  //         //let params = [array.Name, array.IDEmployee]; //storing user data in an array
-  //         let params = [array.EmployeeName, array.IDEmployee]; //storing user data in an array
-  //         db.executeSql(sql, params);
-  //       }
-  //     })
-  //     .catch(function (error) {
-  //       Alert.alert(error);
-  //     });
-  // };
   const managerEmployeeWiseOfflineAreaList = (businessID, IDEmployee) => {
     //console.log(useBusinessID);
     const empurl =
@@ -1637,180 +1412,6 @@ const CustomOrder = props => {
             array.Latitude,
             array.Longitude,
           ]; //storing user data in an array
-          db.executeSql(sql, params);
-        }
-      })
-      .catch(function (error) {
-        Alert.alert(error);
-      });
-  };
-
-  const viewMasterDocList = (businessID, empEmail, idEmp) => {
-    //console.log(useBusinessID);
-    const empurl =
-      BASE_URL +
-      'Doctor/Mobile/List?Businessid=' +
-      businessID +
-      '&EntryUser=' +
-      empEmail +
-      '&IDEmployee=' +
-      idEmp;
-    console.log(empurl);
-    var config = {
-      method: 'get',
-      url: empurl,
-    };
-    axios(config)
-      .then(function (response) {
-        //CREATE TABLE for MangerVisitWithTBL
-        // db.transaction(txn => {
-        //   //txn.executeSql('DROP TABLE IF EXISTS ViewMasterDocList', []);
-        //   txn.executeSql(
-        //     'CREATE TABLE IF NOT EXISTS ViewMasterDocList(IDDoctor INTEGER,Code VARCHAR,Name VARCHAR,Area VARCHAR,ApprovalStatus NUMERIC)',
-        //     [],
-        //   );
-        // });
-        // var _value = [];
-        // _value = response.data;
-        // for (var j = 0; j < _value.length; j++) {
-        //   const array = _value[j];
-        //   let sql =
-        //     'INSERT INTO ViewMasterDocList(IDDoctor,Code,Name,Area,ApprovalStatus) VALUES (?,?,?,?,?)';
-        //   let params = [
-        //     array.IDDoctor,
-        //     array.Code,
-        //     array.Name,
-        //     array.Area,
-        //     array.ApprovalStatus,
-        //   ]; //storing user data in an array
-        //   db.executeSql(sql, params);
-        // }
-      })
-      .catch(function (error) {
-        Alert.alert(error);
-      });
-  };
-  const viewMasterRetList = (businessID, empEmail, idEmp) => {
-    //console.log(useBusinessID);
-    const empurl =
-      BASE_URL +
-      'Retailer/Mobile/List?Businessid=' +
-      businessID +
-      '&EntryUser=' +
-      empEmail +
-      '&IDEmployee=' +
-      idEmp;
-    console.log(empurl);
-    var config = {
-      method: 'get',
-      url: empurl,
-    };
-    axios(config)
-      .then(function (response) {
-        //CREATE TABLE for MangerVisitWithTBL
-        // db.transaction(txn => {
-        //   //txn.executeSql('DROP TABLE IF EXISTS ViewMasterRetList', []);
-        //   txn.executeSql(
-        //     'CREATE TABLE IF NOT EXISTS ViewMasterRetList(IDRetailer INTEGER,Code VARCHAR,Name VARCHAR,Area VARCHAR,ApprovalStatus NUMERIC)',
-        //     [],
-        //   );
-        // });
-        // var _value = [];
-        // _value = response.data;
-        // for (var j = 0; j < _value.length; j++) {
-        //   const array = _value[j];
-        //   let sql =
-        //     'INSERT INTO ViewMasterRetList(IDRetailer,Code,Name,Area,ApprovalStatus) VALUES (?,?,?,?,?)';
-        //   let params = [
-        //     array.IDRetailer,
-        //     array.Code,
-        //     array.Name,
-        //     array.Area,
-        //     array.ApprovalStatus,
-        //   ]; //storing user data in an array
-        //   db.executeSql(sql, params);
-        // }
-      })
-      .catch(function (error) {
-        Alert.alert(error);
-      });
-  };
-
-  const expenseBookingList = (businessID, IDEmployee) => {
-    //console.log(useBusinessID);
-    const empurl =
-      BASE_URL +
-      'ExpenseBooking/List?Businessid=' +
-      businessID +
-      '&IDEmployee=' +
-      IDEmployee;
-    console.log(empurl);
-    var config = {
-      method: 'get',
-      url: empurl,
-    };
-    axios(config)
-      .then(function (response) {
-        //CREATE TABLE for MangerVisitWithTBL
-        db.transaction(txn => {
-          txn.executeSql('DROP TABLE IF EXISTS ViewExpenseBookingList', []);
-
-          txn.executeSql(
-            'CREATE TABLE IF NOT EXISTS ViewExpenseBookingList(IDBooking INTEGER,Bookingno VARCHAR,BookingDate VARCHAR,BookingAmount VARCHAR)',
-            [],
-          );
-        });
-
-        var _value = [];
-        _value = response.data;
-        for (var j = 0; j < _value.length; j++) {
-          const array = _value[j];
-          let sql =
-            'INSERT INTO ViewExpenseBookingList(IDBooking,Bookingno,BookingDate,BookingAmount) VALUES (?,?,?,?)';
-          let params = [
-            array.IDBooking,
-            array.Bookingno,
-            array.BookingDate,
-            array.BookingAmount,
-          ]; //storing user data in an array
-          db.executeSql(sql, params);
-        }
-      })
-      .catch(function (error) {
-        Alert.alert(error);
-      });
-  };
-
-  const orderbookingRetailerList = (businessID, idEmp) => {
-    const retUrl =
-      BASE_URL +
-      'Retailer/RetailerList?Businessid=' +
-      businessID +
-      '&IDEmployee=' +
-      idEmp;
-    console.log('retUrl ' + retUrl);
-    var config = {
-      method: 'get',
-      url: retUrl,
-    };
-    axios(config)
-      .then(function (response) {
-        db.transaction(txn => {
-          txn.executeSql('DROP TABLE IF EXISTS OrderBookingRetList', []);
-
-          txn.executeSql(
-            'CREATE TABLE IF NOT EXISTS OrderBookingRetList(OtherCode VARCHAR,Name VARCHAR)',
-            [],
-          );
-        });
-
-        var _value = [];
-        _value = response.data;
-        for (var j = 0; j < _value.length; j++) {
-          const array = _value[j];
-          let sql =
-            'INSERT INTO OrderBookingRetList(OtherCode,Name) VALUES (?,?)';
-          let params = [array.OtherCode, array.Name]; //storing user data in an array
           db.executeSql(sql, params);
         }
       })
@@ -1958,88 +1559,6 @@ const CustomOrder = props => {
       .catch(function (error) {
         Alert.alert(error);
       });
-  };
-
-  const expenseList = async (businessID, idEmp) => {
-    const url =
-      BASE_URL +
-      'ExpenseBooking/Mobile/List?Businessid=' +
-      businessID +
-      '&IDEmployee=' +
-      idEmp;
-    console.log(url);
-    let result = await fetch(url);
-    result = await result.json();
-    //console.log('result',result);
-
-    db.transaction(txn => {
-      txn.executeSql('DROP TABLE IF EXISTS CRM_ExpenseList', []);
-
-      txn.executeSql(
-        'CREATE TABLE IF NOT EXISTS CRM_ExpenseList(IDBooking INTEGER,Bookingno VARCHAR,BookingAmount VARCHAR,ExpenseHeadName VARCHAR,Requested NUMERIC,Approved VARCHAR,Rejected VARCHAR,RejectedReason VARCHAR,BookingDate VARCHAR)',
-        [],
-      );
-    });
-    for (var j = 0; j < result.length; j++) {
-      const array = result[j];
-      //console.log('result',array);
-      let sql =
-        'INSERT INTO CRM_ExpenseList(IDBooking,Bookingno,BookingAmount,ExpenseHeadName,Requested,Approved,Rejected,RejectedReason,BookingDate) VALUES (?,?,?,?,?,?,?,?,?)';
-      let params = [
-        array.IDBooking,
-        array.Bookingno,
-        array.BookingAmount,
-        array.ExpenseHeadName,
-        array.Requested,
-        array.Approved,
-        array.Rejected,
-        array.RejectedReason,
-        array.BookingDate,
-      ]; //storing user data in an array
-      db.executeSql(sql, params);
-    }
-  };
-
-  const orderList = async (businessID, idEmp) => {
-    const url =
-      BASE_URL +
-      'OrderBooking/List?Businessid=' +
-      businessID +
-      '&IDEmployee=' +
-      idEmp;
-    console.log(url);
-    let result = await fetch(url);
-    result = await result.json();
-
-    db.transaction(txn => {
-      txn.executeSql('DROP TABLE IF EXISTS CRM_OrderList', []);
-
-      txn.executeSql(
-        'CREATE TABLE IF NOT EXISTS CRM_OrderList(IDBooking INTEGER,BookingNo VARCHAR,BookingDate VARCHAR,EmployeeCode VARCHAR,EmployeeName VARCHAR,CustomerCode VARCHAR,CustomerName VARCHAR,ProductCode VARCHAR,ProductName VARCHAR,Division VARCHAR,Qty VARCHAR,Amount VARCHAR)',
-        [],
-      );
-    });
-    for (var j = 0; j < result.length; j++) {
-      const array = result[j];
-      //console.log('result',array);
-      let sql =
-        'INSERT INTO CRM_OrderList(IDBooking,BookingNo,BookingDate,EmployeeCode,EmployeeName,CustomerCode,CustomerName,ProductCode,ProductName,Division,Qty,Amount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)';
-      let params = [
-        array.IDBooking,
-        array.BookingNo,
-        array.BookingDate,
-        array.EmployeeCode,
-        array.EmployeeName,
-        array.CustomerCode,
-        array.CustomerName,
-        array.ProductCode,
-        array.ProductName,
-        array.Division,
-        array.Qty,
-        array.Amount,
-      ]; //storing user data in an array
-      db.executeSql(sql, params);
-    }
   };
 
   const expenseRequestList = async (businessID, idEmp) => {
@@ -2358,6 +1877,112 @@ const CustomOrder = props => {
         });
     }
   };
+  const fetchQuizModules = async (businessID, IDEmployee) => {
+    try {
+      const url =
+        BASE_URL +
+        'user/MobileSubMenuList?Businessid=' +
+        businessID +
+        '&IDEmployee=' +
+        IDEmployee +
+        '&Module=SURVEY';
+      const response = await axios.get(url);
+      const dashBoardJsonArray = response.data;
+      //CREATE TABLE for CRM_TourPlanDate
+      db.transaction(txn => {
+        txn.executeSql('DROP TABLE IF EXISTS SURVEYModuleData', []);
+        txn.executeSql(
+          'CREATE TABLE IF NOT EXISTS SURVEYModuleData(SubMenu VARCHAR,SubMenuSRL VARCHAR)',
+          [],
+        );
+      });
+
+      //SQLITE INSERT CRM_TourPlanDate
+      var _value = [];
+      _value = dashBoardJsonArray;
+      //console.log(_value);
+      for (var j = 0; j < _value.length; j++) {
+        const array = _value[j];
+        let sql =
+          'INSERT INTO SURVEYModuleData(SubMenu,SubMenuSRL) VALUES (?,?)';
+        let params = [array.SubMenu, array.SubMenuSRL]; //storing user data in an array
+        db.executeSql(sql, params);
+      }
+    } catch (error) {
+      console.error('Failed to fetch modules:', error);
+    }
+  };
+
+  const fetchMasterModules = async (businessID, IDEmployee) => {
+    try {
+      const url =
+        BASE_URL +
+        'user/MobileSubMenuList?Businessid=' +
+        businessID +
+        '&IDEmployee=' +
+        IDEmployee +
+        '&Module=MASTER';
+      const response = await axios.get(url);
+      const dashBoardJsonArray = response.data;
+      //CREATE TABLE for CRM_TourPlanDate
+      db.transaction(txn => {
+        txn.executeSql('DROP TABLE IF EXISTS MasterModuleData', []);
+        txn.executeSql(
+          'CREATE TABLE IF NOT EXISTS MasterModuleData(SubMenu VARCHAR,SubMenuSRL VARCHAR)',
+          [],
+        );
+      });
+
+      //SQLITE INSERT CRM_TourPlanDate
+      var _value = [];
+      _value = dashBoardJsonArray;
+      //console.log(_value);
+      for (var j = 0; j < _value.length; j++) {
+        const array = _value[j];
+        let sql =
+          'INSERT INTO MasterModuleData(SubMenu,SubMenuSRL) VALUES (?,?)';
+        let params = [array.SubMenu, array.SubMenuSRL]; //storing user data in an array
+        db.executeSql(sql, params);
+      }
+    } catch (error) {
+      console.error('Failed to fetch modules:', error);
+    }
+  };
+
+  const fetchDCRModules = async (businessID, IDEmployee) => {
+    try {
+      const url =
+        BASE_URL +
+        'user/MobileSubMenuList?Businessid=' +
+        businessID +
+        '&IDEmployee=' +
+        IDEmployee +
+        '&Module=DCR';
+      const response = await axios.get(url);
+      const dashBoardJsonArray = response.data;
+      //CREATE TABLE for CRM_TourPlanDate
+      db.transaction(txn => {
+        txn.executeSql('DROP TABLE IF EXISTS DCRModuleData', []);
+        txn.executeSql(
+          'CREATE TABLE IF NOT EXISTS DCRModuleData(SubMenu VARCHAR,SubMenuSRL VARCHAR)',
+          [],
+        );
+      });
+
+      //SQLITE INSERT CRM_TourPlanDate
+      var _value = [];
+      _value = dashBoardJsonArray;
+      //console.log(_value);
+      for (var j = 0; j < _value.length; j++) {
+        const array = _value[j];
+        let sql = 'INSERT INTO DCRModuleData(SubMenu,SubMenuSRL) VALUES (?,?)';
+        let params = [array.SubMenu, array.SubMenuSRL]; //storing user data in an array
+        db.executeSql(sql, params);
+      }
+    } catch (error) {
+      console.error('Failed to fetch modules:', error);
+    }
+  };
 
   const tourdateCheck = async (businessID, month, year, idEmp) => {
     const url =
@@ -2554,10 +2179,11 @@ const CustomOrder = props => {
     <View style={{flex: 1}}>
       <DrawerContentScrollView
         {...props}
-        contentContainerStyle={{backgroundColor: '#8200d6'}}>
-        <ImageBackground
+        contentContainerStyle={{backgroundColor: '#005696'}}>
+        {/* <ImageBackground
           source={require('../../images/menu-bg.jpeg')}
-          style={{padding: 20}}>
+          style={{padding: 20}}> */}
+          <View style={{padding: 20, backgroundColor: '#005696'}}>
           <TouchableOpacity
             style={styles.container}
             onPress={() => setModalVisible(true)}>
@@ -2685,10 +2311,10 @@ const CustomOrder = props => {
                 fontFamily: 'Roboto-Regular',
                 marginRight: 5,
               }}>
-              Version 2.0
+              Version 2.5
             </Text>
           </View>
-        </ImageBackground>
+        </View>
         <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 10}}>
           <DrawerItemList {...props} />
           <DrawerItem

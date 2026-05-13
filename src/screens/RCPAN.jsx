@@ -12,6 +12,7 @@ import {
   LogBox,
   Modal,
   Button,
+  StatusBar,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -23,7 +24,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import DeviceInfo from 'react-native-device-info';
 import {useFocusEffect} from '@react-navigation/native';
 import {BackHandler} from 'react-native';
-
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 const RCPAN = ({navigation}) => {
   const [isFocus, setIsFocus] = useState(false);
   const [useBusinessID, setBusinessID] = useState('');
@@ -524,14 +525,11 @@ const RCPAN = ({navigation}) => {
     //setModalVisible(!isModalVisible);
     if (useSelfTProductName === '') {
       Alert.alert('Select Self Product');
-    } 
-    else if (useCompProductCode === '') {
+    } else if (useCompProductCode === '') {
       Alert.alert('Select Competitor Product');
-    } 
-    else if (useCompCompanyListCode === '') {
+    } else if (useCompCompanyListCode === '') {
       Alert.alert('Select Company');
-    } 
-    else if (usePackSize === '') {
+    } else if (usePackSize === '') {
       Alert.alert('Select Pack Size');
     } else if (useUnitName === '') {
       Alert.alert('Select Unit');
@@ -972,9 +970,8 @@ const RCPAN = ({navigation}) => {
   };
 
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
-      showsVerticalScrollIndicator={false}>
+    <KeyboardAwareLayout>
+      <StatusBar backgroundColor="#a9ddfaff" barStyle="light-content" />
       <View
         style={{
           paddingLeft: 5,
@@ -1047,34 +1044,27 @@ const RCPAN = ({navigation}) => {
               }}>
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
-                  //width: '25%',
+                  backgroundColor: '#005696',
+                  width: '30%',
                   margin: 5,
                   borderRadius: 5,
                   flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center', // centers content horizontally
+                  paddingVertical: 10,
                 }}
                 onPress={() => nextSelf()}>
                 <Text
                   style={{
-                    textAlign: 'center',
                     fontWeight: '700',
                     fontSize: 18,
-                    margin: 5,
-                    padding: 5,
                     fontFamily: 'Lato-Regular',
                     color: '#fff',
+                    marginRight: 5,
                   }}>
                   Next
                 </Text>
-                <View
-                  style={{
-                    marginTop: 7,
-                    marginBottom: 5,
-                    paddingTop: 5,
-                    paddingBottom: 5,
-                  }}>
-                  <AntDesign name="arrowright" size={20} color="white" />
-                </View>
+                <AntDesign name="arrowright" size={20} color="white" />
               </TouchableOpacity>
             </View>
           </View>
@@ -1224,7 +1214,7 @@ const RCPAN = ({navigation}) => {
               }}>
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   //width: '25%',
                   margin: 5,
                   borderRadius: 5,
@@ -1375,7 +1365,7 @@ const RCPAN = ({navigation}) => {
                 />
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#33767C',
+                    backgroundColor: '#005696',
                     //width: '25%',
                     margin: 5,
                     borderRadius: 5,
@@ -1539,7 +1529,7 @@ const RCPAN = ({navigation}) => {
               }}>
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   //width: '25%',
                   margin: 5,
                   borderRadius: 5,
@@ -1821,7 +1811,7 @@ const RCPAN = ({navigation}) => {
                   {showCData ? (
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '#33767C',
+                        backgroundColor: '#005696',
                         height: 50,
                         width: '30%',
                         padding: 5,
@@ -1847,7 +1837,7 @@ const RCPAN = ({navigation}) => {
                   ) : (
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '#33767C',
+                        backgroundColor: '#005696',
                         height: 50,
                         width: '30%',
                         padding: 5,
@@ -1874,7 +1864,7 @@ const RCPAN = ({navigation}) => {
 
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#33767C',
+                      backgroundColor: '#005696',
                       height: 50,
                       width: '30%',
                       padding: 5,
@@ -2281,7 +2271,7 @@ const RCPAN = ({navigation}) => {
                 <View style={{flexDirection: 'row'}}>
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#33767C',
+                      backgroundColor: '#005696',
                       height: 50,
                       width: '30%',
                       padding: 5,
@@ -2448,7 +2438,7 @@ const RCPAN = ({navigation}) => {
           </Modal>
         ) : null}
       </View>
-    </ScrollView>
+    </KeyboardAwareLayout>
   );
 };
 

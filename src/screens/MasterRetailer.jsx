@@ -5,12 +5,14 @@ import {
   Alert,
   StyleSheet,
   Dimensions,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {TextInput} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
-import {MultipleSelectList} from 'react-native-dropdown-select-list';
-import {BASE_URL} from '@env';
+import React, { useEffect, useState, useCallback } from 'react';
+import { TextInput } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown';
+import { MultipleSelectList } from 'react-native-dropdown-select-list';
+import { BASE_URL } from '@env';
 import {
   isLocationEnabled,
   promptForEnableLocationIfNeeded,
@@ -20,9 +22,11 @@ import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import CustomButton from '../components/custom/CustomButton';
-import {openDatabase} from 'react-native-sqlite-storage';
+import { openDatabase } from 'react-native-sqlite-storage';
 import DeviceInfo from 'react-native-device-info';
 import ProgressDialog from '../components/custom/ProgressDialog';
+import { useFocusEffect } from '@react-navigation/native';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 
 //database connection
 const db = openDatabase(
@@ -36,7 +40,7 @@ const db = openDatabase(
   error => console.log('Database error', error), //on error
 );
 
-const MasterRetailer = ({navigation}) => {
+const MasterRetailer = ({ navigation }) => {
   const [locationStatus, setLocationStatus] = useState('');
   const [currentLongitude, setCurrentLongitude] = useState('0.00');
   const [currentLatitude, setCurrentLatitude] = useState('0.00');
@@ -175,6 +179,20 @@ const MasterRetailer = ({navigation}) => {
     return () => clearInterval(interval);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavMaster'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const handleCheckPressed = async () => {
     if (Platform.OS === 'android') {
       var checkEnabled = await isLocationEnabled();
@@ -224,7 +242,7 @@ const MasterRetailer = ({navigation}) => {
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
       //{enableHighAccuracy: true, timeout: 15000, maximumAge: 1000},
-      {timeout: 15000}, // 15 seconds timeout
+      { timeout: 15000 }, // 15 seconds timeout
     );
   };
 
@@ -248,7 +266,7 @@ const MasterRetailer = ({navigation}) => {
         setLocationStatus(error.message);
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
-      {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000},
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 1000 },
       //{ timeout: 15000 } // 15 seconds timeout
     );
   };
@@ -412,7 +430,7 @@ const MasterRetailer = ({navigation}) => {
             IDDivision: useIDDivision,
             IDArea: useAValue,
             IDPartyType: useTValue,
-            Employee: {IDEmployee: useIDEmployee},
+            Employee: { IDEmployee: useIDEmployee },
             Latitude: 0,
             Longitude: 0,
             Address: '',
@@ -458,7 +476,7 @@ const MasterRetailer = ({navigation}) => {
                   onPress: () => navigation.navigate('AppNavMaster'),
                 },
               ],
-              {cancelable: false},
+              { cancelable: false },
             );
           } else {
             setLoading(true);
@@ -498,7 +516,7 @@ const MasterRetailer = ({navigation}) => {
             IDDivision: useIDDivision,
             IDArea: useAValue,
             IDPartyType: useTValue,
-            Employee: {IDEmployee: useIDEmployee},
+            Employee: { IDEmployee: useIDEmployee },
             Latitude: 0,
             Longitude: 0,
             Address: '',
@@ -541,7 +559,7 @@ const MasterRetailer = ({navigation}) => {
                   onPress: () => navigation.navigate('AppNavMaster'),
                 },
               ],
-              {cancelable: false},
+              { cancelable: false },
             );
           } else {
             db.transaction(tx => {
@@ -637,8 +655,22 @@ const MasterRetailer = ({navigation}) => {
     }
   };
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: false}}>
-      <View style={{padding: 5, margin: 5}}>
+    <KeyboardAwareLayout>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+      <View style={{ 
+        padding: 8,
+          margin: 5,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: 'lightgrey',
+          backgroundColor: 'white',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.8,
+          shadowRadius: 2,
+          elevation: 5,
+       }}>
+        <Text style={{ fontWeight: 'bold', marginBottom: 5 , fontSize: 16 }}>Retailer Information</Text>
         <View
           style={{
             marginTop: 5,
@@ -647,7 +679,7 @@ const MasterRetailer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -674,6 +706,7 @@ const MasterRetailer = ({navigation}) => {
           label="Name"
           mode="outlined"
           autoCapitalize="none"
+          style={{ marginBottom: 5 }}
           autoCorrect={false}
           value={useName}
           onChangeText={text => setName(text)}
@@ -683,10 +716,10 @@ const MasterRetailer = ({navigation}) => {
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={retCode}
           editable={false}
-          // onChangeText={text => setRetCode(text)}
+        // onChangeText={text => setRetCode(text)}
         />
         <TextInput
           label="Mobile"
@@ -694,6 +727,7 @@ const MasterRetailer = ({navigation}) => {
           autoCapitalize="none"
           autoCorrect={false}
           maxLength={10}
+          style={{ marginBottom: 5 }}
           value={useMobile}
           keyboardType="numeric"
           onChangeText={text => setMobile(text)}
@@ -715,7 +749,7 @@ const MasterRetailer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -725,6 +759,7 @@ const MasterRetailer = ({navigation}) => {
             maxHeight={300}
             labelField="label"
             valueField="value"
+            dropdownPosition='top'
             placeholder={!isFocus ? 'Area' : '...'}
             searchPlaceholder="Search"
             onFocus={() => setIsFocus(true)}
@@ -759,8 +794,8 @@ const MasterRetailer = ({navigation}) => {
             fontFamily="Roboto-Bold"
             notFoundText="No Data Exists"
             //badgeTextStyles={{color:'red'}}
-            badgeStyles={{backgroundColor: 'green'}}
-            labelStyles={{fontWeight: '800', color: 'black'}}
+            badgeStyles={{ backgroundColor: 'green' }}
+            labelStyles={{ fontWeight: '800', color: 'black' }}
           />
         </View>
         <View
@@ -774,7 +809,7 @@ const MasterRetailer = ({navigation}) => {
         </View>
         <ProgressDialog visible={loading} message="Please Wait..." />
       </View>
-    </SafeAreaView>
+    </KeyboardAwareLayout>
   );
 };
 

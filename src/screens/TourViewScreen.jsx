@@ -138,119 +138,121 @@ const TourViewScreen = props => {
                 ]}>
                 <TouchableWithoutFeedback>
                   <View>
-                  {item.Rejected === false ? (
-                       <View
-                       style={[
-                         styles.menu,
-                         {
-                           backgroundColor: '#c2dec6',
-                           justifyContent: 'space-between',
-                           flexDirection: 'row',
-                           alignItems: 'center',
-                         },
-                       ]}>
-                       <Text
-                         style={{
-                           fontSize: 16,
-                           fontFamily: 'Roboto-Bold',
-                           color: '#000',
-                           marginTop: 5,
-                           marginBottom:5,
-                           paddingTop: 5,
-                           paddingBottom:5,
-                           flex: 1,
-                           textAlign: 'center',
-                         }}>
-                         {item.TourDate + ' ' + '(' + item.TourDayName + ')'}
-                       </Text>
-                       {item.Approved === false ? (
-                         <AntDesign
-                           name="delete"
-                           size={30}
-                           color="red"
-                           onPress={() => {
-                             onDelete(item.IDTourProgram);
-                           }}
-                         />
-                       ) : null}
-                     </View>
-                    ) :  <View
-                    style={[
-                      styles.menu,
-                      {
-                        backgroundColor: '#FF7F7F',
-                        justifyContent: 'space-between',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      },
-                    ]}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontFamily: 'Roboto-Bold',
-                        color: '#000',
-                        marginTop: 5,
-                        marginBottom:5,
-                        paddingTop: 5,
-                        paddingBottom:5,
-                        flex: 1,
-                        textAlign: 'center',
-                      }}>
-                      {item.TourDate + ' ' + '(' + item.TourDayName + ')'}
-                    </Text>
-                    {item.Approved === false ? (
-                      <AntDesign
-                        name="delete"
-                        size={30}
-                        color="#880808"
-                        onPress={() => {
-                          onDelete(item.IDTourProgram);
-                        }}
-                      />
-                    ) : null}
-                  </View>}
-                 
-                  <View
-                    style={[
-                      styles.menu,
-                      {
-                        backgroundColor: '#ecf0f1',
-                        justifyContent: 'space-between',
-                        //flexDirection: 'row',
-                        alignItems: 'center',
-                      },
-                    ]}>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontFamily: 'Lato-Regular',
-                        color: '#000',
-                        padding:5,
-                        textAlign: 'center',
-                      }}>
-                      Morning : {item.MorningWorktypeName}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontFamily: 'Lato-Regular',
-                        color: '#000',
-                        padding:5,
-                        textAlign: 'center',
-                      }}>
-                      Evening : {item.EveningWorktypeName}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontFamily: 'Lato-Regular',
-                        color: '#000',
-                        padding:5,
-                        textAlign: 'center',
-                      }}>
-                      Remarks : {item.Remarks}
-                    </Text>
-                  </View>
+                    {item.Rejected === false ? (
+                      <View
+                        style={[
+                          styles.menu,
+                          {
+                            backgroundColor: '#c2dec6',
+                            justifyContent: 'space-between',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          },
+                        ]}>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontFamily: 'Roboto-Bold',
+                            color: '#000',
+                            marginTop: 5,
+                            marginBottom: 5,
+                            paddingTop: 5,
+                            paddingBottom: 5,
+                            flex: 1,
+                            textAlign: 'center',
+                          }}>
+                          {item.TourDate + ' ' + '(' + item.TourDayName + ')'}
+                        </Text>
+                        {item.Approved === false ? (
+                          <AntDesign
+                            name="delete"
+                            size={30}
+                            color="red"
+                            onPress={() => {
+                              onDelete(item.IDTourProgram);
+                            }}
+                          />
+                        ) : null}
+                      </View>
+                    ) : (
+                      <View
+                        style={[
+                          styles.menu,
+                          {
+                            backgroundColor: '#FF7F7F',
+                            justifyContent: 'space-between',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          },
+                        ]}>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontFamily: 'Roboto-Bold',
+                            color: '#000',
+                            marginTop: 5,
+                            marginBottom: 5,
+                            paddingTop: 5,
+                            paddingBottom: 5,
+                            flex: 1,
+                            textAlign: 'center',
+                          }}>
+                          {item.TourDate + ' ' + '(' + item.TourDayName + ')'}
+                        </Text>
+                        {item.Approved === false ? (
+                          <AntDesign
+                            name="delete"
+                            size={30}
+                            color="#880808"
+                            onPress={() => {
+                              onDelete(item.IDTourProgram);
+                            }}
+                          />
+                        ) : null}
+                      </View>
+                    )}
+
+                    <View
+                      style={[
+                        styles.menu,
+                        {
+                          backgroundColor: '#ecf0f1',
+                          justifyContent: 'space-between',
+                          //flexDirection: 'row',
+                          alignItems: 'center',
+                        },
+                      ]}>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          padding: 5,
+                          textAlign: 'center',
+                        }}>
+                        Morning : {item.MorningWorktypeName}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          padding: 5,
+                          textAlign: 'center',
+                        }}>
+                        Evening : {item.EveningWorktypeName}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          padding: 5,
+                          textAlign: 'center',
+                        }}>
+                        Remarks : {item.Remarks}
+                      </Text>
+                    </View>
                   </View>
                 </TouchableWithoutFeedback>
                 {gamesTab == 1 && (
@@ -287,8 +289,8 @@ const TourViewScreen = props => {
                           style={{
                             fontFamily: 'Roboto-BoldItalic',
                             fontSize: 18,
-                            padding:5,
-                            margin:5,
+                            padding: 5,
+                            margin: 5,
                             color: '#FF0000',
                           }}>
                           No Areas Found
@@ -331,8 +333,8 @@ const TourViewScreen = props => {
                           style={{
                             fontFamily: 'Roboto-BoldItalic',
                             fontSize: 18,
-                            padding:5,
-                            margin:5,
+                            padding: 5,
+                            margin: 5,
                             color: '#FF0000',
                           }}>
                           No Doctors Found
@@ -375,8 +377,8 @@ const TourViewScreen = props => {
                           style={{
                             fontFamily: 'Roboto-BoldItalic',
                             fontSize: 18,
-                            padding:5,
-                            margin:5,
+                            padding: 5,
+                            margin: 5,
                             color: '#FF0000',
                           }}>
                           No Retailers Found
@@ -419,8 +421,8 @@ const TourViewScreen = props => {
                           style={{
                             fontFamily: 'Roboto-BoldItalic',
                             fontSize: 18,
-                            padding:5,
-                            margin:5,
+                            padding: 5,
+                            margin: 5,
                             color: '#FF0000',
                           }}>
                           No Visit Data Found
@@ -461,11 +463,20 @@ const styles = StyleSheet.create({
     marginRight: 5,
     marginTop: 5,
     padding: 5,
-    //width: 140,
-    //height: 135,
+
+    // ANDROID SHADOW
     elevation: 10,
-    borderRadius: 2,
+
+    // iOS SHADOW
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    backgroundColor: '#fff', // required on iOS for shadow to show
+    borderRadius: 6,
   },
+
   menuItem: {
     fontSize: 14,
     fontFamily: 'Lato-Regular',

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, ImageBackground, Dimensions, View, StyleSheet, Text, TouchableOpacity, TextInput, Alert, Modal, Platform } from 'react-native';
+import {
+    SafeAreaView, ImageBackground, Dimensions, View, StyleSheet, Text,
+    TouchableOpacity, TextInput, Alert, Modal, Platform
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,7 +12,9 @@ import NetInfo from '@react-native-community/netinfo';
 import DeviceInfo from 'react-native-device-info';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-
+import { Hrms_URL, BASE_URL } from '@env';
+import { MultiSelect, Dropdown } from 'react-native-element-dropdown';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 
 const HalfDayLeaveScreen = ({ navigation }) => {
     const [leaveType, setLeaveType] = useState('');
@@ -32,8 +37,11 @@ const HalfDayLeaveScreen = ({ navigation }) => {
     const [alertShown, setAlertShown] = useState(false); // Prevent multiple alerts
     const [device, setDevice] = useState('');
     const [leaveApplied, setLeaveApplied] = useState(false); //  Track apply status
+    const [businessId, setBusinessId] = useState('');
+    const [companyId, setCompanyId] = useState(null); // dynamic companyId
+    const [selectedEncashment, setSelectedEncashment] = useState('0');
 
-    const companyId = '1';
+    //const companyId = '1';
     const currentYear = new Date().getFullYear();
 
     // const today = new Date();
@@ -43,40 +51,87 @@ const HalfDayLeaveScreen = ({ navigation }) => {
 
     useFocusEffect(
         React.useCallback(() => {
-          const onBackPress = () => {
-            if (!leaveApplied) {
-              Alert.alert('Hold On!', 'Please apply the leave before going back.');
-              return true; // Prevent default back
-            }
-    
-            // Reset navigation if leave is applied
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'AppNavScreen' }],
-            });
-            return true; // Prevent default back
-          };
-    
-          const beforeRemoveListener = (e) => {
-            if (!leaveApplied) {
-              e.preventDefault();
-              Alert.alert('Hold On!', 'Please apply the leave before going back.');
-            }
-          };
-    
-          // Add listeners
-          const backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-          const beforeRemoveSubscription = navigation.addListener('beforeRemove', beforeRemoveListener);
-    
-          // Clean up
-          return () => {
-            backHandlerSubscription.remove();
-            beforeRemoveSubscription();
-          };
-        }, [leaveApplied, navigation])
-      );
-    
+            const onBackPress = () => {
+                if (!leaveApplied) {
+                    Alert.alert('Hold On!', 'Please apply the leave before going back.');
+                    return true; // Prevent default back
+                }
 
+                // Reset navigation if leave is applied
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AppNavScreen' }],
+                });
+                return true; // Prevent default back
+            };
+
+            const beforeRemoveListener = (e) => {
+                if (!leaveApplied) {
+                    e.preventDefault();
+                    Alert.alert('Hold On!', 'Please apply the leave before going back.');
+                }
+            };
+
+            // Add listeners
+            const backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            const beforeRemoveSubscription = navigation.addListener('beforeRemove', beforeRemoveListener);
+
+            // Clean up
+            return () => {
+                backHandlerSubscription.remove();
+                beforeRemoveSubscription();
+            };
+        }, [leaveApplied, navigation])
+    );
+
+    useEffect(() => {
+        const initializeData = async () => {
+            await getUserData();
+        };
+        initializeData();
+        // if (empEmail) {
+        //     fetchLeaveBalance(empEmail, currentYear);
+        //     fetchLeaveDurations();
+        // }
+    }, [empEmail]);
+
+
+    const getUserData = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('UserData');
+            if (jsonValue !== null) {
+                const userData = JSON.parse(jsonValue);
+                const businessID = userData.BusinessID;
+                const normalizedBusinessID = businessID?.trim()?.toUpperCase();
+
+                setEmpEmail(userData.Empemail);
+                setIDEmployee(userData.IDEmployee);
+                setBusinessId(normalizedBusinessID);
+
+                let resolvedCompanyId = 0;
+
+                if (normalizedBusinessID === 'GENI-QST-536') {
+                    resolvedCompanyId = 50;
+                } else if (normalizedBusinessID === 'MEND-PVTL-890') {
+                    resolvedCompanyId = 1;
+                } else {
+                    Alert.alert('Unknown Business', `Unsupported Business ID: ${normalizedBusinessID}`);
+                }
+
+                setCompanyId(resolvedCompanyId);
+
+                // ✅ Now call these AFTER companyId is set
+                fetchLeaveBalance(userData.Empemail, currentYear, resolvedCompanyId);
+                fetchLeaveDurations(resolvedCompanyId);
+
+                console.log("BusinessId:", normalizedBusinessID);
+            } else {
+                Alert.alert('Error', 'User data not found.');
+            }
+        } catch (error) {
+            console.error('Error retrieving data:', error);
+        }
+    };
 
 
 
@@ -128,53 +183,37 @@ const HalfDayLeaveScreen = ({ navigation }) => {
     }, []);
 
     // Function to Retrieve `Empemail` and IdEmployee from AsyncStorage
-    const getUserData = async () => {
-        try {
-            const jsonValue = await AsyncStorage.getItem('UserData');
-            if (jsonValue !== null) {
-                const userData = JSON.parse(jsonValue);
-                setEmpEmail(userData.Empemail); // Set Empemail in State
-                setIDEmployee(userData.IDEmployee);
-
-                // Log in console
-                console.log("Retrieved User Data:");
-                console.log("Empemail:", userData.Empemail);
-                console.log("IDEmployee:", userData.IDEmployee);
-            } else {
-                Alert.alert('Error', 'User data not found.');
-            }
-        } catch (error) {
-            console.error('Error retrieving data:', error);
-        }
-    };
+    /** 🔹 Load `Empemail` and then fetch API data */
 
     // Load `Empemail` when the screen loads
     // useEffect(() => {
     //   getUserData();
     // }, []);
 
-    const fetchLeaveBalance = async (email, year) => {
-        const companyId = 1;
-        const url = `https://centralizedapi.iecsl.in/api/centralizedAPI/RetrieveLeaveBalance?companyId=${companyId}&email=${email}&year=${year}`;
+    const fetchLeaveBalance = async (email, year, companyId) => {
+        const url = `${Hrms_URL}RetrieveLeaveBalance?companyId=${companyId}&email=${email}&year=${year}`;
+        console.log("Fetching from API:", url); // Logs the API URL
 
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP status ${response.status}`);
             const data = await response.json();
 
-            // Find the Casual Leave item
-            const casualLeave = data.find(item => item.codedescription.toLowerCase() === 'casual leave');
+            const filteredLeaves = data.filter(item => {
+                const name = item.codedescription?.toLowerCase();
+                return name === 'casual leave' || name === 'special leave';
+            });
 
-            if (casualLeave) {
-                const leaveItem = {
-                    label: casualLeave.codedescription,
-                    value: casualLeave.leavetypeid,
-                    balance: casualLeave.balance,
-                };
+            const formattedLeaves = filteredLeaves.map(item => ({
+                label: item.codedescription,
+                value: item.leavetypeid,
+                balance: item.balance
+            }));
 
-                setLeaveBalance([leaveItem]); // Only Casual Leave shown
-                setLeaveType(leaveItem.value); // ✅ Auto select it
-                setSelectedBalance(leaveItem.balance); // Show balance
+            setLeaveBalance(formattedLeaves); // Set both leave types
+            if (formattedLeaves.length > 0) {
+                setLeaveType(formattedLeaves[0].value); // Auto-select first one
+                setSelectedBalance(formattedLeaves[0].balance);
             }
 
         } catch (error) {
@@ -182,18 +221,20 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         }
     };
 
+
     const handleLeaveTypeChange = (value) => {
         setLeaveType(value);
 
         // Find balance for selected leave type
         const selectedLeave = leaveBalance.find(item => item.value === value);
         setSelectedBalance(selectedLeave ? selectedLeave.balance : null);
+        setSelectedEncashment('0'); // Reset encashment selection when leave type changes
     };
 
     /**  Fetch Leave Durations from API */
-    const fetchLeaveDurations = async () => {
+    const fetchLeaveDurations = async (companyId) => {
         try {
-            const apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/LeaveDuration?companyId=${companyId}`;
+            const apiUrl = `${Hrms_URL}LeaveDuration?companyId=${companyId}`;
             console.log("Fetching from API:", apiUrl); // Logs the API URL
 
             const response = await fetch(apiUrl);
@@ -208,22 +249,13 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         }
     };
 
-
-    /** 🔹 Load `Empemail` and then fetch API data */
-    useEffect(() => {
-        const initializeData = async () => {
-            await getUserData();
-        };
-        initializeData();
-    }, []);
-
     /** 🔹 Fetch API Data After Email is Retrieved */
-    useEffect(() => {
-        if (empEmail) {
-            fetchLeaveBalance(empEmail, currentYear);
-            fetchLeaveDurations();
-        }
-    }, [empEmail]);
+    // useEffect(() => {
+    //     if (empEmail) {
+    //         fetchLeaveBalance(empEmail, currentYear);
+    //         fetchLeaveDurations();
+    //     }
+    // }, [empEmail]);
 
     // Fetch leave durations from the API
     // useEffect(() => {
@@ -243,13 +275,15 @@ const HalfDayLeaveScreen = ({ navigation }) => {
 
 
     // Function to handle Apply Button Click
+
+
     const handleApply = async () => {
         if (!leaveType || !leaveDuration || !fromDate || !reason.trim()) {
             Alert.alert("Incomplete Form", "Please fill all fields before applying.", [{ text: "OK" }]);
             return;
         }
 
-        const companyId = 1; // Hardcoded company ID
+        // const companyId = 1; // Hardcoded company ID
         const email = (empEmail); // Employee Email from AsyncStorage
         const leaveId = encodeURIComponent(leaveType); // Leave ID (assuming it's the selected leaveType)
         const formattedStartDate = moment(fromDate).format("MM-DD-YYYY"); // Format start date
@@ -262,10 +296,16 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         // **Call the API based on Leave Duration selection**
         if (leaveDuration === "F") {
             // API for Full Day Leave
-            apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/FullDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&endDate=${formattedEndDate}&email=${email}&leaveReason=${encodedReason}`;
+            apiUrl = `${Hrms_URL}FullDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&endDate=${formattedEndDate}&email=${email}&leaveReason=${encodedReason}`;
         } else if (leaveDuration === "H") {
-            // API for Half Day Leave
-            apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/HalfDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&email=${email}&leaveReason=${encodedReason}`;
+
+            if (businessId?.toString().trim().toUpperCase() === 'GENI-QST-536') {
+                // API for Half Day Leave
+                apiUrl = `${Hrms_URL}HalfDayLeaveApplyGeniquest?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&email=${email}&leaveReason=${encodedReason}`;
+            } else {
+                // API for Half Day Leave
+                apiUrl = `${Hrms_URL}HalfDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&email=${email}&leaveReason=${encodedReason}`;
+            }
         } else {
             Alert.alert("Invalid Selection", "Please select a valid Leave Duration.", [{ text: "OK" }]);
             return;
@@ -325,7 +365,10 @@ const HalfDayLeaveScreen = ({ navigation }) => {
 
     // Function to Save Data IN HRMS  Database 
     const handleSave = async () => {
-        const companyId = 1; // Hardcoded Company ID
+        //const companyId = 1; // Hardcoded Company ID
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
+        const FinancialYear = `${currentYear}-${nextYear}`;
         const email = empEmail;  // Employee Email from AsyncStorage
         const leaveTypeName = leaveSummary.leavetype;
         const leaveDurationName = leaveSummary.duration;
@@ -339,9 +382,20 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         // Ensure noOfDays is formatted correctly (e.g., 2.00)
         const formattedNoOfDays = leaveSummary.noofdays;
 
-        // Construct API URL with parameters
-        const apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/ApplyLeave?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}`
-        console.log("API Request URL:", apiUrl); // Debugging
+
+        let apiUrl = ""; // ✅ Declare apiUrl outside
+
+        if (businessId?.toString().trim().toUpperCase() === 'GENI-QST-536') {
+            apiUrl = `${Hrms_URL}ApplyLeaveGeniquest?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}&FinancialYear=${FinancialYear}&isEncashed=${selectedEncashment}`;
+
+            console.log("API Request URL:", apiUrl); // Debugging
+        } else {
+            // Construct API URL with parameters
+            apiUrl = `${Hrms_URL}ApplyLeave?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}`
+
+            console.log("API Request URL:", apiUrl); // Debugging
+        }
+
 
 
 
@@ -361,7 +415,7 @@ const HalfDayLeaveScreen = ({ navigation }) => {
             const responseData = await response.json();
             console.log("API Response:", responseData); // Debugging
 
-            // ✅ **Handle Empty Message Case**
+            //  **Handle Empty Message Case**
             if (responseData.length > 0) {
                 const message = responseData[0].Message;
                 if (!message || message.trim() === "") {
@@ -402,7 +456,7 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         // Ensure `noOfDays` is formatted correctly (e.g., 2.00)
         const formattedNoOfDays = leaveSummary.noofdays;
         const Remarks = leaveSummary.leavereason;
-        const Businessid = "MEND-PVTL-890";
+        const Businessid = businessId;
 
         // Construct Request Payload
         const requestBody = {
@@ -420,7 +474,7 @@ const HalfDayLeaveScreen = ({ navigation }) => {
         };
 
         // Construct API URL
-        const apiUrl = `https://crmfieldforceapi.mendine.co.in/api/crm/LeaveApplication/Save`;
+        const apiUrl = `${BASE_URL}LeaveApplication/Save`;
 
         console.log("API Request URL CRM :", apiUrl);
         console.log("Request Body:", JSON.stringify(requestBody)); // Debugging

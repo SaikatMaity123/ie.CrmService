@@ -5,6 +5,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the icon library
+import { Hrms_URL, BASE_URL } from '@env';
 //import { Icon } from "react-native-paper";
 
 const LeaveApplicationList = ({ navigation }) => {
@@ -13,15 +14,36 @@ const LeaveApplicationList = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
     const [empEmail, setEmpEmail] = useState("");
     const [searchQuery, setSearchQuery] = useState(""); // Search Query
+    const [businessId, setBusinessId] = useState('');
+    const [companyId, setCompanyId] = useState(null); // dynamic companyId
 
-    // Function to retrieve Empemail from AsyncStorage
+
+    // Fetch user email when screen loads
+    useEffect(() => {
+        getUserData();
+        if (companyId && empEmail) {
+            fetchLeaveApplications(empEmail, businessId);
+        }
+    }, [companyId, empEmail]);
+
+
     const getUserData = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem("UserData");
             if (jsonValue !== null) {
                 const userData = JSON.parse(jsonValue);
-                setEmpEmail(userData.Empemail);
-                fetchLeaveApplications(userData.Empemail); // Call API after fetching email
+                const normalizedBusinessID = userData.BusinessID?.trim()?.toUpperCase();
+                setBusinessId(normalizedBusinessID);
+                setEmpEmail(userData.Empemail); // Set here
+
+                if (normalizedBusinessID === 'GENI-QST-536') {
+                    setCompanyId(50);
+                } else if (normalizedBusinessID === 'MEND-PVTL-890') {
+                    setCompanyId(1);
+                } else {
+                    setCompanyId(0);
+                    Alert.alert('Unknown Business', `Unsupported Business ID: ${normalizedBusinessID}`);
+                }
             } else {
                 Alert.alert("Error", "User data not found.");
                 setLoading(false);
@@ -32,13 +54,19 @@ const LeaveApplicationList = ({ navigation }) => {
         }
     };
 
-    // Function to Fetch Leave Applications
-    const fetchLeaveApplications = async (email) => {
-        const companyId = 1; // Hardcoded Company ID
-        const currentYear = moment().format("YYYY"); // Get current year dynamically
-        const apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/LeaveApplicationHistory?companyId=${companyId}&email=${email}&year=${currentYear}`;
 
-        console.log("API Request URL List:", apiUrl); // Debugging
+    // Function to Fetch Leave Applications
+    const fetchLeaveApplications = async (email, businessId) => { 
+        const currentYear = moment().format("YYYY");
+        let apiUrl = ''; // Use `let` here so you can assign inside condition
+
+        if (businessId === 'GENI-QST-536') {
+            apiUrl = `${Hrms_URL}LeaveApplicationHistoryGeniquest?companyId=${companyId}&email=${email}&year=${currentYear}`;
+        } else {
+            apiUrl = `${Hrms_URL}LeaveApplicationHistory?companyId=${companyId}&email=${email}&year=${currentYear}`;
+        }
+
+        console.log("API Request URL List:", apiUrl);
 
         try {
             const response = await fetch(apiUrl);
@@ -47,9 +75,7 @@ const LeaveApplicationList = ({ navigation }) => {
             }
 
             const data = await response.json();
-            //console.log("API Response:", data); // Debugging
 
-            // ✅ **Fix: Remove invalid `{}` objects & ensure correct data format**
             const cleanedData = data.map((item) => ({
                 applicationhdrid: item.applicationhdrid || "-",
                 leaveid: item.leaveid || "-",
@@ -60,13 +86,13 @@ const LeaveApplicationList = ({ navigation }) => {
                 applicationdate: item.applicationdate || "-",
                 leavereason: item.leavereason || "-",
                 createdby: item.createdby || "-",
-                codedescription: item.codedescription || "-",  // Leave Type Name
-                Applicationstatus: item.Applicationstatus || "-",  // Leave Status
+                codedescription: item.codedescription || "-",
+                Applicationstatus: item.Applicationstatus || "-",
                 approverremarks: typeof item.approverremarks === "object" ? "-" : item.approverremarks,
             }));
 
             setLeaveApplications(cleanedData);
-            setFilteredApplications(cleanedData); // Initialize filtered list
+            setFilteredApplications(cleanedData);
         } catch (error) {
             console.error("Error fetching leave applications:", error);
             Alert.alert("Error", "Failed to fetch leave applications. Please try again.");
@@ -74,11 +100,6 @@ const LeaveApplicationList = ({ navigation }) => {
             setLoading(false);
         }
     };
-
-    // Fetch user email when screen loads
-    useEffect(() => {
-        getUserData();
-    }, []);
 
     // Function to Handle Search
     const handleSearch = (text) => {

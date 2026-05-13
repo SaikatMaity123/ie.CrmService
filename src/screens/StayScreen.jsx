@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {openDatabase} from 'react-native-sqlite-storage';
 import {Dropdown} from 'react-native-element-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,6 +27,9 @@ import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
 import axios from 'axios';
+import {useFocusEffect} from '@react-navigation/native';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 //database connection
 const db = openDatabase(
@@ -79,6 +83,20 @@ const StayScreen = ({navigation}) => {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavDCRScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const getData = () => {
     try {
@@ -195,9 +213,15 @@ const StayScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
-        //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        // const currentLongitude = JSON.stringify(position.coords.longitude);
+        // //getting the Longitude from the location json
+        // const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -219,9 +243,15 @@ const StayScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
-        //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        // const currentLongitude = JSON.stringify(position.coords.longitude);
+        // //getting the Longitude from the location json
+        // const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -457,146 +487,117 @@ const StayScreen = ({navigation}) => {
   };
 
   return (
-    <ImageBackground
-      source={require('../images/bg2.png')}
-      style={{height: Dimensions.get('window').height}}>
-      {/* <View style={{ alignItems: 'center',}}>
-            <CRMImg
-            height={150}
-            width={200}
-            // style={{transform: [{rotate: '-5deg'}]}}
-          />
-          </View> */}
-      <View
-        style={{
-          backgroundColor: '#ecf0f1',
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 10,
-          borderWidth: 0.1,
-          marginTop: 10,
-          marginBottom: 50,
-          marginLeft: 10,
-          marginRight: 10,
-          elevation: 2,
-          borderRadius: 1,
-        }}>
-        <View>
-          {/* <Text style={style.boldText}>{locationStatus}</Text> */}
-          <Text style={{padding: 5, fontFamily: 'Lato-Regular'}}>
-            Latitude : {currentLatitude}
-          </Text>
-          <Text style={{padding: 5, fontFamily: 'Lato-Regular'}}>
-            Longitude : {currentLongitude}{' '}
-          </Text>
-          {/* <Text style={{padding: 5}}>Date : {currDate}</Text> */}
-          {/* <Text style={{padding: 5}}>Time : {currTime}</Text> */}
-        </View>
-        {/* <View
-          style={{
-            width: '50%',
-            padding: 5,
-            margin: 5,
-            flexDirection: 'row',
-          }}
-          onPress={() => nextPS()}>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontWeight: '700',
-              fontSize: 18,
-              margin: 5,
-              padding: 5,
-              fontFamily: 'Lato-Regular',
-            }}>
-            {currDate}
-          </Text>
-        </View> */}
-      </View>
-      <View
-        style={{
-          justifyContent: 'center',
-          marginTop: 150,
-          marginLeft: 10,
-          marginRight: 10,
-          paddingRight: 10,
-          paddingLeft: 10,
-        }}>
-        {useManagerAccess ? (
-          <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-            placeholderStyle={style.placeholderStyle}
-            selectedTextStyle={style.selectedTextStyle}
-            inputSearchStyle={style.inputSearchStyle}
-            iconStyle={style.iconStyle}
-            data={selectedMAreaData}
-            search
-            maxHeight={300}
-            labelField="label"
-            valueField="value"
-            placeholder={!isFocus ? 'Select Area' : '...'}
-            searchPlaceholder="Search..."
-            //value={wtdataLabel}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setareaValue(item.value);
-              setareaLabel(item.label);
-              // handleState(item.value);
-              setIsFocus(false);
-            }}
-          />
-        ) : (
-          <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-            placeholderStyle={style.placeholderStyle}
-            selectedTextStyle={style.selectedTextStyle}
-            inputSearchStyle={style.inputSearchStyle}
-            iconStyle={style.iconStyle}
-            data={selectedAreaData}
-            search
-            maxHeight={300}
-            labelField="label"
-            valueField="value"
-            placeholder={!isFocus ? 'Select Area' : '...'}
-            searchPlaceholder="Search..."
-            //value={wtdataLabel}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={item => {
-              setareaValue(item.value);
-              setareaLabel(item.label);
-              // handleState(item.value);
-              setIsFocus(false);
-            }}
-          />
-        )}
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+      <KeyboardAwareLayout>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{flexGrow: 1}}>
+          <ImageBackground
+            source={require('../images/bg2.png')}
+            style={{flex: 1}}
+            resizeMode="cover">
+            {/* LOCATION CARD */}
+            <View
+              style={{
+                backgroundColor: '#ffffff',
+                margin: 12,
+                padding: 12,
+                borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 3},
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 10,
+                  borderRadius: 12,
+                  borderWidth: 0.5,
+                  borderColor: '#e0e0e0',
 
-        <View
-          style={{
-            justifyContent: 'center',
-            marginTop: 10,
-          }}>
-          <TextInput
-            label="Remarks"
-            mode="outlined"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={{marginBottom: 5}}
-            value={useRemarks}
-            onChangeText={text => setRemarks(text)}
-          />
-        </View>
-        <View
-          style={{
-            justifyContent: 'center',
-            marginTop: 10,
-          }}>
-          <CustomButton label={'Submit'} onPress={() => submit()} />
-        </View>
-      </View>
-    </ImageBackground>
+                  // Light 3D effect that works on both iOS + Android
+                  shadowColor: '#000',
+                  shadowOffset: {width: 0, height: 2},
+                  shadowOpacity: 0.15,
+                  shadowRadius: 3,
+                  elevation: 3,
+                }}>
+                <Ionicons
+                  name="location-outline"
+                  size={30}
+                  color="#005696"
+                  style={{marginRight: 12}}
+                />
+
+                <View>
+                  <Text
+                    style={{fontSize: 15, fontWeight: '700', color: '#333'}}>
+                    Latitude: {currentLatitude}
+                  </Text>
+                  <Text
+                    style={{fontSize: 15, fontWeight: '700', color: '#333'}}>
+                    Longitude: {currentLongitude}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* FORM */}
+            <View style={{paddingHorizontal: 15, marginTop: 10}}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  marginBottom: 8,
+                  color: '#000',
+                }}>
+                Enter Details
+              </Text>
+
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useManagerAccess ? selectedMAreaData : selectedAreaData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={isFocus ? '...' : 'Select Area'}
+                searchPlaceholder="Search..."
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  setareaValue(item.value);
+                  setareaLabel(item.label);
+                  setIsFocus(false);
+                }}
+              />
+
+              <TextInput
+                label="Remarks"
+                mode="outlined"
+                multiline
+                numberOfLines={4}
+                value={useRemarks}
+                onChangeText={setRemarks}
+                style={{marginTop: 12}}
+              />
+
+              <View style={{marginTop: 20}}>
+                <CustomButton label="Submit" onPress={submit} />
+              </View>
+            </View>
+          </ImageBackground>
+        </ScrollView>
+      </KeyboardAwareLayout>
+    </>
   );
 };
 

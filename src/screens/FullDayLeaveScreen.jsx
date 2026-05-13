@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, ImageBackground, Dimensions, View, StyleSheet, Text, TouchableOpacity, TextInput, Alert, Modal, Platform } from 'react-native';
+import {
+    SafeAreaView, ImageBackground, Dimensions, View, StyleSheet, Text,
+    TouchableOpacity, TextInput, Alert, Modal, Platform
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,8 +10,11 @@ import moment from 'moment';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import NetInfo from '@react-native-community/netinfo';
 import DeviceInfo from 'react-native-device-info';
-import { useFocusEffect,StackActions } from '@react-navigation/native';
+import { useFocusEffect, StackActions } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
+import { Hrms_URL, BASE_URL } from '@env';
+import { MultiSelect, Dropdown } from 'react-native-element-dropdown';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 
 const FullDayLeaveScreen = ({ navigation }) => {
     const [leaveType, setLeaveType] = useState('');
@@ -31,9 +37,15 @@ const FullDayLeaveScreen = ({ navigation }) => {
     const [alertShown, setAlertShown] = useState(false); // Prevent multiple alerts
     const [device, setDevice] = useState('');
     const [leaveApplied, setLeaveApplied] = useState(false); //  Track apply status
+    const [businessId, setBusinessId] = useState('');
+    const [companyId, setCompanyId] = useState(null); // dynamic companyId
+    const [selectedEncashment, setSelectedEncashment] = useState('0');
 
-    const companyId = '1';
+
+
+    //const companyId = '50';
     const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;             // 2026
 
     // const today = new Date();
     // const Current_Year = today.getFullYear();
@@ -42,43 +54,40 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
     useFocusEffect(
         React.useCallback(() => {
-          const onBackPress = () => {
-            if (!leaveApplied) {
-              Alert.alert('Hold On!', 'Please apply the leave before going back.');
-              return true; // Prevent default back
-            }
-    
-            // Reset navigation if leave is applied
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'AppNavScreen' }],
-            });
-            return true; // Prevent default back
-          };
-    
-          const beforeRemoveListener = (e) => {
-            if (!leaveApplied) {
-              e.preventDefault();
-              Alert.alert('Hold On!', 'Please apply the leave before going back.');
-            }
-          };
-    
-          // Add listeners
-          const backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-          const beforeRemoveSubscription = navigation.addListener('beforeRemove', beforeRemoveListener);
-    
-          // Clean up
-          return () => {
-            backHandlerSubscription.remove();
-            beforeRemoveSubscription();
-          };
+            const onBackPress = () => {
+                if (!leaveApplied) {
+                    Alert.alert('Hold On!', 'Please apply the leave before going back.');
+                    return true; // Prevent default back
+                }
+
+                // Reset navigation if leave is applied
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'AppNavScreen' }],
+                });
+                return true; // Prevent default back
+            };
+
+            const beforeRemoveListener = (e) => {
+                if (!leaveApplied) {
+                    e.preventDefault();
+                    Alert.alert('Hold On!', 'Please apply the leave before going back.');
+                }
+            };
+
+            // Add listeners
+            const backHandlerSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            const beforeRemoveSubscription = navigation.addListener('beforeRemove', beforeRemoveListener);
+
+            // Clean up
+            return () => {
+                backHandlerSubscription.remove();
+                beforeRemoveSubscription();
+            };
         }, [leaveApplied, navigation])
-      );
-    
-      
+    );
 
 
-    
     // 🔹 **Check Internet Connection**
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
@@ -110,6 +119,12 @@ const FullDayLeaveScreen = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
+
+        const today = new Date();
+        setFromDate(today); // sets today's date on initial load
+        setToDate(today);
+        setLeaveDays("1.00");
+
         if (leaveDurations.length > 0) {
             const fullDay = leaveDurations.find(d => d.LeaveDuration === "Full Day");
             if (fullDay) {
@@ -118,12 +133,12 @@ const FullDayLeaveScreen = ({ navigation }) => {
         }
     }, [leaveDurations]);
 
-    useEffect(() => {
-        const today = new Date();
-        setFromDate(today); // sets today's date on initial load
-        setToDate(today);
-        setLeaveDays("1.00");
-    }, []);
+    // useEffect(() => {
+    //     const today = new Date();
+    //     setFromDate(today); // sets today's date on initial load
+    //     setToDate(today);
+    //     setLeaveDays("1.00");
+    // }, []);
 
 
     // Function to Retrieve `Empemail` and IdEmployee from AsyncStorage
@@ -132,13 +147,25 @@ const FullDayLeaveScreen = ({ navigation }) => {
             const jsonValue = await AsyncStorage.getItem('UserData');
             if (jsonValue !== null) {
                 const userData = JSON.parse(jsonValue);
-                setEmpEmail(userData.Empemail); // Set Empemail in State
-                setIDEmployee(userData.IDEmployee);
+                const businessID = userData.BusinessID;
 
-                // Log in console
-                console.log("Retrieved User Data:");
-                console.log("Empemail:", userData.Empemail);
-                console.log("IDEmployee:", userData.IDEmployee);
+                setEmpEmail(userData.Empemail);
+                setIDEmployee(userData.IDEmployee);
+                setBusinessId(businessID);
+
+                // 🔹 Set dynamic companyId based on BusinessID
+                const normalizedBusinessID = businessID?.trim()?.toUpperCase();
+
+                if (normalizedBusinessID === 'GENI-QST-536') {
+                    setCompanyId(50);
+                } else if (normalizedBusinessID === 'MEND-PVTL-890') {
+                    setCompanyId(1);
+                } else {
+                    setCompanyId(0);
+                    Alert.alert('Unknown Business', `Unsupported Business ID: ${normalizedBusinessID}`);
+                }
+
+                console.log("BusinessId:", normalizedBusinessID);
             } else {
                 Alert.alert('Error', 'User data not found.');
             }
@@ -146,6 +173,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
             console.error('Error retrieving data:', error);
         }
     };
+
 
     // Load `Empemail` when the screen loads
     // useEffect(() => {
@@ -155,8 +183,8 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
 
     const fetchLeaveBalance = async (email, year) => {
-        const companyId = 1;
-        const url = `https://centralizedapi.iecsl.in/api/centralizedAPI/RetrieveLeaveBalance?companyId=${companyId}&email=${email}&year=${year}`;
+        //const companyId = 50;
+        const url = `${Hrms_URL}RetrieveLeaveBalance?companyId=${companyId}&email=${email}&year=${year}`;
 
         console.log("API Link:", url);
 
@@ -185,16 +213,24 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
     const handleLeaveTypeChange = (value) => {
         setLeaveType(value);
-
-        // Find balance for selected leave type
         const selectedLeave = leaveBalance.find(item => item.value === value);
         setSelectedBalance(selectedLeave ? selectedLeave.balance : null);
+
+        const normalizedBusinessId = businessId?.trim()?.toUpperCase();
+        if (!(normalizedBusinessId === 'GENI-QST-536' && value === '2')) {
+            setSelectedEncashment('0');
+        }
+        console.log("BusinessId Check:", businessId?.trim()?.toUpperCase());
+        console.log("LeaveType Check:", value);
+
     };
+
+
 
     /**  Fetch Leave Durations from API */
     const fetchLeaveDurations = async () => {
         try {
-            const apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/LeaveDuration?companyId=${companyId}`;
+            const apiUrl = `${Hrms_URL}LeaveDuration?companyId=${companyId}`;
             console.log("Fetching from API:", apiUrl); // Logs the API URL
 
             const response = await fetch(apiUrl);
@@ -220,11 +256,11 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
     /** 🔹 Fetch API Data After Email is Retrieved */
     useEffect(() => {
-        if (empEmail) {
+        if (empEmail && companyId !== null) {
             fetchLeaveBalance(empEmail, currentYear);
             fetchLeaveDurations();
         }
-    }, [empEmail]);
+    }, [empEmail, companyId]);
 
     // Fetch leave durations from the API
     // useEffect(() => {
@@ -249,29 +285,38 @@ const FullDayLeaveScreen = ({ navigation }) => {
             return;
         }
 
-        const companyId = 1; // Hardcoded company ID
+        // const companyId = 50; // Hardcoded company ID
+        //const selectedEncashment = (selectedEncashment); // Selected Encashment
+        console.log("Selected Encashment:", selectedEncashment);
         const email = (empEmail); // Employee Email from AsyncStorage
         const leaveId = encodeURIComponent(leaveType); // Leave ID (assuming it's the selected leaveType)
         const formattedStartDate = moment(fromDate).format("MM-DD-YYYY"); // Format start date
         const formattedEndDate = toDate ? moment(toDate).format("MM-DD-YYYY") : formattedStartDate; // Format end date or use startDate
         const encodedReason = encodeURIComponent(reason); // Encode reason to prevent API errors
         setLeaveApplied(true); // Mark as applied
-         
+
         let apiUrl = "";
         console.log("Raw Email:", empEmail);
         // **Call the API based on Leave Duration selection**
         if (leaveDuration === "F") {
-            // API for Full Day Leave
-            apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/FullDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&endDate=${formattedEndDate}&email=${email}&leaveReason=${encodedReason}`;
+            if (businessId?.toString().trim().toUpperCase() === 'GENI-QST-536') {
+                apiUrl = `${Hrms_URL}FullDayLeaveApplyGeniquest?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&endDate=${formattedEndDate}&email=${email}&leaveReason=${encodedReason}&isEncashed=${selectedEncashment}`;
+                console.log("Full Day Leave API URL for Geniquest:", apiUrl); // Debugging
+            } else {
+                // API for Full Day Leave
+                apiUrl = `${Hrms_URL}FullDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&endDate=${formattedEndDate}&email=${email}&leaveReason=${encodedReason}`;
+                console.log("Full Day Leave API URL:", apiUrl); // Debugging
+            }
+
         } else if (leaveDuration === "H") {
             // API for Half Day Leave
-            apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/HalfDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&email=${email}&leaveReason=${encodedReason}`;
+            apiUrl = `${Hrms_URL}HalfDayLeaveApply?companyId=${companyId}&leaveId=${leaveId}&startDate=${formattedStartDate}&email=${email}&leaveReason=${encodedReason}`;
         } else {
             Alert.alert("Invalid Selection", "Please select a valid Leave Duration.", [{ text: "OK" }]);
             return;
         }
 
-        console.log("API Request URL:", apiUrl); // Debugging
+        // console.log("API Request URL:", apiUrl); // Debugging
 
         try {
             const response = await fetch(apiUrl, {
@@ -296,7 +341,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
                     // ✅ **Show full leave details in the modal**
                     setLeaveSummary(responseData[0]);
                     setShowSummary(true);
-                    
+
                 } else {
                     //  **Show only the Status text in an alert**
                     Alert.alert("Leave Application Failed", status, [{ text: "OK" }]);
@@ -324,29 +369,35 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
     // Function to Save Data IN HRMS  Database 
     const handleSave = async () => {
-        const companyId = 1; // Hardcoded Company ID
-        const email = empEmail;  // Employee Email from AsyncStorage
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
+        const FinancialYear = `${currentYear}-${nextYear}`;
+        const email = empEmail;
         const leaveTypeName = leaveSummary.leavetype;
         const leaveDurationName = leaveSummary.duration;
-        // Format Dates for API in "MM-DD-YYYY" format
+
         const formattedFromDate = moment(leaveSummary.leavestartdate, "MM-DD-YYYY").format("MM-DD-YYYY");
         const formattedToDate = moment(leaveSummary.leaveenddate, "MM-DD-YYYY").format("MM-DD-YYYY");
         const prefixFromDate = moment(leaveSummary.prefixfromdate, "MM-DD-YYYY").format("MM-DD-YYYY");
         const suffixToDate = moment(leaveSummary.sufixtodate, "MM-DD-YYYY").format("MM-DD-YYYY");
         const Applicationame = `ieCRM_Mobile - ${device}`;
-
-        // Ensure noOfDays is formatted correctly (e.g., 2.00)
         const formattedNoOfDays = leaveSummary.noofdays;
 
-        // Construct API URL with parameters
-        const apiUrl = `https://centralizedapi.iecsl.in/api/centralizedAPI/ApplyLeave?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}`
-        console.log("API Request URL:", apiUrl); // Debugging
+        let apiUrl = ""; // ✅ Declare apiUrl outside
 
+        if (businessId?.toString().trim().toUpperCase() === 'GENI-QST-536') {
+            apiUrl = `${Hrms_URL}ApplyLeaveGeniquest?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}&FinancialYear=${FinancialYear}&isEncashed=${selectedEncashment}`;
 
+            console.log("API Request URL for Geniquest:", apiUrl);
+        } else {
+            apiUrl = `${Hrms_URL}ApplyLeave?companyId=${companyId}&email=${email}&leaveType=${leaveTypeName}&fromDate=${formattedFromDate}&toDate=${formattedToDate}&noOfDays=${formattedNoOfDays}&leaveReason=${encodeURIComponent(reason)}&duration=${leaveDurationName}&suffixToDate=${suffixToDate}&prefixFromDate=${prefixFromDate}&applicationType=${Applicationame}`;
+
+            console.log("API Request URL:", apiUrl);
+        }
 
         try {
             const response = await fetch(apiUrl, {
-                method: 'POST', // Use POST request
+                method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -358,31 +409,30 @@ const FullDayLeaveScreen = ({ navigation }) => {
             }
 
             const responseData = await response.json();
-            console.log("API Response:", responseData); // Debugging
+            console.log("API Response:", responseData);
 
-            // ✅ **Handle Empty Message Case**
             if (responseData.length > 0) {
                 const message = responseData[0].Message;
                 if (!message || message.trim() === "") {
                     Alert.alert("Leave Submission Failed", "You Already Applied for the Leave", [{ text: "OK" }]);
-                    await handleSaveCrm("Error"); // 👈 Pass Error if duplicate
+                    await handleSaveCrm("Error");
                 } else {
                     Alert.alert("Leave Submitted", message, [{ text: "OK" }]);
-                    await handleSaveCrm("Success"); // 👈 Pass Success
+                    await handleSaveCrm("Success");
                 }
             } else {
                 Alert.alert("Error", "Unexpected response from server.", [{ text: "OK" }]);
                 await handleSaveCrm("Error");
             }
 
-            setShowSummary(false); // Close modal after saving
-            resetForm(); // Reset form fields
+            setShowSummary(false);
+            resetForm();
         } catch (error) {
             console.error("Error submitting leave:", error);
             Alert.alert("Error", "Failed to submit leave request. Please try again.", [{ text: "OK" }]);
-            //await handleSaveCrm("Error");
         }
     };
+
 
     // Function To Save Data In CRM Database 
     const handleSaveCrm = async (status) => {
@@ -401,7 +451,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
         // Ensure `noOfDays` is formatted correctly (e.g., 2.00)
         const formattedNoOfDays = leaveSummary.noofdays;
         const Remarks = leaveSummary.leavereason;
-        const Businessid = "MEND-PVTL-890";
+        const Businessid = businessId;
 
         // Construct Request Payload
         const requestBody = {
@@ -419,7 +469,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
         };
 
         // Construct API URL
-        const apiUrl = `https://crmfieldforceapi.mendine.co.in/api/crm/LeaveApplication/Save`;
+        const apiUrl = `${BASE_URL}LeaveApplication/Save`;
 
         console.log("API Request URL CRM :", apiUrl);
         console.log("Request Body:", JSON.stringify(requestBody)); // Debugging
@@ -459,7 +509,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
 
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAwareLayout>
             <ImageBackground
                 source={require('../images/bg2.png')}
                 style={styles.background}
@@ -470,7 +520,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
                     contentContainerStyle={styles.scrollContainer}
                     keyboardShouldPersistTaps="handled"
                     enableOnAndroid={true}
-                    extraScrollHeight={Platform.OS === 'ios' ? 100 : 200}
+                    extraScrollHeight={Platform.OS === 'ios' ? 100 : 300}
                     enableAutomaticScroll={true}
                     ref={scrollRef}
                 >
@@ -509,15 +559,24 @@ const FullDayLeaveScreen = ({ navigation }) => {
                         <Text style={styles.label}>Select Leave Type</Text>
 
                         <View style={styles.dropdownContainer}>
-                            {/* Picker for selecting Leave Type */}
-                            <View style={styles.dropdown}>
-                                <Picker selectedValue={leaveType} onValueChange={handleLeaveTypeChange} style={styles.picker}>
-                                    <Picker.Item label="Select Leave Type" value="" />
-                                    {leaveBalance.map((item) => (
-                                        <Picker.Item key={item.value} label={item.label} value={item.value} />
-                                    ))}
-                                </Picker>
-                            </View>
+                            {/* Dropdown for selecting Leave Type */}
+                            <Dropdown
+                                style={styles.picker1}
+                                containerStyle={{ borderRadius: 8 }}
+                                data={leaveBalance} // Should be [{ label, value, balance }]
+                                labelField="label"
+                                valueField="value"
+                                placeholder="Select Leave Type"
+                                search
+                                searchPlaceholder="Search leave type..."
+                                value={leaveType}
+                                onChange={item => {
+                                    handleLeaveTypeChange(item.value);
+
+                                    const selected = leaveBalance.find(l => l.value === item.value);
+                                    setSelectedBalance(selected ? selected.balance : null);
+                                }}
+                            />
 
                             {/* Display Leave Balance beside the selected Leave Type */}
                             {selectedBalance !== null && (
@@ -576,6 +635,28 @@ const FullDayLeaveScreen = ({ navigation }) => {
                             placeholderTextColor="#999"
                             editable={false}
                         />
+
+                        {businessId?.toString().trim().toUpperCase() === 'GENI-QST-536' && leaveType?.toString() === '2' && (
+                            <>
+                                <Text style={styles.label}>Encashment</Text>
+                                <Dropdown
+                                    style={styles.picker1}
+                                    containerStyle={{ borderRadius: 8 }}
+                                    data={[
+                                        { label: 'YES', value: '1' },
+                                        { label: 'NO', value: '0' },
+                                    ]}
+                                    labelField="label"
+                                    valueField="value"
+                                    placeholder="Select Option"
+                                    search={false}
+                                    value={selectedEncashment}
+                                    onChange={item => setSelectedEncashment(item.value)}
+                                />
+                            </>
+                        )}
+
+
 
                         {/* Reason Input */}
                         <Text style={styles.label}>Reason</Text>
@@ -639,7 +720,7 @@ const FullDayLeaveScreen = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView >
+        </KeyboardAwareLayout>
     );
 };
 
@@ -649,6 +730,7 @@ const styles = StyleSheet.create({
     background: {
         height: Dimensions.get('window').height,
         width: Dimensions.get('window').width,
+        paddingRight: 20,
     },
     scrollContainer: {
         flexGrow: 1,
@@ -679,6 +761,27 @@ const styles = StyleSheet.create({
         color: '#000',
         marginTop: 5,
         textAlign: 'left',
+    },
+    picker1: {
+        fontSize: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderWidth: 1.3,
+        borderColor: '#0E7777',
+        borderRadius: 10,
+        backgroundColor: '#fff',
+        color: '#000000',
+        marginBottom: 15,
+        paddingRight: 30,
+
+        // Shadow for iOS
+        shadowColor: '#0E7777',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+
+        // Shadow for Android
+        elevation: 5,
     },
     dateButton: {
         backgroundColor: '#fff',
@@ -775,7 +878,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: 'green',
-        marginTop: 5,
+        //marginTop: 5,
     },
     headerContainer: {
         position: 'absolute',

@@ -7,8 +7,9 @@ import {
   ImageBackground,
   Alert,
   BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {TextInput} from 'react-native-paper';
 import {Dropdown} from 'react-native-element-dropdown';
 import {MultipleSelectList} from 'react-native-dropdown-select-list';
@@ -26,6 +27,7 @@ import DeviceInfo from 'react-native-device-info';
 import NetInfo from '@react-native-community/netinfo';
 import {BASE_URL} from '@env';
 import axios from 'axios';
+import {useFocusEffect} from '@react-navigation/native';
 
 //database connection
 const db = openDatabase(
@@ -461,7 +463,7 @@ const UnlistedScreen = props => {
       if (checkEnabled === false) {
         Alert.alert('GPS Not Active');
         BackHandler.exitApp();
-        navigation.navigate('AppNavScreen');
+        props.navigation.navigate('AppNavScreen');
       } else if (checkEnabled === true) {
         //Alert.alert('GPS Active');
         //getOneTimeLocation();
@@ -670,7 +672,7 @@ const UnlistedScreen = props => {
             text: 'OK',
             onPress: () => {
               BackHandler.exitApp(); // This will close the app
-              navigation.navigate('AppNavScreen');
+              props.navigation.navigate('AppNavScreen');
             },
           },
         ],
@@ -1489,241 +1491,108 @@ const UnlistedScreen = props => {
       }
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        props.navigation.navigate('AppNavDCRScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [props.navigation]),
+  );
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
-      showsVerticalScrollIndicator={false}>
-      <ImageBackground
-        source={require('../images/bg2.png')}
-        style={{height: Dimensions.get('window').height}}>
-        {useManagerAccess ? (
-          <View style={{padding: 5, margin: 5}}>
-            <Dropdown
-              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-              placeholderStyle={style.placeholderStyle}
-              selectedTextStyle={style.selectedTextStyle}
-              inputSearchStyle={style.inputSearchStyle}
-              iconStyle={style.iconStyle}
-              data={useData}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder={!isFocus ? 'Customer Type' : '...'}
-              searchPlaceholder="Search Customer Type"
-              //value={wtdataLabel}
-              onFocus={() => setIsFocus(true)}
-              onBlur={() => setIsFocus(false)}
-              onChange={item => {
-                console.log(item.label);
-                setcustTLabel(item.label);
-                setcustTValue(item.value);
-                setIsFocus(false);
-                if (item.label === 'DOCTOR') {
-                  setshouldShowWT(true);
-                } else {
-                  setshouldShowWT(false);
-                }
-              }}
-            />
-            <View style={{marginTop: 5, paddingTop: 5}}>
-              <MultipleSelectList
-                setSelected={val => setusemVwtData(val)}
-                data={useMvisitWTDataSelected}
-                placeholder="Select Visit With"
-                label="Visit With"
-                //save="value"
-                save="key"
-                onSelect={() =>
-                  //console.log(usevisitWTData)
-                  multiSelectMVWT()
-                }
-                fontFamily="Roboto-Bold"
-                notFoundText="No Data Exists"
-                //badgeTextStyles={{color:'red'}}
-                badgeStyles={{backgroundColor: 'green'}}
-                labelStyles={{fontWeight: '800', color: 'black'}}
-              />
-            </View>
-            <Dropdown
-              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-              placeholderStyle={style.placeholderStyle}
-              selectedTextStyle={style.selectedTextStyle}
-              inputSearchStyle={style.inputSearchStyle}
-              iconStyle={style.iconStyle}
-              data={selectedMAreaData}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder={!isFocus ? 'Select Area' : '...'}
-              searchPlaceholder="Search..."
-              //value={wtdataLabel}
-              onFocus={() => setIsFocus(true)}
-              onBlur={() => setIsFocus(false)}
-              onChange={item => {
-                setareaValue(item.value);
-                setareaLabel(item.label);
-                // handleState(item.value);
-                setIsFocus(false);
-              }}
-            />
-
-            <TextInput
-              label="Name"
-              mode="outlined"
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={useName}
-              onChangeText={text => setName(text)}
-            />
-
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <TextInput
-                label="Mobile"
-                mode="outlined"
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={10}
-                value={useMobile}
-                keyboardType="numeric"
-                onChangeText={text => setMobile(text)}
-              />
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useQData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Select Qualification' : '...'}
-                    searchPlaceholder="Search..."
-                    //value={wtdataLabel}
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      setQValue(item.value);
-                      setQLabel(item.label);
-                      // handleState(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
-
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useSData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Select Speciality' : '...'}
-                    searchPlaceholder="Search..."
-                    //value={wtdataLabel}
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      setSValue(item.value);
-                      setSLabel(item.label);
-                      // handleState(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useCData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Category' : '...'}
-                    searchPlaceholder="Search"
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      console.log(item.label);
-                      setCLabel(item.label);
-                      setCValue(item.value);
-                      console.log(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <CustomButton
-                //label={'Save Customer and Move Next'}
-                label={'Save'}
-                onPress={() => saveCustomer()}
-              />
-            </View>
-          </View>
-        ) : (
-          <View style={{padding: 5, margin: 5}}>
-            <Dropdown
-              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-              placeholderStyle={style.placeholderStyle}
-              selectedTextStyle={style.selectedTextStyle}
-              inputSearchStyle={style.inputSearchStyle}
-              iconStyle={style.iconStyle}
-              data={useData}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder={!isFocus ? 'Customer Type' : '...'}
-              searchPlaceholder="Search Customer Type"
-              //value={wtdataLabel}
-              onFocus={() => setIsFocus(true)}
-              onBlur={() => setIsFocus(false)}
-              onChange={item => {
-                console.log(item.label);
-                setcustTLabel(item.label);
-                setcustTValue(item.value);
-                setIsFocus(false);
-                if (item.label === 'DOCTOR') {
-                  setshouldShowWT(true);
-                } else {
-                  setshouldShowWT(false);
-                }
-              }}
-            />
-            <View style={{marginTop: 5, paddingTop: 5}}>
+    <>
+      <StatusBar backgroundColor="#a9ddfaff" barStyle="light-content" />
+      <ScrollView
+        style={{flex: 1, backgroundColor: false, margin: 10}}
+        showsVerticalScrollIndicator={false}>
+        <ImageBackground
+          source={require('../images/bg2.png')}
+          style={{height: Dimensions.get('window').height}}>
+          {useManagerAccess ? (
+            <View
+              style={{
+                backgroundColor: '#ffffff',
+                padding: 8,
+                //margin: 8,
+                borderRadius: 14,
+                // 🟢 3D EFFECT BELOW
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 4},
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 8,
+                borderWidth: 0.5,
+                borderColor: '#e0e0e0',
+                //transform: [{ perspective: 800 }, { rotateX: '3deg' }, { rotateY: '-2deg' }],
+                transform:
+                  Platform.OS === 'android'
+                    ? [
+                        {perspective: 800},
+                        {rotateX: '3deg'},
+                        {rotateY: '-2deg'},
+                      ]
+                    : [], // ❗ No 3D transform on iOS
+              }}>
               <Dropdown
                 style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
                 iconStyle={style.iconStyle}
-                data={selectedAreaData}
+                data={useData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Customer Type' : '...'}
+                searchPlaceholder="Search Customer Type"
+                //value={wtdataLabel}
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  setcustTLabel(item.label);
+                  setcustTValue(item.value);
+                  setIsFocus(false);
+                  if (item.label === 'DOCTOR') {
+                    setshouldShowWT(true);
+                  } else {
+                    setshouldShowWT(false);
+                  }
+                }}
+              />
+              <View style={{marginTop: 5, paddingTop: 5}}>
+                <MultipleSelectList
+                  setSelected={val => setusemVwtData(val)}
+                  data={useMvisitWTDataSelected}
+                  placeholder="Select Visit With"
+                  label="Visit With"
+                  //save="value"
+                  save="key"
+                  onSelect={() =>
+                    //console.log(usevisitWTData)
+                    multiSelectMVWT()
+                  }
+                  fontFamily="Roboto-Bold"
+                  notFoundText="No Data Exists"
+                  //badgeTextStyles={{color:'red'}}
+                  badgeStyles={{backgroundColor: 'green'}}
+                  labelStyles={{fontWeight: '800', color: 'black'}}
+                />
+              </View>
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={selectedMAreaData}
                 search
                 maxHeight={300}
                 labelField="label"
@@ -1740,8 +1609,207 @@ const UnlistedScreen = props => {
                   setIsFocus(false);
                 }}
               />
+
+              <TextInput
+                label="Name"
+                mode="outlined"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={useName}
+                onChangeText={text => setName(text)}
+              />
+
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <TextInput
+                  label="Mobile"
+                  mode="outlined"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={10}
+                  value={useMobile}
+                  keyboardType="numeric"
+                  onChangeText={text => setMobile(text)}
+                />
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useQData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Select Qualification' : '...'}
+                      searchPlaceholder="Search..."
+                      //value={wtdataLabel}
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        setQValue(item.value);
+                        setQLabel(item.label);
+                        // handleState(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useSData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Select Speciality' : '...'}
+                      searchPlaceholder="Search..."
+                      //value={wtdataLabel}
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        setSValue(item.value);
+                        setSLabel(item.label);
+                        // handleState(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useCData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Category' : '...'}
+                      searchPlaceholder="Search"
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        console.log(item.label);
+                        setCLabel(item.label);
+                        setCValue(item.value);
+                        console.log(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <CustomButton
+                  //label={'Save Customer and Move Next'}
+                  label={'Save'}
+                  onPress={() => saveCustomer()}
+                />
+              </View>
             </View>
-            {/* <View style={{marginTop: 2, paddingTop: 2}}>
+          ) : (
+            <View
+              style={{
+                backgroundColor: '#ffffff',
+                padding: 8,
+                //margin: 8,
+                borderRadius: 14,
+                // 🟢 3D EFFECT BELOW
+                shadowColor: '#000',
+                shadowOffset: {width: 0, height: 4},
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 8,
+                borderWidth: 0.5,
+                borderColor: '#e0e0e0',
+                transform:
+                  Platform.OS === 'android'
+                    ? [
+                        {perspective: 800},
+                        {rotateX: '3deg'},
+                        {rotateY: '-2deg'},
+                      ]
+                    : [], // ❗ No 3D transform on iOS
+                // transform: [
+                //   {perspective: 800},
+                //   {rotateX: '3deg'},
+                //   {rotateY: '-2deg'},
+                // ],
+              }}>
+              <Dropdown
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                placeholderStyle={style.placeholderStyle}
+                selectedTextStyle={style.selectedTextStyle}
+                inputSearchStyle={style.inputSearchStyle}
+                iconStyle={style.iconStyle}
+                data={useData}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder={!isFocus ? 'Customer Type' : '...'}
+                searchPlaceholder="Search Customer Type"
+                //value={wtdataLabel}
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                onChange={item => {
+                  console.log(item.label);
+                  setcustTLabel(item.label);
+                  setcustTValue(item.value);
+                  setIsFocus(false);
+                  if (item.label === 'DOCTOR') {
+                    setshouldShowWT(true);
+                  } else {
+                    setshouldShowWT(false);
+                  }
+                }}
+              />
+              <View style={{marginTop: 5, paddingTop: 5}}>
+                <Dropdown
+                  style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                  placeholderStyle={style.placeholderStyle}
+                  selectedTextStyle={style.selectedTextStyle}
+                  inputSearchStyle={style.inputSearchStyle}
+                  iconStyle={style.iconStyle}
+                  data={selectedAreaData}
+                  search
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={!isFocus ? 'Select Area' : '...'}
+                  searchPlaceholder="Search..."
+                  //value={wtdataLabel}
+                  onFocus={() => setIsFocus(true)}
+                  onBlur={() => setIsFocus(false)}
+                  onChange={item => {
+                    setareaValue(item.value);
+                    setareaLabel(item.label);
+                    // handleState(item.value);
+                    setIsFocus(false);
+                  }}
+                />
+              </View>
+              {/* <View style={{marginTop: 2, paddingTop: 2}}>
           <TextInput
             label="Division"
             mode="outlined"
@@ -1751,138 +1819,139 @@ const UnlistedScreen = props => {
             editable={false}
           />
         </View> */}
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <TextInput
-                label="Name"
-                mode="outlined"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={useName}
-                onChangeText={text => setName(text)}
-              />
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <TextInput
-                label="Mobile"
-                mode="outlined"
-                autoCapitalize="none"
-                autoCorrect={false}
-                maxLength={10}
-                value={useMobile}
-                keyboardType="numeric"
-                onChangeText={text => setMobile(text)}
-              />
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useQData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Select Qualification' : '...'}
-                    searchPlaceholder="Search..."
-                    //value={wtdataLabel}
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      setQValue(item.value);
-                      setQLabel(item.label);
-                      // handleState(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <TextInput
+                  label="Name"
+                  mode="outlined"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  value={useName}
+                  onChangeText={text => setName(text)}
+                />
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <TextInput
+                  label="Mobile"
+                  mode="outlined"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={10}
+                  value={useMobile}
+                  keyboardType="numeric"
+                  onChangeText={text => setMobile(text)}
+                />
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useQData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Select Qualification' : '...'}
+                      searchPlaceholder="Search..."
+                      //value={wtdataLabel}
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        setQValue(item.value);
+                        setQLabel(item.label);
+                        // handleState(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
 
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useSData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Select Speciality' : '...'}
-                    searchPlaceholder="Search..."
-                    //value={wtdataLabel}
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      setSValue(item.value);
-                      setSLabel(item.label);
-                      // handleState(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
-            </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useSData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Select Speciality' : '...'}
+                      searchPlaceholder="Search..."
+                      //value={wtdataLabel}
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        setSValue(item.value);
+                        setSLabel(item.label);
+                        // handleState(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
 
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              {shouldShowWT ? (
-                <View style={{marginTop: 2, paddingTop: 2}}>
-                  <Dropdown
-                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                    placeholderStyle={style.placeholderStyle}
-                    selectedTextStyle={style.selectedTextStyle}
-                    inputSearchStyle={style.inputSearchStyle}
-                    iconStyle={style.iconStyle}
-                    data={useCData}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Category' : '...'}
-                    searchPlaceholder="Search"
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      console.log(item.label);
-                      setCLabel(item.label);
-                      setCValue(item.value);
-                      console.log(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-              ) : null}
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                {shouldShowWT ? (
+                  <View style={{marginTop: 2, paddingTop: 2}}>
+                    <Dropdown
+                      style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                      placeholderStyle={style.placeholderStyle}
+                      selectedTextStyle={style.selectedTextStyle}
+                      inputSearchStyle={style.inputSearchStyle}
+                      iconStyle={style.iconStyle}
+                      data={useCData}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Category' : '...'}
+                      searchPlaceholder="Search"
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        console.log(item.label);
+                        setCLabel(item.label);
+                        setCValue(item.value);
+                        console.log(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                ) : null}
+              </View>
+              <View style={style.wrapper}>
+                <CheckBox
+                  title="Approval Required"
+                  checked={checked}
+                  onPress={() => {
+                    setChecked(!checked);
+                    //checkBoxVal(!checked);
+                  }}
+                />
+              </View>
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <CustomButton
+                  //label={'Save Customer and Move Next'}
+                  label={'Save'}
+                  onPress={() => saveCustomer()}
+                />
+              </View>
             </View>
-            <View style={style.wrapper}>
-              <CheckBox
-                title="Approval Required"
-                checked={checked}
-                onPress={() => {
-                  setChecked(!checked);
-                  //checkBoxVal(!checked);
-                }}
-              />
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <CustomButton
-                //label={'Save Customer and Move Next'}
-                label={'Save'}
-                onPress={() => saveCustomer()}
-              />
-            </View>
-          </View>
-        )}
-      </ImageBackground>
-    </ScrollView>
+          )}
+        </ImageBackground>
+      </ScrollView>
+    </>
   );
 };
 

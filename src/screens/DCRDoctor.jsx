@@ -13,6 +13,8 @@ import {
   LogBox,
   BackHandler,
   TextInput,
+  Modal,
+  Button,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {openDatabase} from 'react-native-sqlite-storage';
@@ -35,6 +37,7 @@ import NetInfo from '@react-native-community/netinfo';
 import CustomDCR from '../components/custom/CustomDCR';
 import ProgressDialog from '../components/custom/ProgressDialog';
 import Snackbar from 'react-native-snackbar';
+import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 
 const db = openDatabase(
   {
@@ -71,6 +74,7 @@ const DCRDoctor = ({navigation}) => {
   const [useMAreaLabel, setMAreaLabel] = useState('');
   const [gamesTab, setGamesTab] = useState(1);
   const [fStageLabel, setfStageLabel] = useState([]);
+  const [fStageLabelProd, setfStageLabelProd] = useState([]);
   const [sampleData, setsampleData] = useState([]);
   const [sampleQtyData, setsampleQtyData] = useState([]);
   const [giftQtyData, setgiftQtyDataData] = useState([]);
@@ -106,6 +110,11 @@ const DCRDoctor = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [selectedMArea, setSelectedMArea] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [doctorLocation, setDoctorLocation] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [docName, setDocName] = useState('');
+  const [currentLocation, setCurrentLocation] = useState(null); // Current location of the user
 
   var cdate = moment().format('D/MMM/YYYY');
 
@@ -1249,16 +1258,30 @@ const DCRDoctor = ({navigation}) => {
                 });
               }
 
-              dataProduct.map(function (value) {
-                ProdID.push(value.IDProduct);
-              });
+              // dataProduct.map(function (value) {
+              //   ProdID.push(value.IDProduct);
+              // });
+
+              // dataProduct.map(function (value) {
+              //   curstageID.push(value.IDStage);
+              // });
+
+              // fStageLabel.map(function (valueMisc) {
+              //   fStatus.push(valueMisc);
+              // });
 
               dataProduct.map(function (value) {
-                curstageID.push(value.IDStage);
+                curstageID.push({IDStage: value.IDStage});
+                //curstageID.push(value.IDStage);
+              });
+              fStageLabelProd.map(function (value) {
+                ProdID.push({IDProduct: value});
+                // ProdID.push(value.IDProduct);
               });
 
               fStageLabel.map(function (valueMisc) {
-                fStatus.push(valueMisc);
+                fStatus.push({IDMisc: valueMisc});
+                //fStatus.push(valueMisc);
               });
               const data_api = {
                 dcrDate: cdate,
@@ -1389,24 +1412,38 @@ const DCRDoctor = ({navigation}) => {
                   idRemarks.push(value.key);
                 });
               }
-              dataProduct.map(function (value) {
-                //ProdID.push({IDProduct: value.IDProduct});
-                ProdID.push(value.IDProduct);
-              });
+              // dataProduct.map(function (value) {
+              //   //ProdID.push({IDProduct: value.IDProduct});
+              //   ProdID.push(value.IDProduct);
+              // });
 
-              dataProduct.map(function (value) {
-                //curstageID.push({IDStage: value.IDStage});
-                curstageID.push(value.IDStage);
-              });
+              // dataProduct.map(function (value) {
+              //   //curstageID.push({IDStage: value.IDStage});
+              //   curstageID.push(value.IDStage);
+              // });
 
-              fStageLabel.map(function (valueMisc) {
-                //fStatus.push({IDMisc: valueMisc});
-                fStatus.push(valueMisc);
-              });
+              // fStageLabel.map(function (valueMisc) {
+              //   //fStatus.push({IDMisc: valueMisc});
+              //   fStatus.push(valueMisc);
+              // });
               // if (fStatus.length === 0) {
               //   Alert.alert('Select Final Stage');
               // }
               // else {
+
+              dataProduct.map(function (value) {
+                curstageID.push({IDStage: value.IDStage});
+                //curstageID.push(value.IDStage);
+              });
+              fStageLabelProd.map(function (value) {
+                ProdID.push({IDProduct: value});
+                // ProdID.push(value.IDProduct);
+              });
+
+              fStageLabel.map(function (valueMisc) {
+                fStatus.push({IDMisc: valueMisc});
+                //fStatus.push(valueMisc);
+              });
               const data_api = {
                 dcrDate: cdate,
                 businessID: useBusinessID,
@@ -1564,14 +1601,28 @@ const DCRDoctor = ({navigation}) => {
           });
         }
 
-        dataProduct.map(function (value) {
-          ProdID.push({IDProduct: value.IDProduct});
-          //ProdID.push(value.IDProduct);
-        });
+        // dataProduct.map(function (value) {
+        //   ProdID.push({IDProduct: value.IDProduct});
+        //   //ProdID.push(value.IDProduct);
+        // });
+
+        // dataProduct.map(function (value) {
+        //   curstageID.push({IDStage: value.IDStage});
+        //   //curstageID.push(value.IDStage);
+        // });
+
+        // fStageLabel.map(function (valueMisc) {
+        //   fStatus.push({IDMisc: valueMisc});
+        //   //fStatus.push(valueMisc);
+        // });
 
         dataProduct.map(function (value) {
           curstageID.push({IDStage: value.IDStage});
           //curstageID.push(value.IDStage);
+        });
+        fStageLabelProd.map(function (value) {
+          ProdID.push({IDProduct: value});
+          // ProdID.push(value.IDProduct);
         });
 
         fStageLabel.map(function (valueMisc) {
@@ -1712,6 +1763,10 @@ const DCRDoctor = ({navigation}) => {
           curstageID.push({IDStage: value.IDStage});
           //curstageID.push(value.IDStage);
         });
+        // fStageLabelProd.map(function (value) {
+        //   ProdID.push({IDProduct: value});
+        //   // ProdID.push(value.IDProduct);
+        // });
 
         fStageLabel.map(function (valueMisc) {
           fStatus.push({IDMisc: valueMisc});
@@ -1930,7 +1985,7 @@ const DCRDoctor = ({navigation}) => {
         let result = await fetch(returl);
         result = await result.json();
         console.log(result);
-        console.log(returl);
+        console.log('returl', returl);
         setdoctorData(result);
       } else {
         const query =
@@ -1980,8 +2035,18 @@ const DCRDoctor = ({navigation}) => {
   });
 
   const calculateDistane = (apiLat, apiLong, docCode, docName) => {
-    console.log(apiLat, apiLong);
-    console.log(currentLatitude, currentLongitude);
+    setDocName(docName);
+    setDocCode(docCode);
+    console.log('API Latitude, Longitude:', apiLat, apiLong);
+    console.log(
+      'Current Latitude, Longitude:',
+      currentLatitude,
+      currentLongitude,
+    );
+    setCurrentLocation({
+      Latitude: parseFloat(currentLatitude),
+      Longitude: parseFloat(currentLongitude), // Convert longitude to number
+    });
     const R = 6371; // Radius of the Earth in kilometers
     const dLat = deg2rad(apiLat - currentLatitude);
     const dLon = deg2rad(apiLong - currentLongitude);
@@ -1997,13 +2062,21 @@ const DCRDoctor = ({navigation}) => {
     const distance = d * 1000;
     const roundedNumber = Math.round(distance);
     console.log(distance);
+    setDistance(distance);
     //console.warn(distance);
     //if (distance > 100) {
     if (distance > useDoctorGeofencing) {
-      Alert.alert(
-        'Distance Alert',
-        `Distance exceeds ${useDoctorGeofencing} meters.\nYour distance: ${roundedNumber} meter\nDoc Code: ${docCode}\nDoc Name: ${docName}`,
-      );
+      setModalVisible(true); // Show the modal when the distance exceeds the limit
+      // Ensure latitude and longitude are numbers before setting the state
+      setDoctorLocation({
+        latitude: parseFloat(apiLat), // Convert latitude to number
+        longitude: parseFloat(apiLong), // Convert longitude to number
+      });
+
+      // Alert.alert(
+      //   'Distance Alert',
+      //   `Distance exceeds ${useDoctorGeofencing} meters.\nYour distance: ${roundedNumber} meter\nDoc Code: ${docCode}\nDoc Name: ${docName}`,
+      // );
       setSelectedProduct('');
     } else {
       // Alert.alert(
@@ -2011,6 +2084,12 @@ const DCRDoctor = ({navigation}) => {
       // );
     }
   };
+  // Log the updated doctor location after state change
+  useEffect(() => {
+    if (doctorLocation) {
+      console.log('Doctor Location:', doctorLocation);
+    }
+  }, [doctorLocation]); // This will log the updated location whenever it changes
 
   return (
     <ScrollView
@@ -2210,10 +2289,11 @@ const DCRDoctor = ({navigation}) => {
                                 item.Name,
                               );
                             }
-                            console.warn(item.IDDoctor);
+                            console.log(item.Name);
                             doctorWiseProductListAPI(item.IDDoctor);
                             doctorWiseAreaListAPI(item.IDDoctor);
                             setDocCode(item.IDDoctor);
+                            setDocName(item.Name);
                           }}>
                           <Text style={{fontWeight: '600'}}>{item.Name}</Text>
                         </TouchableOpacity>
@@ -3047,6 +3127,42 @@ const DCRDoctor = ({navigation}) => {
                                   //console.warn('Hello');
                                   setfStageLabel([...fStageLabel, item.value]);
                                 }
+                                // if (fStageLabel.includes(dataItem.IDStage)) {
+                                //   //console.warn('Hi');
+                                //   setfStageLabel(
+                                //     fStageLabel.filter(
+                                //       dataItem => dataItem !== dataItem.IDStage,
+                                //     ),
+                                //   );
+                                // } else {
+                                //   // Item is not selected, so add it to the selectedItems array
+                                //   //setSelectedItems([...selectedItems, itemId]);
+                                //   //console.warn('Hello');
+                                //   setfStageLabel([
+                                //     ...fStageLabel,
+                                //     dataItem.IDStage,
+                                //   ]);
+                                // }
+
+                                // if (
+                                //   fStageLabelProd.includes(dataItem.IDProduct)
+                                // ) {
+                                //   //console.warn('Hi');
+                                //   setfStageLabelProd(
+                                //     fStageLabelProd.filter(
+                                //       dataItem =>
+                                //         dataItem !== dataItem.IDProduct,
+                                //     ),
+                                //   );
+                                // } else {
+                                //   // Item is not selected, so add it to the selectedItems array
+                                //   //setSelectedItems([...selectedItems, itemId]);
+                                //   //console.warn('Hello');
+                                //   setfStageLabelProd([
+                                //     ...fStageLabelProd,
+                                //     dataItem.IDProduct,
+                                //   ]);
+                                // }
                                 setIsFocus(false);
                               }}
                             />
@@ -3062,6 +3178,58 @@ const DCRDoctor = ({navigation}) => {
         ) : null}
       </View>
       <ProgressDialog visible={loading} message="Loading, please wait..." />
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={style.modalContainer}>
+          <View style={style.modalContent}>
+            <Text style={style.modalTitle}>Distance Alert</Text>
+            <Text style={style.modalText}>
+              Distance exceeds {useDoctorGeofencing} meters.
+            </Text>
+            <Text style={style.distanceText}>
+              Distance: {distance != null ? distance.toFixed(2) : '0.00'} meters
+            </Text>
+            <Text style={style.textLabel}>Doctor Code: {docCode}</Text>
+            <Text style={style.textLabel}>Doctor Name: {docName}</Text>
+            <Text style={style.textLabel}>
+              Doctor Location:{' '}
+              {`Latitude: ${doctorLocation?.latitude}, Longitude: ${doctorLocation?.longitude}`}
+            </Text>
+
+            {/* Display Doctor Location on Google Map */}
+            {doctorLocation &&
+              doctorLocation.latitude &&
+              doctorLocation.longitude && (
+                <MapView
+                  provider={PROVIDER_GOOGLE}
+                  style={style.mapView}
+                  region={{
+                    latitude: doctorLocation.latitude,
+                    longitude: doctorLocation.longitude,
+                    latitudeDelta: 0.015,
+                    longitudeDelta: 0.0121,
+                  }}
+                  showsUserLocation={true} // Show user location on the map
+                  followsUserLocation={true} // Automatically center map on user's location
+                >
+                  <Marker
+                    coordinate={doctorLocation}
+                    title="Doctor's Location"
+                  />
+                </MapView>
+              )}
+          </View>
+
+          {/* Close Button */}
+          <View style={style.closeButtonContainer}>
+            <Button title="Close" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -3207,18 +3375,7 @@ const style = StyleSheet.create({
     padding: 10, // Inner padding
     fontSize: 16,
   },
-  modalContainer: {
-    width: 350,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 10,
-    elevation: 5,
-  },
+
   searchBar: {
     height: 40,
     borderColor: '#ccc',
@@ -3226,5 +3383,55 @@ const style = StyleSheet.create({
     borderRadius: 5,
     margin: 10,
     paddingLeft: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent background
+    padding: 20,
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12, // Rounded corners
+    justifyContent: 'space-between',
+    flex: 1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 10,
+    //textAlign: 'center',
+  },
+  distanceText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+    textAlign: 'left',
+    color: 'red',
+  },
+  textLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+    textAlign: 'Left',
+  },
+  mapView: {
+    width: '100%',
+    height: 400, // Adjusted height for the map to make it bigger
+    marginVertical: 20,
+    borderRadius: 10,
+  },
+  closeButtonContainer: {
+    marginTop: 'auto', // Push the button to the bottom
+    marginBottom: 10, // Space from the bottom
+    width: '90%',
+    padding: 5,
   },
 });

@@ -11,23 +11,24 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import Geolocation from '@react-native-community/geolocation';
-import { Dropdown } from 'react-native-element-dropdown';
-import { TextInput } from 'react-native-paper';
+import {Dropdown} from 'react-native-element-dropdown';
+import {TextInput} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { MultipleSelectList } from 'react-native-dropdown-select-list';
+import {MultipleSelectList} from 'react-native-dropdown-select-list';
 import CustomButton from '../components/custom/CustomButton';
 import {
   isLocationEnabled,
   promptForEnableLocationIfNeeded,
 } from 'react-native-android-location-enabler';
-import { BASE_URL } from '@env';
-import { openDatabase } from 'react-native-sqlite-storage';
+import {BASE_URL} from '@env';
+import {openDatabase} from 'react-native-sqlite-storage';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
+import {useFocusEffect} from '@react-navigation/native';
 
 //database connection
 const db = openDatabase(
@@ -41,7 +42,7 @@ const db = openDatabase(
   error => console.log('Database error', error), //on error
 );
 
-const DCRScreen = ({ navigation }) => {
+const DCRScreen = ({navigation}) => {
   const [locationStatus, setLocationStatus] = useState('');
   const [currentLongitude, setCurrentLongitude] = useState('0.00');
   const [currentLatitude, setCurrentLatitude] = useState('0.00');
@@ -110,28 +111,55 @@ const DCRScreen = ({ navigation }) => {
           NetInfo.fetch().then(state => {
             if (state.isConnected) {
               if (user.ManagerAccess === true) {
+                // const empurl =
+                //   BASE_URL +
+                //   'Employee/DivisionWiseEmployeeList?Businessid=' +
+                //   user.BusinessID +
+                //   '&IDDivision=' +
+                //   user.IDDivision +
+                //   '&IDEmployeeDesignation=0';
+                // //console.log(empurl);
+                // var config = {
+                //   method: 'get',
+                //   url: empurl,
+                // };
+                // axios(config)
+                //   .then(function (response) {
+                //     var count = Object.keys(response.data).length;
+                //     let wtNameArray = [];
+                //     for (var i = 0; i < count; i++) {
+                //       wtNameArray.push({
+                //         // value: response.data[i].Name,
+                //         // key: response.data[i].IDEmployee,
+                //         value: response.data[i].IDEmployee,
+                //         label: response.data[i].Name,
+                //       });
+                //     }
+                //     setvisitMVWTDataSelected(wtNameArray);
+                //   })
+                //   .catch(function (error) {
+                //     Alert.alert(error);
+                //   });
                 const empurl =
                   BASE_URL +
-                  'Employee/DivisionWiseEmployeeList?Businessid=' +
+                  'Employee/Hierarchy/All?Businessid=' +
                   user.BusinessID +
-                  '&IDDivision=' +
-                  user.IDDivision +
-                  '&IDEmployeeDesignation=0';
-                //console.log(empurl);
+                  '&IDEmployee=' +
+                  user.IDEmployee;
+                console.log(empurl);
                 var config = {
                   method: 'get',
                   url: empurl,
                 };
                 axios(config)
                   .then(function (response) {
+                    //CREATE TABLE for MangerVisitWithTBL
                     var count = Object.keys(response.data).length;
                     let wtNameArray = [];
                     for (var i = 0; i < count; i++) {
                       wtNameArray.push({
-                        // value: response.data[i].Name,
-                        // key: response.data[i].IDEmployee,
                         value: response.data[i].IDEmployee,
-                        label: response.data[i].Name,
+                        label: response.data[i].EmployeeName,
                       });
                     }
                     setvisitMVWTDataSelected(wtNameArray);
@@ -254,6 +282,20 @@ const DCRScreen = ({ navigation }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const startingDay = () => {
     var date = moment().utcOffset('+05:30').format('YYYY-MM-DD hh:mm:ss A');
     //console.warn(date);
@@ -270,7 +312,7 @@ const DCRScreen = ({ navigation }) => {
             },
           },
         ],
-        { cancelable: false },
+        {cancelable: false},
       );
     } else if (wtdataLabel === '') {
       Alert.alert('Select Work Type for Morning Shift');
@@ -338,7 +380,6 @@ const DCRScreen = ({ navigation }) => {
                 } else {
                   Alert.alert('Else : ' + result.status);
                 }
-
               } catch (error) {
                 Alert.alert(error);
               }
@@ -415,7 +456,7 @@ const DCRScreen = ({ navigation }) => {
                   let result = await fetch(url);
                   result = await result.json();
                   console.log(result);
-                 // navigation.navigate('AppNavScreen');
+                  // navigation.navigate('AppNavScreen');
                   if (!isNaN(result)) {
                     navigateBasedOnLeave();
                   } else {
@@ -681,7 +722,7 @@ const DCRScreen = ({ navigation }) => {
                   let result = await fetch(url);
                   result = await result.json();
                   console.log(result);
-                 // navigation.navigate('AppNavScreen');
+                  // navigation.navigate('AppNavScreen');
                   if (!isNaN(result)) {
                     navigateBasedOnLeave();
                   } else {
@@ -917,7 +958,7 @@ const DCRScreen = ({ navigation }) => {
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
       //{enableHighAccuracy: true, timeout: 15000, maximumAge: 1000},
-      { timeout: 15000 }, // 15 seconds timeout
+      {timeout: 15000}, // 15 seconds timeout
     );
   };
   const getMultipleTimeLocation = () => {
@@ -940,7 +981,7 @@ const DCRScreen = ({ navigation }) => {
         setLocationStatus(error.message);
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 1000 },
+      {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000},
       //{ timeout: 15000 } // 15 seconds timeout
     );
   };
@@ -1507,7 +1548,7 @@ const DCRScreen = ({ navigation }) => {
   };
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: false }}
+      style={{flex: 1, backgroundColor: false}}
       showsVerticalScrollIndicator={false}>
       {/* <ImageBackground
         source={require('../images/bg2.png')}
@@ -1526,19 +1567,19 @@ const DCRScreen = ({ navigation }) => {
         }}>
         <View>
           {/* <Text style={style.boldText}>{locationStatus}</Text> */}
-          <Text style={{ padding: 5 }}>Latitude : {currentLatitude}</Text>
-          <Text style={{ padding: 5 }}>Longitude : {currentLongitude} </Text>
+          <Text style={{padding: 5}}>Latitude : {currentLatitude}</Text>
+          <Text style={{padding: 5}}>Longitude : {currentLongitude} </Text>
           {/* <Text style={{padding: 5}}>Date : {currDate}</Text> */}
-          <Text style={{ padding: 5 }}>Time : {currTime}</Text>
+          <Text style={{padding: 5}}>Time : {currTime}</Text>
         </View>
       </View>
-      <View style={{ padding: 5, margin: 5 }}>
+      <View style={{padding: 5, margin: 5}}>
         <TextInput
           label="Date"
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{ marginBottom: 5 }}
+          style={{marginBottom: 5}}
           value={currDate}
           editable={false}
         />
@@ -1546,7 +1587,7 @@ const DCRScreen = ({ navigation }) => {
           <Text style={style.textTab}>Morning Shift</Text>
         </View>
         <Dropdown
-          style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+          style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
           placeholderStyle={style.placeholderStyle}
           selectedTextStyle={style.selectedTextStyle}
           inputSearchStyle={style.inputSearchStyle}
@@ -1566,7 +1607,12 @@ const DCRScreen = ({ navigation }) => {
             setwtdataLabel(item.label);
             // handleState(item.value);
             setIsFocus(false);
-            console.log('Morning Shift Work Type selected:', item.label, 'Value:', item.value);
+            console.log(
+              'Morning Shift Work Type selected:',
+              item.label,
+              'Value:',
+              item.value,
+            );
             // if (item.label === 'WORKING') {
             //   setshouldShowMSWT(true);
             // } else {
@@ -1579,7 +1625,7 @@ const DCRScreen = ({ navigation }) => {
           <Text style={style.textTab}>Evening Shift</Text>
         </View>
         <Dropdown
-          style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+          style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
           placeholderStyle={style.placeholderStyle}
           selectedTextStyle={style.selectedTextStyle}
           inputSearchStyle={style.inputSearchStyle}
@@ -1599,13 +1645,18 @@ const DCRScreen = ({ navigation }) => {
             setwtdataELabel(item.label);
             // handleState(item.value);
             setIsFocus(false);
-            console.log('Evening Shift Work Type selected:', item.label, 'Value:', item.value);
+            console.log(
+              'Evening Shift Work Type selected:',
+              item.label,
+              'Value:',
+              item.value,
+            );
           }}
         />
 
-        <View style={{ marginTop: 5, paddingTop: 5 }}>
+        <View style={{marginTop: 5, paddingTop: 5}}>
           {useManagerAccess ? (
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               {/* <MultipleSelectList
                 setSelected={val => setusemVwtData(val)}
                 data={usevisitMVWTDataSelected}
@@ -1624,7 +1675,7 @@ const DCRScreen = ({ navigation }) => {
                 labelStyles={{fontWeight: '800', color: 'black'}}
               /> */}
               <Dropdown
-                style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
+                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
                 placeholderStyle={style.placeholderStyle}
                 selectedTextStyle={style.selectedTextStyle}
                 inputSearchStyle={style.inputSearchStyle}
@@ -1649,7 +1700,7 @@ const DCRScreen = ({ navigation }) => {
               />
             </View>
           ) : (
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <MultipleSelectList
                 setSelected={val => setvisitWTData(val)}
                 data={usevisitWTDataSelected}
@@ -1661,13 +1712,13 @@ const DCRScreen = ({ navigation }) => {
                 fontFamily="Roboto-Bold"
                 notFoundText="No Data Exists"
                 //badgeTextStyles={{color:'red'}}
-                badgeStyles={{ backgroundColor: 'green' }}
-                labelStyles={{ fontWeight: '800', color: 'black' }}
+                badgeStyles={{backgroundColor: 'green'}}
+                labelStyles={{fontWeight: '800', color: 'black'}}
               />
             </View>
           )}
           {useManagerAccess ? (
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <MultipleSelectList
                 setSelected={val => setSelectedMArea(val)}
                 data={selectedMAreaData}
@@ -1682,12 +1733,12 @@ const DCRScreen = ({ navigation }) => {
                 fontFamily="Roboto-Bold"
                 notFoundText="No Data Exists"
                 //badgeTextStyles={{color:'red'}}
-                badgeStyles={{ backgroundColor: 'green' }}
-                labelStyles={{ fontWeight: '800', color: 'black' }}
+                badgeStyles={{backgroundColor: 'green'}}
+                labelStyles={{fontWeight: '800', color: 'black'}}
               />
             </View>
           ) : (
-            <View style={{ marginTop: 5, paddingTop: 5 }}>
+            <View style={{marginTop: 5, paddingTop: 5}}>
               <MultipleSelectList
                 setSelected={val => setSelectedArea(val)}
                 data={selectedAreaData}
@@ -1702,8 +1753,8 @@ const DCRScreen = ({ navigation }) => {
                 fontFamily="Roboto-Bold"
                 notFoundText="No Data Exists"
                 //badgeTextStyles={{color:'red'}}
-                badgeStyles={{ backgroundColor: 'green' }}
-                labelStyles={{ fontWeight: '800', color: 'black' }}
+                badgeStyles={{backgroundColor: 'green'}}
+                labelStyles={{fontWeight: '800', color: 'black'}}
               />
             </View>
           )}
@@ -1713,7 +1764,7 @@ const DCRScreen = ({ navigation }) => {
             mode="outlined"
             autoCapitalize="none"
             autoCorrect={false}
-            style={{ marginBottom: 5 }}
+            style={{marginBottom: 5}}
             value={useRemarks}
             onChangeText={text => setRemarks(text)}
           />

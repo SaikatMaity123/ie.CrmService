@@ -13,6 +13,7 @@ import ProgressDialog from '../components/custom/ProgressDialog';
 import NetInfo from '@react-native-community/netinfo';
 import {BASE_URL} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 //database connection
 const db = openDatabase(
@@ -179,7 +180,9 @@ const ExpenseList = () => {
     return (
       item.Bookingno.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.BookingDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.BookingAmount.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      item.BookingAmount.toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
     );
   });
 
@@ -188,15 +191,14 @@ const ExpenseList = () => {
       return (
         <Text
           style={{
-            fontSize: 14,
-            fontFamily: 'Lato-Regular',
-            margin: 5,
-            padding: 5,
-            color: 'red',
-            //width: '50%',
-            textAlignVertical: 'center',
-            //textAli gn: 'center',
-            alignItems: 'center',
+            backgroundColor: '#f24633',
+            color: '#fff',
+            fontSize: 16,
+            paddingVertical: 6,
+            paddingHorizontal: 14,
+            borderRadius: 20,
+            overflow: 'hidden',
+            alignSelf: 'center',
           }}>
           ApprovalStatus : NO
         </Text>
@@ -205,15 +207,14 @@ const ExpenseList = () => {
       return (
         <Text
           style={{
-            fontSize: 14,
-            fontFamily: 'Lato-Regular',
-            margin: 5,
-            padding: 5,
-            color: 'green',
-            //width: '50%',
-            textAlignVertical: 'center',
-            //textAli gn: 'center',
-            alignItems: 'center',
+            backgroundColor: '#3cb371',
+            color: '#fff',
+            fontSize: 16,
+            paddingVertical: 6,
+            paddingHorizontal: 14,
+            borderRadius: 20,
+            overflow: 'hidden',
+            alignSelf: 'center',
           }}>
           ApprovalStatus : YES
         </Text>
@@ -240,12 +241,25 @@ const ExpenseList = () => {
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={styles.container}>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search..."
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#ffffff',
+            borderRadius: 10,
+            margin: 10,
+            paddingHorizontal: 10,
+            elevation: 2,
+          }}>
+          <Ionicons name="search" size={20} color="#999" />
+
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+        </View>
         <View style={styles.container}>
           {filteredData.length ? (
             <View style={styles.areaStyle}>
@@ -258,7 +272,10 @@ const ExpenseList = () => {
                       style={[
                         styles.menu,
                         {
-                          backgroundColor: '#ecf0f1',
+                          backgroundColor: '#ffffff',
+                          borderColor: '#000',
+                          borderWidth: 0.6,
+                          borderRadius: 10,
                         },
                       ]}>
                       <Text
@@ -288,20 +305,27 @@ const ExpenseList = () => {
                         }}>
                         Booking Date : {item.BookingDate}
                       </Text>
-                      <Text
+                      <View
                         style={{
-                          fontSize: 14,
-                          fontFamily: 'Lato-Regular',
-                          margin: 5,
-                          padding: 5,
-                          //width: '50%',
-                          textAlignVertical: 'center',
-                          //textAli gn: 'center',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
                           alignItems: 'center',
                         }}>
-                        Booking Amount : {item.BookingAmount}.00
-                      </Text>
-                      {retApproval(item.Approved)}
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontFamily: 'Lato-Regular',
+                            margin: 5,
+                            padding: 5,
+                            //width: '50%',
+                            textAlignVertical: 'center',
+                            //textAli gn: 'center',
+                            alignItems: 'center',
+                          }}>
+                          Booking Amount : {item.BookingAmount}.00
+                        </Text>
+                        {retApproval(item.Approved)}
+                      </View>
                     </View>
                   </TouchableWithoutFeedback>
                 )}
@@ -373,11 +397,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    margin: 10,
-    paddingLeft: 10,
+    flex: 1,
+    marginLeft: 8,
+    paddingVertical: 8,
+    fontSize: 15,
   },
 });

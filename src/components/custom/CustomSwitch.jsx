@@ -82,7 +82,7 @@ const CustomSwitch = ({selectionMode,option1,option2,option3,option4,onSelectSwi
               width: '100%',
               backgroundColor: '#e4e4e4',
               borderRadius: 10,
-              borderColor: '#AD40AF',
+              borderColor: '#005696',
               flexDirection: 'row',
               justifyContent: 'center',
             }}>
@@ -91,14 +91,14 @@ const CustomSwitch = ({selectionMode,option1,option2,option3,option4,onSelectSwi
         onPress={() => updateSwitchData(1)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 1 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 1 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 1 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 1 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
@@ -110,14 +110,14 @@ const CustomSwitch = ({selectionMode,option1,option2,option3,option4,onSelectSwi
         onPress={() => updateSwitchData(2)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 2 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 2 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 2 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 2 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
@@ -129,14 +129,14 @@ const CustomSwitch = ({selectionMode,option1,option2,option3,option4,onSelectSwi
         onPress={() => updateSwitchData(3)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 3 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 3 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 3 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 3 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
@@ -148,14 +148,14 @@ const CustomSwitch = ({selectionMode,option1,option2,option3,option4,onSelectSwi
         onPress={() => updateSwitchData(4)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 4 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 4 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
         }}>
         <Text
           style={{
-            color: getSelectionMode == 4 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 4 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>

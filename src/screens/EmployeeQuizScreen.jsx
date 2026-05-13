@@ -1,379 +1,4 @@
-// import React, {useState, useEffect} from 'react';
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   TextInput,
-//   StyleSheet,
-//   SafeAreaView,
-//   ScrollView,
-//   FlatList,
-//   Alert,
-// } from 'react-native';
-// import NetInfo from '@react-native-community/netinfo';
-// import {BASE_URL} from '@env';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// // const sampleQuestions = [
-// //   {
-// //     id: '1',
-// //     question: 'What is the capital of France?',
-// //     type: 'single',
-// //     options: ['Berlin', 'Madrid', 'Paris', 'Rome'],
-// //     answer: 'Paris',
-// //   },
-// //   {
-// //     id: '2',
-// //     question: 'Select all fruits:',
-// //     type: 'multiple',
-// //     options: ['Apple', 'Carrot', 'Banana', 'Potato'],
-// //     answer: ['Apple', 'Banana'],
-// //   },
-// //   {
-// //     id: '3',
-// //     question: 'What is 10 + 15?',
-// //     type: 'text',
-// //     answer: '25',
-// //   },
-// // ];
-
-// const EmployeeQuizScreen = () => {
-//   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-//   const [selectedOptions, setSelectedOptions] = useState([]);
-//   const [shortAnswer, setShortAnswer] = useState('');
-//   const [score, setScore] = useState(0);
-//   const [isQuizFinished, setIsQuizFinished] = useState(false);
-//   const [timeLeft, setTimeLeft] = useState(60);
-//   const [questions, setQuestions] = useState([]);
-
-//   //const currentQuestion = sampleQuestions[currentQuestionIndex];
-
-//   // Timer Effect
-//   // useEffect(() => {
-//   //   if (!isQuizFinished) {
-//   //     if (timeLeft === 0) {
-//   //       handleNext();
-//   //       return;
-//   //     }
-//   //     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
-//   //     return () => clearTimeout(timer);
-//   //   }
-//   // }, [timeLeft]);
-
-//   // const handleOptionPress = (option) => {
-//   //   if (currentQuestion.type === 'multiple') {
-//   //     setSelectedOptions((prev) =>
-//   //       prev.includes(option) ? prev.filter((opt) => opt !== option) : [...prev, option]
-//   //     );
-//   //   } else {
-//   //     setSelectedOptions([option]);
-//   //   }
-//   // };
-
-//   // const checkAnswer = () => {
-//   //   if (currentQuestion.type === 'single') {
-//   //     return selectedOptions[0] === currentQuestion.answer;
-//   //   } else if (currentQuestion.type === 'multiple') {
-//   //     const selected = [...selectedOptions].sort().join(',');
-//   //     const correct = [...currentQuestion.answer].sort().join(',');
-//   //     return selected === correct;
-//   //   } else if (currentQuestion.type === 'text') {
-//   //     return shortAnswer.trim().toLowerCase() === currentQuestion.answer.toLowerCase();
-//   //   }
-//   //   return false;
-//   // };
-
-//   // const handleNext = () => {
-//   //   if (checkAnswer()) {
-//   //     setScore((prev) => prev + 1);
-//   //   }
-
-//   //   if (currentQuestionIndex + 1 < sampleQuestions.length) {
-//   //     setCurrentQuestionIndex((prev) => prev + 1);
-//   //     setSelectedOptions([]);
-//   //     setShortAnswer('');
-//   //     setTimeLeft(60);
-//   //   } else {
-//   //     setIsQuizFinished(true);
-//   //   }
-//   // };
-
-//   // const handlePrevious = () => {
-//   //   if (currentQuestionIndex > 0) {
-//   //     setCurrentQuestionIndex(prev => prev - 1);
-//   //     setSelectedOptions([]);
-//   //     setShortAnswer('');
-//   //   }
-//   // };
-
-//   // const handleRestart = () => {
-//   //   setCurrentQuestionIndex(0);
-//   //   setScore(0);
-//   //   setSelectedOptions([]);
-//   //   setShortAnswer('');
-//   //   setIsQuizFinished(false);
-//   //   setTimeLeft(60);
-//   // };
-
-//   // return (
-//   //   <SafeAreaView style={styles.container}>
-//   //     {isQuizFinished ? (
-//   //       <View style={styles.resultContainer}>
-//   //         <Text style={styles.resultText}>Quiz Completed!</Text>
-//   //         <Text style={styles.resultText}>
-//   //           Your Score: {score}/{sampleQuestions.length}
-//   //         </Text>
-//   //         <TouchableOpacity style={styles.button} onPress={handleRestart}>
-//   //           <Text style={styles.buttonText}>Restart Quiz</Text>
-//   //         </TouchableOpacity>
-//   //       </View>
-//   //     ) : (
-//   //       <ScrollView contentContainerStyle={styles.quizContainer}>
-//   //         <Text style={styles.timer}>⏱ {timeLeft}s</Text>
-//   //         <Text style={styles.questionText}>{currentQuestion.question}</Text>
-
-//   //         {/* Single / Multiple Options */}
-//   //         {currentQuestion.type === 'single' ||
-//   //         currentQuestion.type === 'multiple' ? (
-//   //           currentQuestion.options.map(option => (
-//   //             <TouchableOpacity
-//   //               key={option}
-//   //               style={[
-//   //                 styles.optionButton,
-//   //                 selectedOptions.includes(option) && {
-//   //                   backgroundColor:
-//   //                     currentQuestion.type === 'multiple'
-//   //                       ? '#e0f8e9'
-//   //                       : '#d0f0c0',
-//   //                   borderColor: '#33aa33',
-//   //                 },
-//   //               ]}
-//   //               onPress={() => handleOptionPress(option)}>
-//   //               <Text style={styles.optionText}>{option}</Text>
-//   //             </TouchableOpacity>
-//   //           ))
-//   //         ) : currentQuestion.type === 'text' ? (
-//   //           <TextInput
-//   //             placeholder="Type your answer"
-//   //             style={styles.input}
-//   //             value={shortAnswer}
-//   //             onChangeText={setShortAnswer}
-//   //           />
-//   //         ) : null}
-
-//   //         {/* <TouchableOpacity style={styles.button} onPress={handleNext}>
-//   //           <Text style={styles.buttonText}>Next</Text>
-//   //         </TouchableOpacity> */}
-
-//   //         <View style={styles.navRow}>
-//   //           <TouchableOpacity
-//   //             style={[styles.button, {backgroundColor: 'gray'}]}
-//   //             onPress={handlePrevious}
-//   //             disabled={currentQuestionIndex === 0}>
-//   //             <Text style={styles.buttonText}>Previous</Text>
-//   //           </TouchableOpacity>
-
-//   //           <TouchableOpacity style={styles.button} onPress={handleNext}>
-//   //             <Text style={styles.buttonText}>Next</Text>
-//   //           </TouchableOpacity>
-//   //         </View>
-//   //       </ScrollView>
-//   //     )}
-//   //   </SafeAreaView>
-//   // );
-
-//   /*New One*/
-//   useEffect(() => {
-//     try {
-//       AsyncStorage.getItem('UserData').then(value => {
-//         if (value != null) {
-//           let user = JSON.parse(value);
-//           NetInfo.fetch().then(async state => {
-//             if (state.isConnected) {
-//               const url =
-//                 BASE_URL +
-//                 'Survey/Employee/QuestionList?Businessid=' +
-//                 user.BusinessID +
-//                 '&IDEmployee=' +
-//                 user.IDEmployee;
-//               fetch(url)
-//                 .then(response => response.json())
-//                 .then(data => setQuestions(data.result))
-//                 .catch(error =>
-//                   console.error('Error fetching questions:', error),
-//                 );
-
-//               // let result = await fetch(url);
-//               // result = await result.json();
-//               // console.log('result',result);
-//               // setQuestions(result);
-//             }
-//           }, []);
-//         }
-//       });
-//     } catch (error) {
-//       Alert.alert(error);
-//     }
-//   }, []);
-
-//   return (
-//     <FlatList
-//       data={questions}
-//       keyExtractor={item => item.IDQuestion.toString()}
-//       renderItem={({item}) =>
-//        <RenderQuestion question={item} />
-//       //console.log(item)
-
-//     }
-//     />
-//   );
-// };
-
-// const RenderQuestion = ({question}) => {
-//   if (question.QuestionType === 'SINGLE-SELECTION-4') {
-//     return <SingleSelection question={question} />;
-//   } else if (question.QuestionType === 'LONG-TEXT') {
-//     return <LongText question={question} />;
-//   }
-//   return null;
-// };
-// const SingleSelection = ({question}) => {
-//   const [selectedOption, setSelectedOption] = useState(null);
-
-//   return (
-//     <View style={{padding: 10, borderBottomWidth: 1, borderColor: '#ccc'}}>
-//       <Text style={{fontSize: 16, fontWeight: 'bold'}}>
-//         {question.Question}
-//       </Text>
-//       {[question.Option1, question.Option2, question.Option3, question.Option4]
-//         .filter(option => option) // Remove empty options
-//         .map((option, index) => (
-//           <TouchableOpacity
-//             key={index}
-//             onPress={() => setSelectedOption(option)}
-//             style={{
-//               flexDirection: 'row',
-//               alignItems: 'center',
-//               padding: 10,
-//               backgroundColor:
-//                 selectedOption === option ? 'lightblue' : 'white',
-//               marginVertical: 5,
-//               borderRadius: 5,
-//               borderWidth: 1,
-//               borderColor: '#ddd',
-//             }}>
-//             <Text>{option}</Text>
-//           </TouchableOpacity>
-//         ))}
-
-//       {question.Timers.length > 0 && (
-//         <Text style={{color: 'red', marginTop: 5}}>
-//           Timer: {question.Timers[0].Duration} min
-//         </Text>
-//       )}
-//     </View>
-//   );
-// };
-
-// const LongText = ({question}) => {
-//   const [text, setText] = useState('');
-
-//   return (
-//     <View style={{padding: 10, borderBottomWidth: 1, borderColor: '#ccc'}}>
-//       <Text style={{fontSize: 16, fontWeight: 'bold'}}>
-//         {question.Question}
-//       </Text>
-//       <TextInput
-//         placeholder="Write your answer..."
-//         multiline
-//         style={{
-//           borderWidth: 1,
-//           borderColor: '#ccc',
-//           borderRadius: 5,
-//           padding: 10,
-//           minHeight: 100,
-//           marginTop: 10,
-//         }}
-//         value={text}
-//         onChangeText={setText}
-//       />
-//     </View>
-//   );
-// };
-
-// export default EmployeeQuizScreen;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 20,
-//     backgroundColor: '#f2f2f2',
-//   },
-//   quizContainer: {
-//     flexGrow: 1,
-//     justifyContent: 'center',
-//   },
-//   questionText: {
-//     fontSize: 20,
-//     fontWeight: 'bold',
-//     marginBottom: 20,
-//   },
-//   optionButton: {
-//     backgroundColor: '#fff',
-//     padding: 15,
-//     marginVertical: 8,
-//     borderRadius: 8,
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//   },
-//   optionText: {
-//     fontSize: 16,
-//   },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     backgroundColor: '#fff',
-//     borderRadius: 8,
-//     padding: 12,
-//     fontSize: 16,
-//     marginVertical: 10,
-//   },
-//   button: {
-//     backgroundColor: '#33767C',
-//     padding: 15,
-//     borderRadius: 8,
-//     marginTop: 20,
-//     alignItems: 'center',
-//   },
-//   buttonText: {
-//     color: '#fff',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-//   resultContainer: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   resultText: {
-//     fontSize: 22,
-//     fontWeight: 'bold',
-//     marginVertical: 10,
-//   },
-//   timer: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     alignSelf: 'flex-end',
-//     marginBottom: 10,
-//   },
-//   navRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginTop: 20,
-//   },
-// });
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -383,6 +8,8 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DeviceInfo from 'react-native-device-info';
@@ -393,8 +20,9 @@ import NetInfo from '@react-native-community/netinfo';
 import { BASE_URL } from '@env';
 import moment from 'moment';
 import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
 
-const EmployeeQuizScreen = () => {
+const EmployeeQuizScreen = ({ navigation }) => {
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
@@ -413,6 +41,9 @@ const EmployeeQuizScreen = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [quizData, setQuizData] = useState(null);
   const [data, setData] = useState(null);
+  const [countdown, setCountdown] = useState(0);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const hasAutoStartedRef = useRef(false);
 
   const formatDate = date => {
     return moment(date).format('DD-MMM-YYYY'); // '03-Apr-2025'
@@ -460,121 +91,278 @@ const EmployeeQuizScreen = () => {
     } catch (error) {
       Alert.alert(error);
     }
-  }, []);
+
+    if (showCountdown && countdown > 0) {
+      const interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setShowCountdown(false);
+
+            if (!hasAutoStartedRef.current) {
+              hasAutoStartedRef.current = true;
+              proceedToEmployeeSurvey(useIDEmployee, useEmpemail);
+            }
+
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [countdown, showCountdown]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavQuiz'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
   const fetchSurveyQuestions = async () => {
+    // try {
+    //   AsyncStorage.getItem('UserData').then(value => {
+    //     if (value != null) {
+    //       let user = JSON.parse(value);
+    //       NetInfo.fetch().then(async state => {
+    //         if (state.isConnected) {
+    //           const url =
+    //             BASE_URL +
+    //             'Survey/CheckEmployeeQuiz?Businessid=' +
+    //             useBusinessID +
+    //             '&IDEmployee=' +
+    //             useIDEmployee +
+    //             '&IDSurvey=' +
+    //             useIDSurvey;
+    //           const response = await fetch(url);
+    //           const json = await response.json();
+    //           if (json.d !== '') {
+    //             Alert.alert('Survey Already Submitted', 'This Employee Survey has already submitted.');
+    //             return;
+    //           }
+
+    //           const EmpStartBody = {
+    //             IDEmployee: useIDEmployee,
+    //             EntryUser: useEmpemail,
+    //             EntryDevice: `Mobile - ${device}`,
+    //             Businessid: 'MEND-PVTL-890',
+    //             SurveyType: 'EMPLOYEE',
+    //           };
+
+    //           const submitEmpResponse = await fetch(`${BASE_URL}Survey/Start/Save`, {
+    //             method: 'POST',
+    //             headers: {
+    //               Accept: 'application/json',
+    //               'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(EmpStartBody),
+    //           });
+
+    //           const submitData = await submitEmpResponse.json();
+
+    //           if (submitData.result !== "") {
+    //             Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
+    //             return;
+    //           }
+
+    //           if (submitData.result === '') {
+    //             const url =
+    //               BASE_URL +
+    //               'Survey/Employee/QuestionList?Businessid=' +
+    //               useBusinessID +
+    //               '&IDEmployee=' +
+    //               useIDEmployee +
+    //               '&SurveyType=EMPLOYEE';
+    //             const response = await fetch(url);
+    //             const json = await response.json();
+    //             //setQuestions(data.result);
+    //             if (json.result?.length > 0) {
+    //               const formatted = json.result.map(q => ({
+    //                 id: q.IDQuestion.toString(),
+    //                 IDQuestion: q.IDQuestion,
+    //                 IDSurvey: q.IDSurvey,
+    //                 question: q.Question,
+    //                 options: [
+    //                   q.Option1,
+    //                   q.Option2,
+    //                   q.Option3,
+    //                   q.Option4,
+    //                   q.Option5,
+    //                 ].filter(Boolean),
+    //                 type: q.QuestionType.includes('MULTIPLE')
+    //                   ? 'multiple'
+    //                   : q.QuestionType === 'SHORT-TEXT' ||
+    //                     q.QuestionType === 'LONG-TEXT'
+    //                     ? 'TEXT'
+    //                     : 'single',
+    //                 textType: q.QuestionType, // <-- Add this line to track original text type
+    //               }));
+
+    //               setQuizQuestions(formatted);
+    //               setQuizStarted(true);
+
+    //               setTimeLeft(json.Duration * 60); // Convert minutes to seconds
+
+    //               const timer = setInterval(() => {
+    //                 setTimeLeft(prev => {
+    //                   if (prev <= 1) {
+    //                     clearInterval(timer);
+    //                     return 0;
+    //                   }
+    //                   return prev - 1;
+    //                 });
+    //               }, 1000);
+
+    //               return () => clearInterval(timer);
+    //             } else {
+    //               Alert.alert('No quiz available.');
+    //             }
+    //           } else {
+    //             Alert.alert(json.d);
+    //           }
+    //         } else {
+    //           Alert.alert('No Internet');
+    //         }
+    //       }, []);
+    //     }
+    //   });
+    // } catch (error) {
+    //   Alert.alert(error);
+    // }
     try {
-      AsyncStorage.getItem('UserData').then(value => {
-        if (value != null) {
-          let user = JSON.parse(value);
-          NetInfo.fetch().then(async state => {
-            if (state.isConnected) {
-              const url =
-                BASE_URL +
-                'Survey/CheckEmployeeQuiz?Businessid=' +
-                useBusinessID +
-                '&IDEmployee=' +
-                useIDEmployee +
-                '&IDSurvey=' +
-                useIDSurvey;
-              const response = await fetch(url);
-              const json = await response.json();
-              if (json.d !== '') {
-                Alert.alert('Survey Already Submitted', 'This Employee Survey has already submitted.');
-                return;
-              }
+      const value = await AsyncStorage.getItem('UserData');
+      if (!value) return;
 
-              const EmpStartBody = {
-                IDEmployee: useIDEmployee,
-                EntryUser: useEmpemail,
-                EntryDevice: `Mobile - ${device}`,
-                Businessid: 'MEND-PVTL-890',
-                SurveyType: 'EMPLOYEE',
-              };
+      const user = JSON.parse(value);
+      const IDEmployee = user.IDEmployee;
+      const Empemail = user.Email;
 
-              const submitEmpResponse = await fetch(`${BASE_URL}Survey/Start/Save`, {
-                method: 'POST',
-                headers: {
-                  Accept: 'application/json',
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(EmpStartBody),
-              });
 
-              const submitData = await submitEmpResponse.json();
+      const state = await NetInfo.fetch();
+      if (!state.isConnected) {
+        Alert.alert('No Internet');
+        return;
+      }
 
-              if (submitData.result !== "") {
-                Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
-                return;
-              }
+      // Step 1: Check already submitted
+      const checkUrl = `${BASE_URL}Survey/CheckEmployeeQuiz?Businessid=${useBusinessID}&IDEmployee=${IDEmployee}&IDSurvey=${useIDSurvey}`;
+      const checkResponse = await fetch(checkUrl);
+      const checkJson = await checkResponse.json();
+      if (checkJson.d !== '') {
+        Alert.alert('Survey Already Submitted', 'This Employee Survey has already been submitted.');
+        return;
+      }
 
-              if (submitData.result === '') {
-                const url =
-                  BASE_URL +
-                  'Survey/Employee/QuestionList?Businessid=' +
-                  useBusinessID +
-                  '&IDEmployee=' +
-                  useIDEmployee +
-                  '&SurveyType=EMPLOYEE';
-                const response = await fetch(url);
-                const json = await response.json();
-                //setQuestions(data.result);
-                if (json.result?.length > 0) {
-                  const formatted = json.result.map(q => ({
-                    id: q.IDQuestion.toString(),
-                    IDQuestion: q.IDQuestion,
-                    IDSurvey: q.IDSurvey,
-                    question: q.Question,
-                    options: [
-                      q.Option1,
-                      q.Option2,
-                      q.Option3,
-                      q.Option4,
-                      q.Option5,
-                    ].filter(Boolean),
-                    type: q.QuestionType.includes('MULTIPLE')
-                      ? 'multiple'
-                      : q.QuestionType === 'SHORT-TEXT' ||
-                        q.QuestionType === 'LONG-TEXT'
-                        ? 'TEXT'
-                        : 'single',
-                    textType: q.QuestionType, // <-- Add this line to track original text type
-                  }));
+      // Step 1.5: Check scheduling
+      const scheduleUrl = `${BASE_URL}Survey/SurveyScheduling?Businessid=${useBusinessID}&IDParticipants=${IDEmployee}&SurveyType=EMPLOYEE`;
+      const scheduleResponse = await fetch(scheduleUrl);
+      const scheduleData = await scheduleResponse.json();
+      const timerValue = scheduleData?.d;
 
-                  setQuizQuestions(formatted);
-                  setQuizStarted(true);
+      if (timerValue && timerValue !== '') {
+        const [h, m, s] = timerValue.split(':').map(Number);
+        const totalSeconds = h * 3600 + m * 60 + s;
 
-                  setTimeLeft(json.Duration * 60); // Convert minutes to seconds
+        hasAutoStartedRef.current = false;
+        setCountdown(totalSeconds);
+        setShowCountdown(true);
+        return;
+      }
 
-                  const timer = setInterval(() => {
-                    setTimeLeft(prev => {
-                      if (prev <= 1) {
-                        clearInterval(timer);
-                        return 0;
-                      }
-                      return prev - 1;
-                    });
-                  }, 1000);
-
-                  return () => clearInterval(timer);
-                } else {
-                  Alert.alert('No quiz available.');
-                }
-              } else {
-                Alert.alert(json.d);
-              }
-            } else {
-              Alert.alert('No Internet');
-            }
-          }, []);
-        }
-      });
+      // Proceed immediately if no waiting
+      await proceedToEmployeeSurvey(IDEmployee, Empemail);
     } catch (error) {
-      Alert.alert(error);
+      Alert.alert('Error', error.message || 'Something went wrong');
     }
   };
+
+  // === PROCEED TO SURVEY ===
+  const proceedToEmployeeSurvey = async (IDEmployee, Empemail) => {
+    try {
+      const EmpStartBody = {
+        IDEmployee: IDEmployee,
+        EntryUser: Empemail,
+        EntryDevice: `Mobile - ${device}`,
+        Businessid: useBusinessID,
+        SurveyType: 'EMPLOYEE',
+      };
+
+      const submitEmpResponse = await fetch(`${BASE_URL}Survey/Start/Save`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(EmpStartBody),
+      });
+
+      const submitData = await submitEmpResponse.json();
+      if (submitData.result !== '') {
+        Alert.alert('Error', submitData.result || 'Unexpected error occurred.');
+        return;
+      }
+
+      // Fetch question list
+      const questionUrl = `${BASE_URL}Survey/Employee/QuestionList?Businessid=${useBusinessID}&IDEmployee=${useIDEmployee}&SurveyType=EMPLOYEE`;
+      const response = await fetch(questionUrl);
+      const json = await response.json();
+
+      if (json.result?.length > 0) {
+        const formatted = json.result.map(q => ({
+          id: q.IDQuestion.toString(),
+          IDQuestion: q.IDQuestion,
+          IDSurvey: q.IDSurvey,
+          question: q.Question,
+          options: [
+            q.Option1,
+            q.Option2,
+            q.Option3,
+            q.Option4,
+            q.Option5,
+          ].filter(Boolean),
+          type: q.QuestionType.includes('MULTIPLE')
+            ? 'multiple'
+            : q.QuestionType === 'SHORT-TEXT' || q.QuestionType === 'LONG-TEXT'
+              ? 'TEXT'
+              : 'single',
+          textType: q.QuestionType,
+        }));
+
+        setQuizQuestions(formatted);
+        setQuizStarted(true);
+        setTimeLeft(json.Duration * 60); // minutes → seconds
+
+        // countdown for quiz duration
+        const timer = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      } else {
+        Alert.alert('No quiz available.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Something went wrong');
+    }
+  };
+
+
 
   const handleOptionPress = optionIndex => {
     const q = currentQuestion;
@@ -678,7 +466,7 @@ const EmployeeQuizScreen = () => {
       EntryUser: useEmpemail,
       EntryDevice: 'Mobile_' + device,
       Businessid: useBusinessID,
-      SurveyType : 'EMPLOYEE',
+      SurveyType: 'EMPLOYEE',
       Answers: Object.values(answersMap),
     };
     console.log(payload);
@@ -751,8 +539,38 @@ const EmployeeQuizScreen = () => {
     setShortAnswer('');
   };
 
+
+
+  // === COUNTDOWN UI ===
+  if (showCountdown) {
+    const hours = Math.floor(countdown / 3600);
+    const minutes = Math.floor((countdown % 3600) / 60);
+    const seconds = countdown % 60;
+
+    return (
+      <>
+        <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16, backgroundColor: '#ffffff' }}>
+          <Text style={{ fontSize: 18, color: '#444', marginBottom: 8 }}>
+            You will start your Survey After
+          </Text>
+          <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#005696' }}>
+            {`${hours.toString().padStart(2, '0')}:${minutes
+              .toString()
+              .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+          </Text>
+          <Text style={{ fontSize: 14, color: '#777', marginTop: 12 }}>
+            Please keep this screen open.
+          </Text>
+        </View>
+      </>
+    );
+  }
+
+
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       {!quizStarted ? (
         <Card style={styles.card}>
           {quizData ? (
@@ -894,7 +712,7 @@ const EmployeeQuizScreen = () => {
                 styles.button,
                 {
                   backgroundColor:
-                    currentQuestionIndex === 0 ? 'gray' : '#33767C',
+                    currentQuestionIndex === 0 ? 'gray' : '#005696',
                 },
               ]}
               onPress={handlePrevious}
@@ -970,7 +788,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#33767C',
+    backgroundColor: '#005696',
     padding: 15,
     borderRadius: 8,
     marginTop: 20,
