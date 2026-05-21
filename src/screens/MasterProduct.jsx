@@ -1,13 +1,13 @@
-import {View, Text, ImageBackground, StatusBar, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {Checkbox, TextInput} from 'react-native-paper';
+import { View, Text, ImageBackground, StatusBar, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Checkbox, TextInput } from 'react-native-paper';
 import KeyBoardNewLayout from '../components/custom/KeyBoardNewLayout';
-import {Dropdown} from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import CustomButton from '../components/custom/CustomButton';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MasterProduct = ({navigation}) => {
+const MasterProduct = ({ navigation }) => {
   const [useCode, setCode] = useState('');
   const [useName, setName] = useState('');
   const [useHcode, setHcode] = useState('');
@@ -74,17 +74,17 @@ const MasterProduct = ({navigation}) => {
         // -------- Second API --------
         const responsenew = await fetch(
           BASE_URL +
-            'ProductGroup/List?HexKey=' +
-            HexKey +
-            '&BusinessID=' +
-            user.CompanyCode,
+          'ProductGroup/List?HexKey=' +
+          HexKey +
+          '&BusinessID=' +
+          user.CompanyCode,
         );
         console.log(
           BASE_URL +
-            'ProductGroup/List?HexKey=' +
-            HexKey +
-            '&BusinessID=' +
-            user.CompanyCode,
+          'ProductGroup/List?HexKey=' +
+          HexKey +
+          '&BusinessID=' +
+          user.CompanyCode,
         );
 
         const jsonnew = await responsenew.json();
@@ -100,10 +100,10 @@ const MasterProduct = ({navigation}) => {
         // -------- Third API --------
         const responseCategory = await fetch(
           BASE_URL +
-            'ProductCategory/List?HexKey=' +
-            HexKey +
-            '&BusinessID=' +
-            user.CompanyCode,
+          'ProductCategory/List?HexKey=' +
+          HexKey +
+          '&BusinessID=' +
+          user.CompanyCode,
         );
 
         const jsonC = await responseCategory.json();
@@ -161,7 +161,17 @@ const MasterProduct = ({navigation}) => {
     result = await result.json();
     console.log(result);
     if (result.Status === 'SUCCESS') {
-      navigation.navigate('AppNavMaster');
+      Alert.alert(
+        'Success',
+        'Product created successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('AppNavMaster'),
+          },
+        ],
+        { cancelable: false }
+      );
     } else {
       Alert.alert(result.Message);
     }
@@ -169,7 +179,7 @@ const MasterProduct = ({navigation}) => {
   return (
     <ImageBackground
       source={require('../images/bg2.png')}
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
       <KeyBoardNewLayout>
         <StatusBar barStyle="light-content" backgroundColor="transparent" />
@@ -178,10 +188,10 @@ const MasterProduct = ({navigation}) => {
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={useCode}
           editable={false}
-          // onChangeText={text => setDocCode(text)}
+        // onChangeText={text => setDocCode(text)}
         />
         <TextInput
           label="Name"
@@ -198,10 +208,10 @@ const MasterProduct = ({navigation}) => {
           mode="outlined"
           multiline
           numberOfLines={4}
-          style={{backgroundColor: '#fff'}}
+          style={{ backgroundColor: '#fff' }}
           outlineColor="#d6d6d6"
           activeOutlineColor="#4a90e2"
-          contentStyle={{textAlignVertical: 'top'}} // Important for Android
+          contentStyle={{ textAlignVertical: 'top' }} // Important for Android
         />
         <View
           style={{
@@ -209,7 +219,7 @@ const MasterProduct = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -238,7 +248,7 @@ const MasterProduct = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}

@@ -54,7 +54,7 @@ const LeadDrawer = () => {
           component={LeadFollowup}
           options={{
             drawerIcon: ({ color }) => (
-              <Ionicons name="home-outline" size={22} color={color} />
+              <Ionicons name="call-outline" size={22} color={color} />
             ),
             headerBackground: () => (
               <LinearGradient
@@ -67,7 +67,7 @@ const LeadDrawer = () => {
             headerTintColor: '#ffffff',
           }}
         />
-        
+
         <Drawer.Screen
           name="LogOut"
           component={LogoutScreen}

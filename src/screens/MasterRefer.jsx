@@ -1,13 +1,13 @@
-import {View, Text, StatusBar, ImageBackground, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import { View, Text, StatusBar, ImageBackground, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import KeyBoardNewLayout from '../components/custom/KeyBoardNewLayout';
-import {TextInput} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
+import { TextInput } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown';
 import CustomButton from '../components/custom/CustomButton';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MasterRefer = ({navigation}) => {
+const MasterRefer = ({ navigation }) => {
   const [useCode, setCode] = useState('');
   const [useName, setName] = useState('');
   const [useAddress, setAddress] = useState('');
@@ -139,7 +139,35 @@ const MasterRefer = ({navigation}) => {
     loadData(); // call async function
   }, []);
 
+  const validateForm = () => {
+    if (!currDate) return 'Please select Lead Date';
+    if (!useempEmail) return 'Please enter Email';
+
+    // Email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(useempEmail)) return 'Invalid Email format';
+
+    if (!useLeadSourceLabel) return 'Please select Lead Source';
+    if (!usepriorityLabel) return 'Please select Lead Priority';
+    if (!useAvalue) return 'Please select Account';
+    if (!useRvalue) return 'Please select Referrer';
+    if (!useILabel) return 'Please select Industry';
+    if (!usePvalue) return 'Please select Product';
+    if (!useLCLabel) return 'Please select Lead Class';
+    if (!useRemarks) return 'Please enter Remarks';
+
+    return null;
+  };
+
   const saveData = async () => {
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      Alert.alert(validationError);
+      return;
+    }
+
     var params = {
       IDReferer: 0,
       Code: useCode,
@@ -179,7 +207,17 @@ const MasterRefer = ({navigation}) => {
     result = await result.json();
     console.log(result);
     if (result.Status === 'SUCCESS') {
-      navigation.navigate('AppNavMaster');
+      Alert.alert(
+        'Success',
+        'Referrer created successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('AppNavMaster'),
+          },
+        ],
+        { cancelable: false }
+      );
     } else {
       Alert.alert(result.Message);
     }
@@ -188,7 +226,7 @@ const MasterRefer = ({navigation}) => {
   return (
     <ImageBackground
       source={require('../images/bg2.png')}
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
       <KeyBoardNewLayout>
         <StatusBar barStyle="light-content" backgroundColor="transparent" />
@@ -197,10 +235,10 @@ const MasterRefer = ({navigation}) => {
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={useCode}
           editable={false}
-          // onChangeText={text => setDocCode(text)}
+        // onChangeText={text => setDocCode(text)}
         />
         <TextInput
           label="Name"
@@ -243,7 +281,7 @@ const MasterRefer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -272,7 +310,7 @@ const MasterRefer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -301,7 +339,7 @@ const MasterRefer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -396,7 +434,7 @@ const MasterRefer = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}

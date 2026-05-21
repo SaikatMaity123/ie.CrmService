@@ -11,20 +11,21 @@ import {
   Button,
   TouchableWithoutFeedback,
   Alert,
+  ScrollView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import KeyBoardNewLayout from '../components/custom/KeyBoardNewLayout';
-import {TextInput} from 'react-native-paper';
-import {BASE_URL} from '@env';
+import { TextInput } from 'react-native-paper';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {FlatList} from 'react-native';
+import { FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import {CheckBox} from 'react-native-elements';
+import { CheckBox } from 'react-native-elements';
 
-const LeadGenerationView = ({navigation}) => {
+const LeadGenerationView = ({ navigation }) => {
   const [currDate, setcurrDate] = useState('');
   const [currDateNext, setcurrDateNext] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -45,6 +46,9 @@ const LeadGenerationView = ({navigation}) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [data, setData] = useState([]);
   const [changedItems, setChangedItems] = useState({});
+  const [ViewmodalVisible, setViewModalVisible] = useState(false);
+  const [leadData, setLeadData] = useState(null);
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -169,7 +173,7 @@ const LeadGenerationView = ({navigation}) => {
     // }
 
     let updatedSelected = [...selectedItems];
-    let updatedChanged = {...changedItems};
+    let updatedChanged = { ...changedItems };
 
     if (selectedItems.includes(itemID)) {
       // ❌ Unchecked
@@ -259,7 +263,7 @@ const LeadGenerationView = ({navigation}) => {
       }
     }
   };
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View style={styles.card}>
       {/* Customer Name */}
       <Text style={styles.customer}>{item.Account}</Text>
@@ -288,7 +292,7 @@ const LeadGenerationView = ({navigation}) => {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionBtn} onPress={()=>viewModal(item.IDLead)}>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => viewModal(item.IDLead)}>
           <Icon name="bar-chart-2" size={18} color="#005696" />
           <Text style={styles.actionText}>View</Text>
         </TouchableOpacity>
@@ -304,7 +308,7 @@ const LeadGenerationView = ({navigation}) => {
     </View>
   );
 
-  const renderCheckItem = ({item}) => {
+  const renderCheckItem = ({ item }) => {
     return (
       <TouchableWithoutFeedback>
         <View
@@ -328,14 +332,45 @@ const LeadGenerationView = ({navigation}) => {
     );
   };
 
-  const viewModal=(IDLead)=>{
 
-  }
+  const viewModal = async (IDLead) => {
+    try {
+      setLoading(true);
+      //console.log('View Modal for Lead ID:', IDLead);
+
+      const url = `${BASE_URL}Lead/Generation/Detail?HexKey=${useHexKey}&IDLead=${IDLead}`;
+      console.log('API URL:', url);
+
+      const response = await fetch(url);
+      const json = await response.json();
+
+      if (json?.data?.length > 0) {
+        setLeadData(json.data[0]);
+        setViewModalVisible(true);
+      } else {
+        Alert('No Data Found');
+      }
+    } catch (error) {
+      console.log('API ERROR:', error);
+      Alert('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const InfoRow = ({ label, value, multiline }) => (
+  <View style={styles.Vrow}>
+    <Text style={styles.Vlabel}>{label}</Text>
+    <Text style={[styles.Vvalue, multiline && { lineHeight: 20 }]}>
+      {value || '-'}
+    </Text>
+  </View>
+);
 
   return (
     <ImageBackground
       source={require('../images/bg2.png')}
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
       <KeyBoardNewLayout>
         <StatusBar barStyle="light-content" backgroundColor="transparent" />
@@ -358,7 +393,7 @@ const LeadGenerationView = ({navigation}) => {
                 mode="outlined"
                 value={currDate}
                 editable={false}
-                style={{height: 55}}
+                style={{ height: 55 }}
               />
             </View>
           </TouchableOpacity>
@@ -383,7 +418,7 @@ const LeadGenerationView = ({navigation}) => {
                 mode="outlined"
                 value={currDateNext}
                 editable={false}
-                style={{height: 55}}
+                style={{ height: 55 }}
               />
             </View>
           </TouchableOpacity>
@@ -396,7 +431,7 @@ const LeadGenerationView = ({navigation}) => {
             presentationStyle="overFullScreen" // REQUIRED FOR iOS
           />
           {/* Button */}
-          <View style={{flex: 0.3}}>
+          <View style={{ flex: 0.3 }}>
             <TouchableOpacity
               onPress={showData}
               style={{
@@ -420,9 +455,9 @@ const LeadGenerationView = ({navigation}) => {
           </View>
         </View>
         {ushowData ? (
-          <View style={{margin: 10}}>
+          <View style={{ margin: 10 }}>
             {loading && (
-              <ActivityIndicator size="large" style={{marginTop: 50}} />
+              <ActivityIndicator size="large" style={{ marginTop: 50 }} />
             )}
 
             <FlatList
@@ -431,8 +466,8 @@ const LeadGenerationView = ({navigation}) => {
               keyExtractor={item => item.IDLead.toString()}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={() => (
-                <View style={{alignItems: 'center', marginTop: 50}}>
-                  <Text style={{fontSize: 16, color: 'red'}}>
+                <View style={{ alignItems: 'center', marginTop: 50 }}>
+                  <Text style={{ fontSize: 16, color: 'red' }}>
                     No Data Found
                   </Text>
                 </View>
@@ -461,7 +496,7 @@ const LeadGenerationView = ({navigation}) => {
                 data={filteredData}
                 renderItem={renderCheckItem}
                 keyExtractor={(item, index) => index.toString()}
-                style={{maxHeight: 400}} // 🔥 important
+                style={{ maxHeight: 400 }} // 🔥 important
               />
 
               <View style={styles.buttonRow}>
@@ -475,6 +510,50 @@ const LeadGenerationView = ({navigation}) => {
             </View>
           </View>
         </Modal>
+
+
+        <Modal
+          visible={ViewmodalVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <View style={styles.Voverlay}>
+            <View style={styles.VmodalContainer}>
+
+              {/* Header */}
+              <View style={styles.Vheader}>
+                <Text style={styles.VheaderTitle}>Lead Details</Text>
+                <TouchableOpacity onPress={() => setViewModalVisible(false)}>
+                  <Text style={styles.Vclose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Body */}
+              {loading ? (
+                <ActivityIndicator size="large" color="#0E7777" />
+              ) : (
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {leadData && (
+                    <>
+                      <InfoRow label="Lead No" value={leadData.LeadNo} />
+                      <InfoRow label="Date" value={leadData.LeadDate} />
+                      <InfoRow label="Account" value={leadData.Account} />
+                      <InfoRow label="Product" value={leadData.Product} />
+                      <InfoRow label="Industry" value={leadData.Industry} />
+                      <InfoRow label="Priority" value={leadData.LeadPriority} />
+                      <InfoRow label="Class" value={leadData.LeadClass} />
+                      <InfoRow label="Source" value={leadData.LeadSource} />
+                      <InfoRow label="Phone" value={leadData.Phone} />
+                      <InfoRow label="Email" value={leadData.Email} />
+                      <InfoRow label="Remarks" value={leadData.Remarks} multiline />
+                    </>
+                  )}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </Modal>
+
       </KeyBoardNewLayout>
     </ImageBackground>
   );
@@ -509,7 +588,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     // iOS SHADOW
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3.84,
     borderRadius: 5,
@@ -590,5 +669,49 @@ const styles = StyleSheet.create({
     color: '#005696',
     fontWeight: '600',
   },
-  container1: {flex: 1, padding: 10, backgroundColor: 'white'},
+  container1: { flex: 1, padding: 10, backgroundColor: 'white' },
+
+  Voverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    padding: 15,
+  },
+  VmodalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    maxHeight: '85%',
+  },
+  Vheader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  VheaderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#0E7777',
+  },
+  Vclose: {
+    fontSize: 20,
+    color: '#999',
+  },
+  Vrow: {
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#eee',
+  },
+  Vlabel: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 2,
+  },
+  Vvalue: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
 });

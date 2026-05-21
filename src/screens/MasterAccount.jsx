@@ -6,16 +6,16 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {TextInput} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
+import React, { useEffect, useState } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { TextInput } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown';
 import CRMImg from '../images/CRMNEW.svg';
 import CustomButton from '../components/custom/CustomButton';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MasterAccount = ({navigation}) => {
+const MasterAccount = ({ navigation }) => {
   const [useCode, setCode] = useState('');
   const [useName, setName] = useState('');
   const [useAddress, setAddress] = useState('');
@@ -122,7 +122,18 @@ const MasterAccount = ({navigation}) => {
     result = await result.json();
     console.log(result);
     if (result.Status === 'SUCCESS') {
-      navigation.navigate('AppNavMaster');
+      Alert.alert(
+        'Success',
+        'Account created successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('AppNavMaster'),
+          },
+        ],
+        { cancelable: false }
+      );
+
     } else {
       Alert.alert(result.Message);
     }
@@ -130,9 +141,9 @@ const MasterAccount = ({navigation}) => {
   return (
     <ImageBackground
       source={require('../images/bg2.png')}
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAwareScrollView
           contentContainerStyle={{
             //flexGrow: 1,
@@ -146,10 +157,10 @@ const MasterAccount = ({navigation}) => {
             mode="outlined"
             autoCapitalize="none"
             autoCorrect={false}
-            style={{marginBottom: 5}}
+            style={{ marginBottom: 5 }}
             value={useCode}
             editable={false}
-            // onChangeText={text => setDocCode(text)}
+          // onChangeText={text => setDocCode(text)}
           />
           <TextInput
             label="Name"
@@ -192,7 +203,7 @@ const MasterAccount = ({navigation}) => {
               paddingTop: 5,
             }}>
             <Dropdown
-              style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+              style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
               placeholderStyle={style.placeholderStyle}
               selectedTextStyle={style.selectedTextStyle}
               inputSearchStyle={style.inputSearchStyle}

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -25,18 +25,18 @@ import Feather from 'react-native-vector-icons/Feather';
 import CRMImg from '../images/ieCRM Logo 1.svg';
 import ProgressDialog from '../components/custom/ProgressDialog';
 import NetInfo from '@react-native-community/netinfo';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 //import messaging from '@react-native-firebase/messaging';
 import DeviceInfo from 'react-native-device-info';
 import Geocoder from 'react-native-geocoding';
 import Geolocation from '@react-native-community/geolocation';
-import {GOOGLE_MAPS_API_KEY} from '@env';
-import {add} from 'date-fns';
+import { GOOGLE_MAPS_API_KEY } from '@env';
+import { add } from 'date-fns';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const LogInScreen = ({navigation}) => {
+const LogInScreen = ({ navigation }) => {
   const [secureText, setSecureText] = useState(true);
   const [loading, setLoading] = useState(false);
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -86,16 +86,16 @@ const LogInScreen = ({navigation}) => {
             if (geo.results?.length) {
               address = geo.results[0].formatted_address;
             }
-          } catch {}
+          } catch { }
 
-          const loc = {lat, lng, address};
+          const loc = { lat, lng, address };
           setLoginLocation(loc);
 
           resolve(loc);
         },
         err => {
           console.log('GPS FAILED, USING 0,0', err);
-          resolve({lat: 0, lng: 0, address: ''});
+          resolve({ lat: 0, lng: 0, address: '' });
         },
         {
           enableHighAccuracy: false,
@@ -326,8 +326,8 @@ const LogInScreen = ({navigation}) => {
 
         setLoading(false);
         navigation.replace('AppNavDash'); // prevents back to login
-      } 
-      else if(result?.data?.Result === 'Active'){
+      }
+      else if (result?.data?.Result === 'Active') {
         setLoading(false);
         Alert.alert('User Already Logged In from Another Device !!');
       }
@@ -361,9 +361,10 @@ const LogInScreen = ({navigation}) => {
   const checkUserExist = async () => {
     try {
       const url = BASE_URL + 'Login/Validate/Account/Name?UserName=' + uName;
-
+      console.log('CHECK USER :', url);
       const response = await fetch(url);
       const json = await response.json();
+
 
       console.log(json);
 
@@ -381,17 +382,17 @@ const LogInScreen = ({navigation}) => {
 
   return (
     <KeyboardAvoidingView
-      style={{flex: 1, backgroundColor: '#005696'}}
+      style={{ flex: 1, backgroundColor: '#005696' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
       <StatusBar barStyle="light-content" backgroundColor="#005696" />
 
       <ScrollView
-        contentContainerStyle={{flexGrow: 1}}
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         bounces={false}>
         {/* Logo */}
-        <View style={{alignItems: 'center', marginTop: height * 0.05}}>
+        <View style={{ alignItems: 'center', marginTop: height * 0.05 }}>
           <CRMImg height={183} width={154} />
           <Text style={styles.versionText}>Version 0.1</Text>
         </View>
@@ -419,7 +420,7 @@ const LogInScreen = ({navigation}) => {
                   <Animated.View
                     style={[
                       styles.loginButton,
-                      {transform: [{scale: scaleValue}]},
+                      { transform: [{ scale: scaleValue }] },
                     ]}>
                     <Text style={styles.loginText}>Next</Text>
                   </Animated.View>
@@ -468,7 +469,7 @@ const LogInScreen = ({navigation}) => {
                   <Animated.View
                     style={[
                       styles.loginButton,
-                      {transform: [{scale: scaleValue}]},
+                      { transform: [{ scale: scaleValue }] },
                     ]}>
                     <Text style={styles.loginText}>Login</Text>
                   </Animated.View>
@@ -502,7 +503,7 @@ const styles = StyleSheet.create({
 
     // iOS Shadows
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 3},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
 

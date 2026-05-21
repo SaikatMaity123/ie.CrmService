@@ -5,19 +5,20 @@ import {
   StatusBar,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import KeyBoardNewLayout from '../components/custom/KeyBoardNewLayout';
-import {TextInput} from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {Dropdown} from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import CustomButton from '../components/custom/CustomButton';
 import axios from 'axios';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 
-const LeadGeneration = ({navigation}) => {
+const LeadGeneration = ({ navigation }) => {
   const [useCode, setCode] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
@@ -223,7 +224,34 @@ const LeadGeneration = ({navigation}) => {
     hideDatePicker();
   };
 
+  const validateForm = () => {
+    if (!currDate) return 'Please select Lead Date';
+    if (!useempEmail) return 'Please enter Email';
+
+    // Email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(useempEmail)) return 'Invalid Email format';
+
+    if (!useLeadSourceLabel) return 'Please select Lead Source';
+    if (!usepriorityLabel) return 'Please select Lead Priority';
+    if (!useAvalue) return 'Please select Account';
+    if (!useRvalue) return 'Please select Referrer';
+    if (!useILabel) return 'Please select Industry';
+    if (!usePvalue) return 'Please select Product';
+    if (!useLCLabel) return 'Please select Lead Class';
+    if (!useRemarks) return 'Please enter Remarks';
+
+    return null;
+  };
+
   const saveData = async () => {
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      Alert.alert(validationError);
+      return;
+    }
     var params = {
       IDLead: '0',
       LeadNo: useCode,
@@ -242,6 +270,7 @@ const LeadGeneration = ({navigation}) => {
       CompanyCode: useBusinessID,
     };
     console.log(params);
+    
     const url = BASE_URL + 'Lead/Generation/Save?HexKey=' + useHexKey;
     console.log(url);
 
@@ -266,19 +295,19 @@ const LeadGeneration = ({navigation}) => {
   return (
     <ImageBackground
       source={require('../images/bg2.png')}
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       resizeMode="cover">
       <KeyBoardNewLayout>
-        <StatusBar barStyle="light-content" backgroundColor="transparent" />
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
         <TextInput
           label="Code"
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={useCode}
           editable={false}
-          // onChangeText={text => setDocCode(text)}
+        // onChangeText={text => setDocCode(text)}
         />
         <TouchableOpacity
           style={{
@@ -297,7 +326,7 @@ const LeadGeneration = ({navigation}) => {
               mode="outlined"
               autoCapitalize="none"
               autoCorrect={false}
-              style={{marginBottom: 5}}
+              style={{ marginBottom: 5 }}
               value={currDate}
               editable={false}
             />
@@ -326,7 +355,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -355,7 +384,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -384,7 +413,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -413,7 +442,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -442,7 +471,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -471,7 +500,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -500,7 +529,7 @@ const LeadGeneration = ({navigation}) => {
             paddingTop: 5,
           }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -530,10 +559,10 @@ const LeadGeneration = ({navigation}) => {
           mode="outlined"
           multiline
           numberOfLines={4}
-          style={{backgroundColor: '#fff'}}
+          style={{ backgroundColor: '#fff' }}
           outlineColor="#d6d6d6"
           activeOutlineColor="#4a90e2"
-          contentStyle={{textAlignVertical: 'top'}} // Important for Android
+          contentStyle={{ textAlignVertical: 'top' }} // Important for Android
         />
         <View
           style={{
@@ -545,7 +574,7 @@ const LeadGeneration = ({navigation}) => {
             alignItems: 'center',
             justifyContent: 'space-evenly',
           }}>
-          <View style={{flex: 1, marginRight: 5}}>
+          <View style={{ flex: 1, marginRight: 5 }}>
             <CustomButton label={'Submit'} onPress={() => saveData()} />
           </View>
 
