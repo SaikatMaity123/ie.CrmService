@@ -763,6 +763,53 @@ const LeadFollowup = () => {
 
   };
 
+
+  const cleanFileName = fileName => {
+    if (!fileName) {
+      return `file_${Date.now()}`;
+    }
+
+    return fileName
+      .replace(/\s+/g, '_')             // space to underscore
+      .replace(/[()]/g, '')             // remove brackets
+      .replace(/[^a-zA-Z0-9._-]/g, '')  // remove unsafe chars
+      .replace(/_+/g, '_');
+  };
+
+  const getOriginalNameWithoutExtension = fileName => {
+    if (!fileName) {
+      return `document_${Date.now()}`;
+    }
+
+    const parts = fileName.split('.');
+    if (parts.length <= 1) {
+      return fileName;
+    }
+
+    parts.pop();
+    return parts.join('.');
+  };
+
+  const getExtension = fileName => {
+    if (!fileName || !fileName.includes('.')) {
+      return '';
+    }
+
+    return fileName.split('.').pop();
+  };
+
+  const appendFileToFormData = (formData, file, customFileName) => {
+    if (!file || !file.uri) {
+      return;
+    }
+
+    formData.append('files', {
+      uri: file.uri,
+      name: cleanFileName(customFileName),
+      type: file.type || 'application/octet-stream',
+    });
+  };
+
   const saveFollowup = async () => {
     if (!nextDate || !contactPerson || !followBy || !communication || !autoCode || !remarks) {
       Alert.alert("Validation Error", "Please fill all required fields.");
@@ -795,6 +842,9 @@ const LeadFollowup = () => {
         EntryUser: useUName,
         IDUser: idUser,
         BusinessID: businessID,
+        Place: visitPlaceName,
+        Latitude: visitLat,
+        Longitude: visitLong,
 
 
       };
@@ -804,39 +854,87 @@ const LeadFollowup = () => {
       // JSON DATA
       formData.append("data", JSON.stringify(param));
 
+      // // RECEIVED DOCUMENTS
+      // receivedDocs.forEach(file => {
+
+      //   const originalName = file.name.split('.').slice(0, -1).join('.');
+      //   const extension = file.name.split('.').pop();
+
+      //   const customFileName =
+      //     `${selectedLeadId}_${autoCode}_${originalName}_Received.${extension}`;
+
+      //   formData.append("files", {
+      //     uri: file.uri,
+      //     name: customFileName,
+      //     type: file.type
+      //   });
+
+      // });
+
+      // // GIVEN DOCUMENTS
+      // givenDocs.forEach(file => {
+
+      //   const originalName = file.name.split('.').slice(0, -1).join('.');
+      //   const extension = file.name.split('.').pop();
+
+      //   const customFileName =
+      //     `${selectedLeadId}_${autoCode}_${originalName}_Given.${extension}`;
+
+      //   formData.append("files", {
+      //     uri: file.uri,
+      //     name: customFileName,
+      //     type: file.type
+      //   });
+
+      // });
+
+      // // VISIT IMAGE
+      // if (visitImage) {
+      //   const originalName = visitImage.name.split('.').slice(0, -1).join('.');
+      //   const extension = visitImage.name.split('.').pop();
+      //   const customFileName = `${selectedLeadId}_${originalName}_Visit.${extension}`;
+      //   formData.append("files", {
+      //     uri: visitImage.uri,
+      //     name: customFileName,
+      //     type: visitImage.type
+      //   });
+      // };
+
       // RECEIVED DOCUMENTS
       receivedDocs.forEach(file => {
+        const originalName = getOriginalNameWithoutExtension(file.name);
+        const extension = getExtension(file.name);
 
-        const originalName = file.name.split('.').slice(0, -1).join('.');
-        const extension = file.name.split('.').pop();
+        const customFileName = extension
+          ? `${selectedLeadId}_${autoCode}_${originalName}_Received.${extension}`
+          : `${selectedLeadId}_${autoCode}_${originalName}_Received`;
 
-        const customFileName =
-          `${selectedLeadId}_${autoCode}_${originalName}_Received.${extension}`;
-
-        formData.append("files", {
-          uri: file.uri,
-          name: customFileName,
-          type: file.type
-        });
-
+        appendFileToFormData(formData, file, customFileName);
       });
 
       // GIVEN DOCUMENTS
       givenDocs.forEach(file => {
+        const originalName = getOriginalNameWithoutExtension(file.name);
+        const extension = getExtension(file.name);
 
-        const originalName = file.name.split('.').slice(0, -1).join('.');
-        const extension = file.name.split('.').pop();
+        const customFileName = extension
+          ? `${selectedLeadId}_${autoCode}_${originalName}_Given.${extension}`
+          : `${selectedLeadId}_${autoCode}_${originalName}_Given`;
+
+        appendFileToFormData(formData, file, customFileName);
+      });
+
+      // VISIT IMAGE - only one live clicked image
+      if (visitImage) {
+        const imageName = visitImage.name || `visit_${Date.now()}.jpg`;
+        const originalName = getOriginalNameWithoutExtension(imageName);
+        const extension = getExtension(imageName) || 'jpg';
 
         const customFileName =
-          `${selectedLeadId}_${autoCode}_${originalName}_Given.${extension}`;
+          `${selectedLeadId}_${autoCode}_${originalName}_Visit.${extension}`;
 
-        formData.append("files", {
-          uri: file.uri,
-          name: customFileName,
-          type: file.type
-        });
-
-      });
+        appendFileToFormData(formData, visitImage, customFileName);
+      }
 
       console.log("Sending formData...");
 
@@ -866,6 +964,8 @@ const LeadFollowup = () => {
         setNextDate('');
         setGivenDocs([]);
         setReceivedDocs([]);
+        setCommunication(null);
+        setVisitImage(null);
 
         fetchLeads(hexKey, idUser, userType, businessID, startDate, endDate);
 
