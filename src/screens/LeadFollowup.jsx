@@ -80,6 +80,7 @@ const LeadFollowup = () => {
   const [givenDocs, setGivenDocs] = useState([]);
   const [receivedDocs, setReceivedDocs] = useState([]);
   const [isConnected, setIsConnected] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const ratingList = [
     { label: '1', value: 1 },
@@ -811,6 +812,9 @@ const LeadFollowup = () => {
   };
 
   const saveFollowup = async () => {
+    if (isSaving) {
+      return;
+    }
     if (!nextDate || !contactPerson || !followBy || !communication || !autoCode || !remarks) {
       Alert.alert("Validation Error", "Please fill all required fields.");
       return;
@@ -822,7 +826,7 @@ const LeadFollowup = () => {
       );
       return;
     }
-    setLoading(true);
+    setIsSaving(true);
     try {
 
       const url = `${BASE_URL}LeadFollowUp/Save?HexKey=${hexKey}`;
@@ -901,6 +905,7 @@ const LeadFollowup = () => {
       // };
 
       // RECEIVED DOCUMENTS
+
       receivedDocs.forEach(file => {
         const originalName = getOriginalNameWithoutExtension(file.name);
         const extension = getExtension(file.name);
@@ -981,7 +986,7 @@ const LeadFollowup = () => {
 
     }
     finally {
-      setLoading(false);
+      setIsSaving(false);
     }
 
   };
@@ -1478,7 +1483,11 @@ const LeadFollowup = () => {
               <View style={styles.modalBtnRow}>
 
                 <TouchableOpacity
-                  style={styles.cancelBtn}
+                  style={[
+                    styles.cancelBtn,
+                    isSaving && { opacity: 0.5 },
+                  ]}
+                  disabled={isSaving}
                   onPress={() => {
                     clearVisitData();
                     setAddModalVisible(false);
@@ -1488,10 +1497,22 @@ const LeadFollowup = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.saveBtn}
+                  style={[
+                    styles.saveBtn,
+                    isSaving && styles.saveBtnDisabled,
+                  ]}
                   onPress={saveFollowup}
+                  disabled={isSaving}
+                  activeOpacity={isSaving ? 1 : 0.7}
                 >
-                  <Text style={{ color: '#fff' }}>Save</Text>
+                  {isSaving ? (
+                    <View style={styles.savingRow}>
+                      <ActivityIndicator size="small" color="#fff" />
+                      <Text style={styles.savingText}>Saving...</Text>
+                    </View>
+                  ) : (
+                    <Text style={{ color: '#fff' }}>Save</Text>
+                  )}
                 </TouchableOpacity>
 
               </View>
@@ -1876,5 +1897,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'left',
     gap: 10,
+  },
+  saveBtnDisabled: {
+    opacity: 0.6,
+  },
+
+  savingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  savingText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontWeight: '600',
   },
 });
