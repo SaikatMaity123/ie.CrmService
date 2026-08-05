@@ -307,21 +307,22 @@ const LeadFollowup = () => {
     setFollowLoading(true);
     try {
 
-      const url =
-        `${BASE_URL}LeadFollowUp/Exist/Today?HexKey=${hexKey}&IDLead=${lead.IDLead}`;
+      // const url =
+      //   `${BASE_URL}LeadFollowUp/Exist/Today?HexKey=${hexKey}&IDLead=${lead.IDLead}`;
 
-      const res = await axios.get(url);
+      // const res = await axios.get(url);
+      // console.log('Follow-up Exist Check:', url, res.data);
 
-      if (res.data.data.ResultID !== 0) {
+      // if (res.data.data.ResultID !== 0) {
 
-        Alert.alert(
-          "Follow-up Exists",
-          "A follow-up has already been added today."
-        );
+      //   Alert.alert(
+      //     "Follow-up Exists",
+      //     "A follow-up has already been added today."
+      //   );
 
-        return;
+      //   return;
 
-      }
+      // }
 
       setSelectedLeadId(lead.IDLead);
 
@@ -837,7 +838,7 @@ const LeadFollowup = () => {
         IDLead: selectedLeadId,
         FollowupCode: autoCode,
         NextFollowupDate: nextDate,
-        Points: rating,
+        Points: rating ?? 0,
         ContactPerson: contactPerson,
         ComMethod: communication,
         FollowedBy: followBy,
@@ -846,12 +847,27 @@ const LeadFollowup = () => {
         EntryUser: useUName,
         IDUser: idUser,
         BusinessID: businessID,
-        Place: visitPlaceName,
-        Latitude: visitLat,
-        Longitude: visitLong,
+        Place: visitPlaceName ?? '',
+        Latitude: visitLat ?? '',
+        Longitude: visitLong ?? '',
 
 
       };
+
+
+      /*
+       * LOG API DATA
+       */
+      // console.log('====================================');
+      // console.log('FOLLOWUP SAVE API');
+      // console.log('URL:', url);
+      // console.log('PARAM:', JSON.stringify(param, null, 2));
+
+      // console.log('Received Documents:', receivedDocs);
+      // console.log('Given Documents:', givenDocs);
+      // console.log('Visit Image:', visitImage);
+      // console.log('====================================');
+
 
       const formData = new FormData();
 
