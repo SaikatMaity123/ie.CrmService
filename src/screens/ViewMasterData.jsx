@@ -12,20 +12,25 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { openDatabase } from 'react-native-sqlite-storage';
+import React, {useEffect, useState, useCallback} from 'react';
+import {openDatabase} from 'react-native-sqlite-storage';
 import CustomViewMaster from '../components/custom/CustomViewMaster';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { BASE_URL } from '@env';
-import { Image } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import { useNavigation } from '@react-navigation/native';
+import {BASE_URL} from '@env';
+import {Image} from 'react-native';
+import {Dropdown} from 'react-native-element-dropdown';
+import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Open DB
 const db = openDatabase(
-  { name: 'CRM_db', location: 'default' },
+  {name: 'CRM_db', location: 'default'},
   () => console.log('Database connected!'),
   error => console.log('Database error', error),
 );
@@ -43,7 +48,8 @@ const ViewMasterData = () => {
   const [productList, setProductList] = useState([]);
   const [stageList, setStageList] = useState([]);
   const [isFocus, setIsFocus] = useState(false);
-  const [isAddProductModalVisible, setIsAddProductModalVisible] = useState(false);
+  const [isAddProductModalVisible, setIsAddProductModalVisible] =
+    useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedStage, setSelectedStage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,6 +166,20 @@ const ViewMasterData = () => {
     }
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavMaster'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const handleEdit = async item => {
     const IDDoctor = item.IDDoctor || item.ID;
     const userData = await AsyncStorage.getItem('UserData');
@@ -170,7 +190,7 @@ const ViewMasterData = () => {
     try {
       const net = await NetInfo.fetch();
       if (!net.isConnected) {
-        alert('No internet connection.');
+        Alert.alert('No internet connection.');
         return;
       }
 
@@ -188,29 +208,34 @@ const ViewMasterData = () => {
       const productRes = await fetch(productUrl);
       if (!productRes.ok) throw new Error('Failed to fetch products');
       const productJson = await productRes.json();
-      setProductList(productJson.map(p => ({ label: p.Name, value: p.IDProduct })));
+      setProductList(
+        productJson.map(p => ({label: p.Name, value: p.IDProduct})),
+      );
 
       // 3. Fetch stages
       const stageUrl = `https://apitest.mendine.co.in/api/crm/Misc/List?Businessid=${user.BusinessID}&Type=TARGET`;
       const stageRes = await fetch(stageUrl);
       if (!stageRes.ok) throw new Error('Failed to fetch stages');
       const stageJson = await stageRes.json();
-      setStageList(stageJson.map(s => ({ label: s.Name, value: s.IDMisc })));
+      setStageList(stageJson.map(s => ({label: s.Name, value: s.IDMisc})));
 
       // ✅ Only open modal if all above succeeds
       setIsModalVisible(true);
     } catch (err) {
       console.error(err);
-      alert(err.message || 'Something went wrong.');
+      Alert.alert(err.message || 'Something went wrong.');
     } finally {
       setIsLoading(false); // Always stop loader
     }
   };
 
-
   // New saveData method for Modal Submit button
   const saveData = async () => {
-    if (!selectedDoctor || !selectedDoctor.Products || selectedDoctor.Products.length === 0) {
+    if (
+      !selectedDoctor ||
+      !selectedDoctor.Products ||
+      selectedDoctor.Products.length === 0
+    ) {
       Alert.alert('Select Product & Stage');
       return;
     }
@@ -221,7 +246,7 @@ const ViewMasterData = () => {
 
     const productsID = selectedDoctor.Products.map(p => ({
       IDProduct: p.Product.IDProduct,
-      IDSatge: p.Stage.IDMisc
+      IDSatge: p.Stage.IDMisc,
     }));
 
     const data = {
@@ -238,7 +263,7 @@ const ViewMasterData = () => {
       IDHQ: selectedDoctor.HQ?.IDHQ || 0,
       Mobile: selectedDoctor.Mobile || '',
       Email: selectedDoctor.Email || '',
-      Employee: { IDEmployee: user.IDEmployee },
+      Employee: {IDEmployee: user.IDEmployee},
       Latitude1: 0,
       Longitude1: 0,
       Latitude2: 0,
@@ -251,7 +276,7 @@ const ViewMasterData = () => {
       PatientNo: selectedDoctor.PatientNo || 0,
       CreatedBy: user.Empemail,
       Businessid: user.BusinessID,
-      Products: productsID
+      Products: productsID,
     };
 
     console.log('Submitting:', data);
@@ -259,21 +284,24 @@ const ViewMasterData = () => {
     NetInfo.fetch().then(async state => {
       if (state.isConnected) {
         try {
-          const response = await fetch(BASE_URL + 'Doctor/MobileDoctorAddEdit', {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
+          const response = await fetch(
+            BASE_URL + 'Doctor/MobileDoctorAddEdit',
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
             },
-            body: JSON.stringify(data),
-          });
+          );
 
           const result = await response.json();
           console.log('API Result:', result);
 
           if (result.result === '') {
             Alert.alert('Success', 'Record Successfully Saved', [
-              { text: 'Ok', onPress: () => navigation.navigate('AppNavMaster') },
+              {text: 'Ok', onPress: () => navigation.navigate('AppNavMaster')},
             ]);
           } else {
             Alert.alert('Error', result.result);
@@ -283,14 +311,13 @@ const ViewMasterData = () => {
           Alert.alert('Error', 'Something went wrong while saving.');
         }
       } else {
-        Alert.alert('No internet connection', 'You are offline, try again later.');
+        Alert.alert(
+          'No internet connection',
+          'You are offline, try again later.',
+        );
       }
     });
   };
-
-
-
-
 
   // Search handlers
   const handleSearch = text => setSearchQuery(text);
@@ -300,27 +327,30 @@ const ViewMasterData = () => {
 
   const ApprovalStatus = item =>
     item === 0 ? (
-      <Text style={styles.approvalRed}>ApprovalStatus : No</Text>
+      <Text style={styles.approvalNo}> Rejected </Text>
     ) : item === 1 ? (
-      <Text style={styles.approvalBlue}>ApprovalStatus : Yes</Text>
+      <Text style={styles.approvalYes}> Approved </Text>
     ) : (
-      <Text style={styles.approvalText}>ApprovalStatus :</Text>
+      <Text style={styles.approvalText}> : </Text>
     );
 
-  const filteredDoctors = useDoctors.filter(item =>
-    item.Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.Area?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.Code?.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredDoctors = useDoctors.filter(
+    item =>
+      item.Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.Area?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.Code?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const filteredRetailer = useRetailers.filter(item =>
-    item.Name?.toLowerCase().includes(searchQueryRet.toLowerCase()) ||
-    item.Area?.toLowerCase().includes(searchQueryRet.toLowerCase()) ||
-    item.Code?.toLowerCase().includes(searchQueryRet.toLowerCase()),
+  const filteredRetailer = useRetailers.filter(
+    item =>
+      item.Name?.toLowerCase().includes(searchQueryRet.toLowerCase()) ||
+      item.Area?.toLowerCase().includes(searchQueryRet.toLowerCase()) ||
+      item.Code?.toLowerCase().includes(searchQueryRet.toLowerCase()),
   );
 
   return (
     <>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#007bff" />
@@ -328,9 +358,9 @@ const ViewMasterData = () => {
         </View>
       )}
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <SafeAreaView>
-          <View style={{ marginLeft: 10, marginRight: 10, marginTop: 10 }}>
+      {/* <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}> */}
+        <SafeAreaView style={{flex: 1}}>
+          <View style={{marginLeft: 10, marginRight: 10, marginTop: 10}}>
             <CustomViewMaster
               selectionMode={1}
               option1="Master Doctors"
@@ -341,18 +371,30 @@ const ViewMasterData = () => {
 
           {gamesTab === 1 ? (
             <View>
-              <TextInput
-                style={styles.searchBar}
-                placeholder="Search..."
-                value={searchQuery}
-                onChangeText={handleSearch}
-              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#ffffff',
+                  borderRadius: 10,
+                  margin: 10,
+                  paddingHorizontal: 10,
+                  elevation: 2,
+                }}>
+                <Ionicons name="search" size={20} color="#999" />
+                <TextInput
+                  style={styles.searchBar}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                />
+              </View>
               {filteredDoctors.length ? (
                 <View style={styles.areaStyle}>
                   <FlatList
                     data={filteredDoctors}
                     keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
+                    renderItem={({item}) => (
                       <TouchableWithoutFeedback>
                         <View style={styles.menu}>
                           {item.ApprovalStatus === 1 && (
@@ -360,11 +402,42 @@ const ViewMasterData = () => {
                               <Text style={styles.editButton}>Edit</Text>
                             </TouchableOpacity>
                           )}
-
-                          <Text style={styles.menuItem}>Name : {item.Name}</Text>
-                          <Text style={styles.menuItem}>Code : {item.Code}</Text>
-                          <Text style={styles.menuItem}>Area : {item.Area}</Text>
-                          {ApprovalStatus(item.ApprovalStatus)}
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}>
+                            <MaterialCommunityIcons
+                              name="doctor"
+                              size={45}
+                              color="#005696"
+                              style={{marginRight: 10}}
+                            />
+                            <View style={{flex: 1}}>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                }}>
+                                Dr. {item.Name}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={styles.menuItem}>
+                            Code : {item.Code}
+                          </Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                            }}>
+                            <Text style={styles.menuItem}>
+                              Area : {item.Area}
+                            </Text>
+                            {ApprovalStatus(item.ApprovalStatus)}
+                          </View>
                         </View>
                       </TouchableWithoutFeedback>
                     )}
@@ -376,24 +449,70 @@ const ViewMasterData = () => {
             </View>
           ) : (
             <View>
-              <TextInput
-                style={styles.searchBar}
-                placeholder="Search..."
-                value={searchQueryRet}
-                onChangeText={handleSearchRet}
-              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#ffffff',
+                  borderRadius: 10,
+                  margin: 10,
+                  paddingHorizontal: 10,
+                  elevation: 2,
+                }}>
+                <Ionicons name="search" size={20} color="#999" />
+                <TextInput
+                  style={styles.searchBar}
+                  placeholder="Search..."
+                  value={searchQueryRet}
+                  onChangeText={handleSearchRet}
+                />
+              </View>
               {filteredRetailer.length ? (
                 <View style={styles.areaStyle}>
                   <FlatList
                     data={filteredRetailer}
                     keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
+                    renderItem={({item}) => (
                       <TouchableWithoutFeedback>
                         <View style={styles.menu}>
-                          <Text style={styles.menuItem}>Name : {item.Name}</Text>
-                          <Text style={styles.menuItem}>Code : {item.Code}</Text>
-                          <Text style={styles.menuItem}>Area : {item.Area}</Text>
-                          {ApprovalStatus(item.ApprovalStatus)}
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}>
+                            <MaterialCommunityIcons
+                              name="store-outline"
+                              size={45}
+                              color="#005696"
+                              style={{marginRight: 10}}
+                            />
+
+                            <View style={{flex: 1}}>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                }}>
+                                {item.Name}
+                              </Text>
+                            </View>
+                          </View>
+                          {/* <Text style={styles.menuItem}>Name : {item.Name}</Text> */}
+                          <Text style={styles.menuItem}>
+                            Code : {item.Code}
+                          </Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}>
+                            <Text style={styles.menuItem}>
+                              Area : {item.Area}
+                            </Text>
+                            {ApprovalStatus(item.ApprovalStatus)}
+                          </View>
                         </View>
                       </TouchableWithoutFeedback>
                     )}
@@ -410,26 +529,36 @@ const ViewMasterData = () => {
               <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                   <Text style={styles.modalTitle}>Doctor Details</Text>
-                  <ScrollView style={{ maxHeight: 400 }}>
+                  <ScrollView style={{maxHeight: 400}}>
                     <Text>Name: {selectedDoctor?.Name || '-'}</Text>
                     <Text>Code: {selectedDoctor?.Code || '-'}</Text>
                     <Text>Mobile: {selectedDoctor?.Mobile || '-'}</Text>
-                    <Text>Qualification: {selectedDoctor?.Qualification?.Name || '-'}</Text>
-                    <Text>Speciality: {selectedDoctor?.Speciality?.Name || '-'}</Text>
-                    <Text>Category: {selectedDoctor?.Category?.Name || '-'}</Text>
-                    <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Products:</Text>
+                    <Text>
+                      Qualification:{' '}
+                      {selectedDoctor?.Qualification?.Name || '-'}
+                    </Text>
+                    <Text>
+                      Speciality: {selectedDoctor?.Speciality?.Name || '-'}
+                    </Text>
+                    <Text>
+                      Category: {selectedDoctor?.Category?.Name || '-'}
+                    </Text>
+                    <Text style={{marginTop: 10, fontWeight: 'bold'}}>
+                      Products:
+                    </Text>
 
                     <FlatList
                       data={selectedDoctor?.Products || []}
                       keyExtractor={(item, index) => index.toString()}
-                      renderItem={({ item, index }) => (
+                      renderItem={({item, index}) => (
                         <View style={styles.productItem}>
-                          <View style={{
-                            flex: 1,
-                            fontFamily: 'Roboto-BoldItalic',
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                          }}>
+                          <View
+                            style={{
+                              flex: 1,
+                              fontFamily: 'Roboto-BoldItalic',
+                              fontSize: 18,
+                              fontWeight: 'bold',
+                            }}>
                             <Text>Product: {item.Product.Name}</Text>
                             <Text>Stage: {item.Stage.Name}</Text>
                           </View>
@@ -438,9 +567,11 @@ const ViewMasterData = () => {
                               onPress={() => {
                                 const updated = [...selectedDoctor.Products];
                                 updated.splice(index, 1);
-                                setSelectedDoctor({ ...selectedDoctor, Products: updated });
-                              }}
-                            >
+                                setSelectedDoctor({
+                                  ...selectedDoctor,
+                                  Products: updated,
+                                });
+                              }}>
                               <Image
                                 source={require('../images/Delete_icon.png')}
                                 style={styles.deleteIconImage}
@@ -455,27 +586,27 @@ const ViewMasterData = () => {
                   <View style={styles.buttonRow}>
                     <TouchableOpacity
                       style={styles.EditButton}
-                      onPress={() => setIsAddProductModalVisible(true)}
-                    >
+                      onPress={() => setIsAddProductModalVisible(true)}>
                       <Text style={styles.buttonText}>Add</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.saveButton}
-                      onPress={saveData}
-                    >
+                      onPress={saveData}>
                       <Text style={styles.buttonText}>Submit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.closeButton}
-                      onPress={() => setIsModalVisible(false)}
-                    >
+                      onPress={() => setIsModalVisible(false)}>
                       <Text style={styles.buttonText}>Close</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               </View>
 
-              <Modal visible={isAddProductModalVisible} transparent animationType="slide">
+              <Modal
+                visible={isAddProductModalVisible}
+                transparent
+                animationType="slide">
                 <View style={styles.modalContainer}>
                   <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Add Product & Stage</Text>
@@ -505,43 +636,52 @@ const ViewMasterData = () => {
                         onPress={() => {
                           if (selectedProduct && selectedStage) {
                             const isDuplicate = selectedDoctor.Products?.some(
-                              p => p.Product.IDProduct === selectedProduct.value
+                              p =>
+                                p.Product.IDProduct === selectedProduct.value,
                             );
-                        
+
                             if (isDuplicate) {
-                              Alert.alert('Duplicate Product', 'This product is already added.');
+                              Alert.alert(
+                                'Duplicate Product',
+                                'This product is already added.',
+                              );
                               return;
                             }
-                        
-                            const updated = [...(selectedDoctor.Products || [])];
+
+                            const updated = [
+                              ...(selectedDoctor.Products || []),
+                            ];
                             updated.push({
                               Product: {
                                 IDProduct: selectedProduct.value,
-                                Name: selectedProduct.label
+                                Name: selectedProduct.label,
                               },
                               Stage: {
                                 IDMisc: selectedStage.value,
-                                Name: selectedStage.label
-                              }
+                                Name: selectedStage.label,
+                              },
                             });
-                        
-                            setSelectedDoctor({ ...selectedDoctor, Products: updated });
+
+                            setSelectedDoctor({
+                              ...selectedDoctor,
+                              Products: updated,
+                            });
                             setIsAddProductModalVisible(false);
                             setSelectedProduct(null);
                             setSelectedStage(null);
                           } else {
-                            Alert.alert('Validation', 'Please select both Product and Stage.');
+                            Alert.alert(
+                              'Validation',
+                              'Please select both Product and Stage.',
+                            );
                           }
-                        }}
-                        
-                      >
+                        }}>
                         <Text style={styles.buttonText}>Save</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         style={styles.closeButton}
-                        onPress={() => setIsAddProductModalVisible(false)}
-                      >
+                        onPress={() => setIsAddProductModalVisible(false)}>
                         <Text style={styles.buttonText}>Cancel</Text>
                       </TouchableOpacity>
                     </View>
@@ -551,10 +691,9 @@ const ViewMasterData = () => {
             </Modal>
           )}
         </SafeAreaView>
-      </ScrollView>
+      {/* </ScrollView> */}
     </>
   );
-
 };
 
 export default ViewMasterData;
@@ -565,24 +704,24 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     marginLeft: 5,
     marginRight: 5,
-    borderRadius: 5,
+    borderRadius: 10,
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginLeft: 10,
-    marginRight: 10,
-    marginTop: 5,
-    paddingLeft: 10,
+    flex: 1,
+    marginLeft: 8,
+    paddingVertical: 8,
+    fontSize: 15,
   },
   menu: {
     margin: 5,
     padding: 5,
-    backgroundColor: '#ecf0f1',
+    backgroundColor: '#ffffff',
     elevation: 5,
-    borderRadius: 2,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   menuItem: {
     fontSize: 14,
@@ -591,28 +730,45 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   editButton: {
+    flex: 1,
+    width: 60,
     fontSize: 15,
     fontFamily: 'Lato-Bold',
-    color: '#007bff',
-    textAlign: 'right',
+    backgroundColor: '#007bff',
+    color: '#ffffff',
+    borderRadius: 20,
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    margin: 5,
     padding: 5,
     right: 10, // Adjust as needed
   },
 
-  approvalRed: {
-    color: 'red',
-    fontSize: 14,
-    margin: 5,
-    padding: 5,
+  approvalYes: {
+    backgroundColor: '#3cb371',
+    color: '#fff',
+    fontSize: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    overflow: 'hidden',
+    alignSelf: 'center',
   },
-  approvalBlue: {
-    color: 'blue',
-    fontSize: 14,
-    margin: 5,
-    padding: 5,
+  approvalNo: {
+    backgroundColor: '#f24633',
+    color: '#fff',
+    fontSize: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    overflow: 'hidden',
+    alignSelf: 'center',
   },
+
   approvalText: {
-    fontSize: 14,
+    fontSize: 16,
     margin: 5,
     padding: 5,
   },
@@ -755,5 +911,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-
 });

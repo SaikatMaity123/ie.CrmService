@@ -14,8 +14,10 @@ import {
   Image,
   Modal,
   TextInput,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 //import {TextInput} from 'react-native-paper';
 import {openDatabase} from 'react-native-sqlite-storage';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -25,8 +27,10 @@ import {BASE_URL} from '@env';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import moment from 'moment';
 import axios from 'axios';
+import {useFocusEffect} from '@react-navigation/native';
 import CRMImg from '../images/CRMNEW.svg';
 import {MultipleSelectList} from 'react-native-dropdown-select-list';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 
 //database connection
 const db = openDatabase(
@@ -85,6 +89,20 @@ const OrderBookingScreen = ({navigation}) => {
     //setModalVisible(!isModalVisible);
     setModalVisible(true);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   useEffect(() => {
     LogBox.ignoreLogs([
@@ -423,8 +441,7 @@ const OrderBookingScreen = ({navigation}) => {
               errorText = result.result;
             }
             console.log(errorText);
-            if (result.result === useRemarks)
-               {
+            if (result.result === useRemarks) {
               Alert.alert(
                 'Success',
                 'Record Successfully Saved',
@@ -437,7 +454,7 @@ const OrderBookingScreen = ({navigation}) => {
                 ],
                 {cancelable: false},
               );
-            } 
+            }
             // else if (result.result === errorText) {
             //   Alert.alert(
             //     'Success',
@@ -451,7 +468,7 @@ const OrderBookingScreen = ({navigation}) => {
             //     ],
             //     {cancelable: false},
             //   );
-            // } 
+            // }
             else {
               Alert.alert(result.result);
               navigation.navigate('AppNavScreen');
@@ -689,7 +706,7 @@ const OrderBookingScreen = ({navigation}) => {
                 for (let i = 0; i < results.rows.length; ++i) {
                   temp.push({
                     value: results.rows.item(i).IDArea,
-                    label: results.rows.item(i).AreaName,
+                    label: results.rows.item(i).Name,
                   });
                 }
                 setMArea(temp);
@@ -825,10 +842,9 @@ const OrderBookingScreen = ({navigation}) => {
     }, []);
   };
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
-      showsVerticalScrollIndicator={false}>
-      <View style={{justifyContent: 'center'}}>
+    <KeyboardAwareLayout>  
+      <StatusBar backgroundColor="#a9ddfaff" barStyle="light-content" />
+      <View style={{justifyContent: 'center' , backgroundColor:'#ffffff'}}>
         {/* <View
         style={{
           backgroundColor: '#ecf0f1',
@@ -983,8 +999,10 @@ const OrderBookingScreen = ({navigation}) => {
             mode="outlined"
             autoCapitalize="none"
             autoCorrect={false}
-            style={[style.textInput, {marginTop: 5}]}
+            style={[style.textInput, {marginTop: 10}]}
             placeholder="Remarks"
+            multiline={true}
+            numberOfLines={3}
             placeholderTextColor="#555"
             value={useRemarks}
             onChangeText={text => setRemarks(text)}
@@ -1348,7 +1366,7 @@ const OrderBookingScreen = ({navigation}) => {
                   <View style={{flexDirection: 'row'}}>
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '#33767C',
+                        backgroundColor: '#005696',
                         height: 50,
                         width: '30%',
                         padding: 5,
@@ -1373,7 +1391,7 @@ const OrderBookingScreen = ({navigation}) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={{
-                        backgroundColor: '#33767C',
+                        backgroundColor: '#005696',
                         height: 50,
                         width: '30%',
                         padding: 5,
@@ -1518,7 +1536,7 @@ const OrderBookingScreen = ({navigation}) => {
           />
         </View>
       </View>
-    </ScrollView>
+    </KeyboardAwareLayout>
   );
 };
 
@@ -1532,13 +1550,13 @@ const style = StyleSheet.create({
   },
   dropdown: {
     height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
+    borderColor: '#333333',
+    borderWidth: 0.7,
     borderRadius: 8,
     paddingHorizontal: 8,
     backgroundColor: '#fff',
     //marginBottom: 10,
-    //marginTop: 5,
+    marginTop: 5,
   },
   dropdownStage: {
     height: 50,
@@ -1686,7 +1704,7 @@ const style = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#00695C',
+    backgroundColor: '#005696',
     paddingVertical: 15,
     paddingHorizontal: 30,
     marginBottom: 20,

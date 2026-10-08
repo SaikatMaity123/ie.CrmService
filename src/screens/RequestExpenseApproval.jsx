@@ -99,7 +99,7 @@ const RequestExpenseApproval = ({navigation}) => {
             style={[
               styles.menu,
               {
-                backgroundColor: '#ecf0f1',
+                backgroundColor: '#ffffff',
                 //justifyContent: 'space-around',
                 flexDirection: 'row',
                 alignItems: 'center',

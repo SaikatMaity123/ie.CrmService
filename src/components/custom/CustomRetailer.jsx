@@ -1,5 +1,6 @@
-import {View, Text, TouchableOpacity} from 'react-native';
-import React, {useState} from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const CustomRetailer = ({
   selectionMode,
@@ -13,6 +14,11 @@ const CustomRetailer = ({
     setSelectionMode(value);
     onSelectSwitch(value);
   };
+  const getIconName = option => {
+    if (option.toLowerCase() === 'sample') return 'flask-outline';
+    if (option.toLowerCase() === 'gift') return 'gift-outline';
+    return 'ellipse-outline';
+  };
   return (
     <View
       style={{
@@ -20,7 +26,7 @@ const CustomRetailer = ({
         width: '100%',
         backgroundColor: '#e4e4e4',
         borderRadius: 10,
-        borderColor: '#AD40AF',
+        borderColor: '#005696',
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
@@ -29,14 +35,21 @@ const CustomRetailer = ({
         onPress={() => updateSwitchData(1)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 1 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 1 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
+          flexDirection: 'row',
         }}>
+        <Ionicons
+          name={getIconName(option1)}
+          size={18}
+          color={getSelectionMode == 1 ? 'white' : '#005696'}
+          style={{ marginRight: 6 }}
+        />
         <Text
           style={{
-            color: getSelectionMode == 1 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 1 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
@@ -48,21 +61,28 @@ const CustomRetailer = ({
         onPress={() => updateSwitchData(2)}
         style={{
           flex: 1,
-          backgroundColor: getSelectionMode == 2 ? '#AD40AF' : '#e4e4e4',
+          backgroundColor: getSelectionMode == 2 ? '#005696' : '#e4e4e4',
           borderRadius: 10,
           justifyContent: 'center',
           alignItems: 'center',
+          flexDirection: 'row',
         }}>
+        <Ionicons
+          name={getIconName(option2)}
+          size={18}
+          color={getSelectionMode == 2 ? 'white' : '#005696'}
+          style={{ marginRight: 6 }}
+        />
         <Text
           style={{
-            color: getSelectionMode == 2 ? 'white' : '#AD40AF',
+            color: getSelectionMode == 2 ? 'white' : '#005696',
             fontSize: 14,
             fontFamily: 'Roboto-Medium',
           }}>
           {option2}
         </Text>
       </TouchableOpacity>
-    
+
     </View>
   );
 };

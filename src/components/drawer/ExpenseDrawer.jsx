@@ -1,6 +1,6 @@
-import {View, Text,TouchableOpacity} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
-import {createDrawerNavigator} from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -9,36 +9,46 @@ import ExpenseScreen from '../../screens/ExpenseScreen';
 import ExpenseList from '../../screens/ExpenseList';
 import LogoutScreen from '../../screens/LogoutScreen';
 import RequestExpenseApproval from '../../screens/RequestExpenseApproval';
-
+import LinearGradient from 'react-native-linear-gradient';
 const Drawer = createDrawerNavigator();
 
-const ExpenseDrawer = ({navigation}) => {
+const ExpenseDrawer = ({ navigation }) => {
   return (
     <Drawer.Navigator
-      screenOptions={({navigation}) => ({
+      screenOptions={({ navigation }) => ({
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{marginRight: 15}}>
-            <Ionicons name="arrow-back" size={24} color="black" />
+            //onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate('AppNavScreen')}
+            style={{ marginRight: 15 }}>
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </TouchableOpacity>
         ),
         headerLeft: () => (
           <TouchableOpacity
             onPress={() => navigation.toggleDrawer()}
-            style={{marginLeft: 15}}>
-            <Ionicons name="menu" size={24} color="black" />
+            style={{ marginLeft: 15 }}>
+            <Ionicons name="menu" size={24} color="#ffffff" />
           </TouchableOpacity>
         ),
+        headerBackground: () => (
+          <LinearGradient
+            colors={['#a9ddfaff', '#005696']} // light → dark
+            style={{ flex: 1 }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+        ),
+        headerTitleStyle: { color: '#ffffff', fontSize: 18, fontWeight: 'bold', justifyContent: 'center', alignItems: 'center' },
       })}
       drawerContent={props => <CustomExpense {...props} />}>
       <Drawer.Screen
-        name="Expense DashBoard"
+        name="Expense Dashboard"
         //component={BottomTabNavigator}
         component={ExpenseScreen}
         //options={{headerShown: true}}
         options={{
-          drawerIcon: ({color}) => (
+          drawerIcon: ({ color }) => (
             <AntDesign name="dashboard" size={22} color={color} />
           ),
         }}
@@ -49,7 +59,7 @@ const ExpenseDrawer = ({navigation}) => {
         component={ExpenseList}
         //options={{headerShown: true}}
         options={{
-          drawerIcon: ({color}) => (
+          drawerIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="clipboard-list-outline"
               size={22}
@@ -64,7 +74,7 @@ const ExpenseDrawer = ({navigation}) => {
         component={RequestExpenseApproval}
         //options={{headerShown: true}}
         options={{
-          drawerIcon: ({color}) => (
+          drawerIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="format-list-checks"
               size={22}
@@ -78,7 +88,7 @@ const ExpenseDrawer = ({navigation}) => {
         component={LogoutScreen}
         // options={{headerShown: true}}
         options={{
-          drawerIcon: ({color}) => (
+          drawerIcon: ({ color }) => (
             <Ionicons name="exit-outline" size={22} color={color} />
           ),
         }}

@@ -14,12 +14,13 @@ import {
   LogBox,
   BackHandler,
   TextInput,
+  StatusBar,
 } from 'react-native';
 import {
   isLocationEnabled,
   promptForEnableLocationIfNeeded,
 } from 'react-native-android-location-enabler';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 //import {TextInput} from 'react-native-paper';
 import {MultipleSelectList} from 'react-native-dropdown-select-list';
@@ -40,7 +41,10 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import ProgressDialog from '../components/custom/ProgressDialog';
 import CustomRetailer from '../components/custom/CustomRetailer';
-
+import {useFocusEffect} from '@react-navigation/native';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 //database connection
 const db = openDatabase(
   {
@@ -139,6 +143,20 @@ const RetailerDCRScreen = ({navigation}) => {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavDCRScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const getData = () => {
     try {
@@ -252,9 +270,15 @@ const RetailerDCRScreen = ({navigation}) => {
                     Alert.alert(error);
                   });
 
+                // const vwturl =
+                //   BASE_URL +
+                //   'Employee/EmployeeUpwardManagerList?Businessid=' +
+                //   user.BusinessID +
+                //   '&IDEmployee=' +
+                //   user.IDEmployee;
                 const vwturl =
                   BASE_URL +
-                  'Employee/EmployeeUpwardManagerList?Businessid=' +
+                  'Employee/MSRVisitwithList?Businessid=' +
                   user.BusinessID +
                   '&IDEmployee=' +
                   user.IDEmployee;
@@ -596,9 +620,15 @@ const RetailerDCRScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
-        //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        // const currentLongitude = JSON.stringify(position.coords.longitude);
+        // //getting the Longitude from the location json
+        // const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -649,9 +679,15 @@ const RetailerDCRScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
-        //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        // const currentLongitude = JSON.stringify(position.coords.longitude);
+        // //getting the Longitude from the location json
+        // const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -719,7 +755,7 @@ const RetailerDCRScreen = ({navigation}) => {
                 for (let i = 0; i < results.rows.length; ++i) {
                   temp.push({
                     value: results.rows.item(i).IDArea,
-                    label: results.rows.item(i).AreaName,
+                    label: results.rows.item(i).Name,
                   });
                 }
                 setMArea(temp);
@@ -1141,7 +1177,7 @@ const RetailerDCRScreen = ({navigation}) => {
           ProductStatuss: status,
           Visitwiths: Mvisitwith,
         };
-        //console.log(data_api);
+        console.log(data_api);
 
         let result = await fetch(BASE_URL + 'Manager/DCR/Mobile/Save', {
           method: 'POST',
@@ -1196,12 +1232,16 @@ const RetailerDCRScreen = ({navigation}) => {
         if (sampleQtyData.length === 0) {
           samples = [];
         } else {
-          sampleQtyData.map(function (value) {
-            samples.push({
-              IDProduct: value.IDProduct,
-              Qty: value.Qty,
-            });
-          });
+          // sampleQtyData.map(function (value) {
+          //   samples.push({
+          //     IDProduct: value.IDProduct,
+          //     Qty: value.Qty,
+          //   });
+          // });
+          samples = sampleQtyData.map(item => ({
+            IDProduct: String(parseInt(item.IDProduct)), // removes .0
+            Qty: item.Qty,
+          }));
         }
 
         if (giftQtyData.length === 0) {
@@ -1236,44 +1276,44 @@ const RetailerDCRScreen = ({navigation}) => {
           Visitwiths: Mvisitwith,
         };
         console.log('User End', data_api);
-        // //let result = await fetch(BASE_URL + 'DCR/Mobile/End', {
-        // let result = await fetch(BASE_URL + 'DCR/Mobile/Save', {
-        //   method: 'POST',
-        //   headers: {
-        //     Accept: 'application/json',
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(data_api),
-        // });
+        //let result = await fetch(BASE_URL + 'DCR/Mobile/End', {
+        let result = await fetch(BASE_URL + 'DCR/Mobile/Save', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data_api),
+        });
 
-        // result = await result.json();
-        // //console.log(result);
-        // if (result.result === '') {
-        //   db.transaction(txn => {
-        //     txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
-        //     txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
-        //   });
-        //   Alert.alert(
-        //     'Success',
-        //     'Record Successfully Saved',
-        //     [
-        //       {
-        //         text: 'Ok',
-        //         //onPress: () => navigation.navigate('Report DashBoard'),
-        //         onPress: () => navigation.navigate('AppNavDCRScreen'),
-        //       },
-        //     ],
-        //     {cancelable: false},
-        //   );
-        // } else {
-        //   db.transaction(txn => {
-        //     txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
-        //     txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
-        //   });
-        //   //Alert.alert('Else : ' + result.result);
-        //   //Alert.alert('Error Alert', `${result.result}`);
-        //   Alert.alert(result.result, `${result.result}`);
-        // }
+        result = await result.json();
+        //console.log(result);
+        if (result.result === '') {
+          db.transaction(txn => {
+            txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
+            txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
+          });
+          Alert.alert(
+            'Success',
+            'Record Successfully Saved',
+            [
+              {
+                text: 'Ok',
+                //onPress: () => navigation.navigate('Report DashBoard'),
+                onPress: () => navigation.navigate('AppNavDCRScreen'),
+              },
+            ],
+            {cancelable: false},
+          );
+        } else {
+          db.transaction(txn => {
+            txn.executeSql('DROP TABLE IF EXISTS CRM_SAMPLEQTY', []);
+            txn.executeSql('DROP TABLE IF EXISTS CRM_GIFTQTY', []);
+          });
+          //Alert.alert('Else : ' + result.result);
+          //Alert.alert('Error Alert', `${result.result}`);
+          Alert.alert(result.result, `${result.result}`);
+        }
       }
     }
   };
@@ -1543,9 +1583,8 @@ const RetailerDCRScreen = ({navigation}) => {
     }, []);
   };
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
-      showsVerticalScrollIndicator={false}>
+    <KeyboardAwareLayout>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       <View
         style={{
           backgroundColor: '#ecf0f1',
@@ -1558,17 +1597,27 @@ const RetailerDCRScreen = ({navigation}) => {
           elevation: 2,
           borderRadius: 1,
         }}>
-        <View>
-          {/* <Text style={style.boldText}>{locationStatus}</Text> */}
-          <Text style={{padding: 5}}>Lat: {currentLatitude}</Text>
-          <Text style={{padding: 5}}>Long: {currentLongitude} </Text>
-          {/* <Text style={{padding: 5}}>DCR Status : </Text> */}
+        <View style={{flexDirection: 'row', alignItems: 'center', padding: 5}}>
+          {/* Big Location Icon */}
+          <Ionicons
+            name="location-outline"
+            size={40}
+            color="#005696"
+            style={{marginRight: 12}}
+          />
+
+          <View>
+            {/* <Text style={style.boldText}>{locationStatus}</Text> */}
+            <Text style={{padding: 5}}>Lat: {currentLatitude}</Text>
+            <Text style={{padding: 5}}>Long: {currentLongitude} </Text>
+            {/* <Text style={{padding: 5}}>DCR Status : </Text> */}
+          </View>
         </View>
         {/* {showData ? ( */}
         <TouchableOpacity
           style={{
-            backgroundColor: '#33767C',
-            width: '40%',
+            backgroundColor: '#005696',
+            width: '35%',
             padding: 5,
             margin: 5,
             borderRadius: 5,
@@ -1688,6 +1737,8 @@ const RetailerDCRScreen = ({navigation}) => {
                   //label="Remarks"
                   mode="outlined"
                   autoCapitalize="none"
+                  multiline={true}
+                  numberOfLines={3}
                   autoCorrect={false}
                   style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Remarks"
@@ -1786,6 +1837,8 @@ const RetailerDCRScreen = ({navigation}) => {
                   //label="Remarks"
                   mode="outlined"
                   autoCapitalize="none"
+                  multiline={true}
+                  numberOfLines={3}
                   autoCorrect={false}
                   style={[style.textInput, {marginBottom: 5}]}
                   placeholder="Remarks"
@@ -1809,7 +1862,7 @@ const RetailerDCRScreen = ({navigation}) => {
         </View>
         {gamesTab == 1 && (
           <View style={{margin: 10}}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Dropdown
                 style={[
                   style.dropdownNew,
@@ -1846,7 +1899,12 @@ const RetailerDCRScreen = ({navigation}) => {
                 // value={dataGift[index]}
                 style={[
                   style.textInput,
-                  {width: '20%', alignItems: 'center', marginRight: 5},
+                  {
+                    width: '20%',
+                    alignItems: 'center',
+                    marginRight: 5,
+                    height: '86%',
+                  },
                 ]}
                 placeholder="Qty"
                 placeholderTextColor="#555"
@@ -1854,9 +1912,9 @@ const RetailerDCRScreen = ({navigation}) => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   width: '25%',
-
+                  height: '86%',
                   margin: 5,
                   borderRadius: 5,
                   flexDirection: 'row',
@@ -1867,7 +1925,7 @@ const RetailerDCRScreen = ({navigation}) => {
                     textAlign: 'center',
                     fontWeight: '700',
                     fontSize: 18,
-                    marginLeft: 25,
+                    marginLeft: 20,
                     marginTop: 5,
                     padding: 5,
                     fontFamily: 'Lato-Regular',
@@ -1877,104 +1935,238 @@ const RetailerDCRScreen = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View>
+            {/* <View>
               {sampleQtyData.length
                 ? sampleQtyData.map((item, index) => {
-                    return (
-                      <ScrollView>
-                        <TouchableWithoutFeedback>
+                  return (
+                    <ScrollView>
+                      <TouchableWithoutFeedback>
+                        <View
+                          style={[
+                            style.menu,
+                            {
+                              backgroundColor: '#ecf0f1',
+                              flexDirection: 'row',
+                            },
+                          ]}>
                           <View
-                            style={[
-                              style.menu,
-                              {
-                                backgroundColor: '#ecf0f1',
-                                flexDirection: 'row',
-                              },
-                            ]}>
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            <AntDesign
+                              name="delete"
+                              size={30}
+                              color="red"
+                              onPress={() => {
+                                onDeleteSample(item.id);
+                              }}
+                            />
+                          </View>
+                          <View
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              margin: 5,
+                            }}>
                             <View
                               style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                flexDirection: 'row',
                               }}>
-                              <AntDesign
-                                name="delete"
-                                size={30}
-                                color="red"
-                                onPress={() => {
-                                  onDeleteSample(item.id);
-                                }}
-                              />
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  fontFamily: 'Lato-Regular',
+                                  color: '#000',
+                                  margin: 2,
+                                  padding: 2,
+                                  textAlignVertical: 'center',
+                                }}>
+                                Name :{' '}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 14,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                  width: '80%',
+                                  textAlignVertical: 'center',
+                                }}>
+                                {item.Name}
+                              </Text>
                             </View>
                             <View
                               style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: 5,
+                                flexDirection: 'row',
                               }}>
-                              <View
+                              <Text
                                 style={{
-                                  flexDirection: 'row',
+                                  fontSize: 14,
+                                  fontFamily: 'Lato-Regular',
+                                  color: '#000',
+                                  margin: 2,
+                                  padding: 2,
+                                  textAlignVertical: 'center',
                                 }}>
-                                <Text
-                                  style={{
-                                    fontSize: 12,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    margin: 2,
-                                    padding: 2,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Name :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    width: '80%',
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {item.Name}
-                                </Text>
-                              </View>
-                              <View
+                                Qty :{' '}
+                              </Text>
+                              <Text
                                 style={{
-                                  flexDirection: 'row',
+                                  fontSize: 16,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                  textAlignVertical: 'center',
                                 }}>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    margin: 2,
-                                    padding: 2,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Qty :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 16,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {item.Qty}
-                                </Text>
-                              </View>
+                                {item.Qty}
+                              </Text>
                             </View>
                           </View>
-                        </TouchableWithoutFeedback>
-                      </ScrollView>
-                    );
-                  })
+                        </View>
+                      </TouchableWithoutFeedback>
+                    </ScrollView>
+                  );
+                })
                 : null}
-            </View>
+            </View> */}
+            {sampleQtyData && sampleQtyData.length > 0 ? (
+              <View
+                style={{
+                  marginTop: 10,
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                }}>
+                {/* Header Row */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    backgroundColor: '#005696',
+                    paddingVertical: 8,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#ccc',
+                  }}>
+                  <Text
+                    style={{
+                      flex: 0.1,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    No
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.5,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    Name
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.2,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    Qty
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.2,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                    }}>
+                    Action
+                  </Text>
+                </View>
+
+                {/* Data Rows */}
+                <ScrollView>
+                  {sampleQtyData.map((item, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor:
+                          index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#ccc',
+                      }}>
+                      {/* Sr. No */}
+                      <Text
+                        style={{
+                          flex: 0.1,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}>
+                        {index + 1}
+                      </Text>
+
+                      {/* Name */}
+                      <Text
+                        style={{
+                          flex: 0.5,
+                          fontFamily: 'Lato-Bold',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}
+                        numberOfLines={3}
+                        ellipsizeMode="tail">
+                        {item.Name}
+                      </Text>
+
+                      {/* Quantity */}
+                      <Text
+                        style={{
+                          flex: 0.2,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}>
+                        {item.Qty}
+                      </Text>
+
+                      {/* Delete Icon */}
+                      <TouchableOpacity
+                        style={{
+                          flex: 0.2,
+                          alignItems: 'center',
+                          paddingVertical: 6,
+                        }}
+                        onPress={() => onDeleteSample(item.id)}>
+                        <AntDesign name="delete" size={22} color="red" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
           </View>
         )}
         {gamesTab == 2 && (
           <View style={{margin: 10}}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Dropdown
                 style={[
                   style.dropdownNew,
@@ -2011,7 +2203,12 @@ const RetailerDCRScreen = ({navigation}) => {
                 // value={dataGift[index]}
                 style={[
                   style.textInput,
-                  {width: '20%', alignItems: 'center', marginRight: 5},
+                  {
+                    width: '20%',
+                    alignItems: 'center',
+                    marginRight: 5,
+                    height: '86%',
+                  },
                 ]}
                 placeholder="Qty"
                 placeholderTextColor="#555"
@@ -2019,9 +2216,9 @@ const RetailerDCRScreen = ({navigation}) => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   width: '25%',
-
+                  height: '86%',
                   margin: 5,
                   borderRadius: 5,
                   flexDirection: 'row',
@@ -2032,7 +2229,7 @@ const RetailerDCRScreen = ({navigation}) => {
                     textAlign: 'center',
                     fontWeight: '700',
                     fontSize: 18,
-                    marginLeft: 25,
+                    marginLeft: 20,
                     marginTop: 5,
                     padding: 5,
                     fontFamily: 'Lato-Regular',
@@ -2042,99 +2239,233 @@ const RetailerDCRScreen = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View>
+            {/* <View>
               {giftQtyData.length
                 ? giftQtyData.map((item, index) => {
-                    return (
-                      <ScrollView>
-                        <TouchableWithoutFeedback>
+                  return (
+                    <ScrollView>
+                      <TouchableWithoutFeedback>
+                        <View
+                          style={[
+                            style.menu,
+                            {
+                              backgroundColor: '#ecf0f1',
+                              flexDirection: 'row',
+                            },
+                          ]}>
                           <View
-                            style={[
-                              style.menu,
-                              {
-                                backgroundColor: '#ecf0f1',
-                                flexDirection: 'row',
-                              },
-                            ]}>
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            <AntDesign
+                              name="delete"
+                              size={25}
+                              color="red"
+                              onPress={() => {
+                                onDeleteGift(item.id);
+                              }}
+                            />
+                          </View>
+                          <View
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              margin: 5,
+                            }}>
                             <View
                               style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                flexDirection: 'row',
                               }}>
-                              <AntDesign
-                                name="delete"
-                                size={30}
-                                color="red"
-                                onPress={() => {
-                                  onDeleteGift(item.id);
-                                }}
-                              />
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  fontFamily: 'Lato-Regular',
+                                  color: '#000',
+                                  margin: 2,
+                                  padding: 2,
+                                  textAlignVertical: 'center',
+                                }}>
+                                Name :{' '}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 14,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                  width: '80%',
+                                  textAlignVertical: 'center',
+                                }}>
+                                {item.Name}
+                              </Text>
                             </View>
                             <View
                               style={{
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: 5,
+                                flexDirection: 'row',
                               }}>
-                              <View
+                              <Text
                                 style={{
-                                  flexDirection: 'row',
+                                  fontSize: 14,
+                                  fontFamily: 'Lato-Regular',
+                                  color: '#000',
+                                  margin: 2,
+                                  padding: 2,
+                                  textAlignVertical: 'center',
                                 }}>
-                                <Text
-                                  style={{
-                                    fontSize: 12,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    margin: 2,
-                                    padding: 2,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Name :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    width: '80%',
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {item.Name}
-                                </Text>
-                              </View>
-                              <View
+                                Qty :{' '}
+                              </Text>
+                              <Text
                                 style={{
-                                  flexDirection: 'row',
+                                  fontSize: 16,
+                                  fontFamily: 'Lato-Bold',
+                                  color: '#000',
+                                  textAlignVertical: 'center',
                                 }}>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontFamily: 'Lato-Regular',
-                                    color: '#000',
-                                    margin: 2,
-                                    padding: 2,
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  Qty :{' '}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 16,
-                                    fontFamily: 'Lato-Bold',
-                                    color: '#000',
-                                    textAlignVertical: 'center',
-                                  }}>
-                                  {item.Qty}
-                                </Text>
-                              </View>
+                                {item.Qty}
+                              </Text>
                             </View>
                           </View>
-                        </TouchableWithoutFeedback>
-                      </ScrollView>
-                    );
-                  })
+                        </View>
+                      </TouchableWithoutFeedback>
+                    </ScrollView>
+                  );
+                })
                 : null}
-            </View>
+            </View> */}
+            {giftQtyData && giftQtyData.length > 0 ? (
+              <View
+                style={{
+                  marginTop: 10,
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                }}>
+                {/* Header Row */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    backgroundColor: '#005696',
+                    paddingVertical: 8,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#ccc',
+                  }}>
+                  <Text
+                    style={{
+                      flex: 0.1,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    No
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.5,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    Name
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.2,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                      borderRightWidth: 1,
+                      borderRightColor: '#ccc',
+                    }}>
+                    Qty
+                  </Text>
+                  <Text
+                    style={{
+                      flex: 0.2,
+                      color: '#fff',
+                      fontFamily: 'Lato-Bold',
+                      textAlign: 'center',
+                    }}>
+                    Action
+                  </Text>
+                </View>
+
+                {/* Data Rows */}
+                <ScrollView>
+                  {giftQtyData.map((item, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor:
+                          index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#ccc',
+                      }}>
+                      {/* Sr. No */}
+                      <Text
+                        style={{
+                          flex: 0.1,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}>
+                        {index + 1}
+                      </Text>
+
+                      {/* Name */}
+                      <Text
+                        style={{
+                          flex: 0.5,
+                          fontFamily: 'Lato-Bold',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}
+                        numberOfLines={3}
+                        ellipsizeMode="tail">
+                        {item.Name}
+                      </Text>
+
+                      {/* Quantity */}
+                      <Text
+                        style={{
+                          flex: 0.2,
+                          fontFamily: 'Lato-Regular',
+                          color: '#000',
+                          textAlign: 'center',
+                          borderRightWidth: 1,
+                          borderRightColor: '#ccc',
+                          paddingVertical: 8,
+                        }}>
+                        {item.Qty}
+                      </Text>
+
+                      {/* Delete Icon */}
+                      <TouchableOpacity
+                        style={{
+                          flex: 0.2,
+                          alignItems: 'center',
+                          paddingVertical: 6,
+                        }}
+                        onPress={() => onDeleteGift(item.id)}>
+                        <AntDesign name="delete" size={20} color="red" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
           </View>
         )}
         {/* <View style={{marginLeft: 10, marginRight: 10}}>
@@ -2142,7 +2473,7 @@ const RetailerDCRScreen = ({navigation}) => {
       </View> */}
       </SafeAreaView>
       <ProgressDialog visible={loading} message="Loading, please wait..." />
-    </ScrollView>
+    </KeyboardAwareLayout>
   );
 };
 
@@ -2267,7 +2598,7 @@ const style = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#000', // Border color
+    borderColor: '#b2b1b9ff', // Border color
     borderRadius: 8, // Rounded corners
     padding: 10, // Inner padding
     fontSize: 16,

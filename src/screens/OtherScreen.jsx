@@ -7,8 +7,10 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Alert,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import Geolocation from '@react-native-community/geolocation';
 import {
   isLocationEnabled,
@@ -24,6 +26,8 @@ import DeviceInfo from 'react-native-device-info';
 import {BASE_URL} from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
+import {useFocusEffect} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 //database connection
 const db = openDatabase(
@@ -141,40 +145,51 @@ const OtherScreen = ({navigation}) => {
     return () => clearInterval(interval);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavDCRScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const save = () => {
-    if (currentLongitude == 0.00 && currentLatitude == 0.00) {
+    if (currentLongitude == 0.0 && currentLatitude == 0.0) {
       Alert.alert(
-        "Invalid Location",
-        "Latitude and Longitude are both 0.00. Closing the app.",
+        'Invalid Location',
+        'Latitude and Longitude are both 0.00. Closing the app.',
         [
           {
-            text: "OK",
+            text: 'OK',
             onPress: () => {
               BackHandler.exitApp(); // This will close the app
               navigation.navigate('AppNavScreen');
-            }
-          }
+            },
+          },
         ],
-        { cancelable: false }
+        {cancelable: false},
       );
-    } 
-    else if(useRemarks==='')
-    {
+    } else if (useRemarks === '') {
       Alert.alert('Type Remarks');
-    }
-    else{
-    try {
-      AsyncStorage.getItem('IDday').then(value => {
-        if (value != null) {
-          let IDday = JSON.parse(value);
+    } else {
+      try {
+        AsyncStorage.getItem('IDday').then(value => {
+          if (value != null) {
+            let IDday = JSON.parse(value);
 
-          EndOthersDcr(IDday);
-        }
-      });
-    } catch (error) {
-      console.log(error);
+            EndOthersDcr(IDday);
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }
   };
 
   const EndOthersDcr = IDday => {
@@ -472,9 +487,15 @@ const OtherScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
+        //const currentLongitude = JSON.stringify(position.coords.longitude);
         //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        //const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -525,9 +546,15 @@ const OtherScreen = ({navigation}) => {
       //Will give you the current location
       position => {
         setLocationStatus('You are Here');
-        const currentLongitude = JSON.stringify(position.coords.longitude);
+        //const currentLongitude = JSON.stringify(position.coords.longitude);
         //getting the Longitude from the location json
-        const currentLatitude = JSON.stringify(position.coords.latitude);
+        //const currentLatitude = JSON.stringify(position.coords.latitude);
+        const lat = position.coords.latitude;
+        const long = position.coords.longitude;
+
+        // Round to 6 decimal places for consistency
+        const currentLatitude = lat.toFixed(6); // "22.507298"
+        const currentLongitude = long.toFixed(6); // "88.336675"
         //getting the Latitude from the location json
         setCurrentLongitude(currentLongitude);
         //Setting state Longitude to re re-render the Longitude Text
@@ -576,63 +603,137 @@ const OtherScreen = ({navigation}) => {
   };
 
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
-      showsVerticalScrollIndicator={false}>
-      <ImageBackground
-        source={require('../images/bg2.png')}
-        style={{height: Dimensions.get('window').height}}>
-        <View
-          style={{
-            backgroundColor: '#ecf0f1',
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: 10,
-            borderWidth: 0.1,
-            margin: 10,
-            elevation: 2,
-            borderRadius: 1,
-          }}>
-          <View>
-            <Text
-              style={{padding: 5, fontFamily: 'Lato-Bold'}}
-              numberOfLines={1}>
-              Latitude : {currentLatitude}
-            </Text>
-            <Text
-              style={{padding: 5, fontFamily: 'Lato-Bold'}}
-              numberOfLines={1}>
-              Longitude : {currentLongitude}
-            </Text>
+    <>
+      <StatusBar backgroundColor="#a9ddfaff" barStyle="light-content" />
+      <ScrollView
+        style={{flex: 1, backgroundColor: false}}
+        showsVerticalScrollIndicator={false}>
+        <ImageBackground
+          source={require('../images/bg2.png')}
+          style={{height: Dimensions.get('window').height}}>
+          <View
+            style={{
+              backgroundColor: '#ffffff',
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: 12,
+              margin: 12,
+              borderRadius: 14,
+              // 🟢 3D EFFECT BELOW
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: 4},
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 8,
+              borderWidth: 0.5,
+              borderColor: '#e0e0e0',
+              //transform: [{ perspective: 800 }, { rotateX: '3deg' }, { rotateY: '-2deg' }],
+              transform:
+                Platform.OS === 'android'
+                  ? [{perspective: 800}, {rotateX: '3deg'}, {rotateY: '-2deg'}]
+                  : [], // ❗ No 3D transform on iOS
+            }}>
+            <View
+              style={{flexDirection: 'row', alignItems: 'center', padding: 5}}>
+              <Ionicons
+                name="location-outline"
+                size={32}
+                color="#005696"
+                style={{marginRight: 8}}
+              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 5,
+                }}>
+                <Text
+                  style={{
+                    paddingVertical: 3,
+                    fontFamily: 'Lato-Bold',
+                    fontSize: 13,
+                    color: '#333',
+                    marginRight: 10,
+                  }}
+                  numberOfLines={1}>
+                  Latitude: {currentLatitude}
+                </Text>
+                <Text
+                  style={{
+                    paddingVertical: 3,
+                    fontFamily: 'Lato-Bold',
+                    fontSize: 13,
+                    color: '#333',
+                  }}
+                  numberOfLines={1}>
+                  Longitude: {currentLongitude}
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
-        <View
-          style={{
-            paddingLeft: 5,
-            paddingRight: 5,
-            marginRight: 5,
-            marginLeft: 5,
-          }}>
-          <TextInput
-            label="Division"
-            mode="outlined"
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={useDivision}
-            editable={false}
-          />
-          <View style={{marginTop: 2, paddingTop: 2}}>
-            <TextInput
-              label="Employee"
-              mode="outlined"
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={empName}
-              editable={false}
-            />
-          </View>
-          {/* <View style={{marginTop: 2, paddingTop: 2}}>
+
+          <View
+            style={{
+              backgroundColor: '#ffffff',
+              padding: 5,
+              margin: 8,
+              borderRadius: 14,
+              // 🟢 3D EFFECT BELOW
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: 4},
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 8,
+              borderWidth: 0.5,
+              borderColor: '#e0e0e0',
+              // transform: [
+              //   {perspective: 800},
+              //   {rotateX: '3deg'},
+              //   {rotateY: '-2deg'},
+              // ],
+              transform:
+                Platform.OS === 'android'
+                  ? [{perspective: 800}, {rotateX: '3deg'}, {rotateY: '-2deg'}]
+                  : [], // ❗ No 3D transform on iOS
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: '#333',
+                fontFamily: 'Lato-Bold',
+                //textAlign: 'center',
+                marginBottom: 5,
+                padding: 5,
+              }}>
+              Enter Details
+            </Text>
+            <View
+              style={{
+                paddingLeft: 5,
+                paddingRight: 5,
+                marginRight: 5,
+                marginLeft: 5,
+              }}>
+              <TextInput
+                label="Division"
+                mode="outlined"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={useDivision}
+                editable={false}
+              />
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <TextInput
+                  label="Employee"
+                  mode="outlined"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  value={empName}
+                  editable={false}
+                />
+              </View>
+              {/* <View style={{marginTop: 2, paddingTop: 2}}>
             <TextInput
               label="Employee No"
               mode="outlined"
@@ -654,63 +755,67 @@ const OtherScreen = ({navigation}) => {
               editable={false}
             />
           </View> */}
-          <View style={{marginTop: 2, paddingTop: 2}}>
-            <TextInput
-              label="DCR Date"
-              mode="outlined"
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={{marginBottom: 5}}
-              value={currDate}
-              editable={false}
-            />
+              <View style={{marginTop: 2, paddingTop: 2}}>
+                <TextInput
+                  label="DCR Date"
+                  mode="outlined"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{marginBottom: 5}}
+                  value={currDate}
+                  editable={false}
+                />
+              </View>
+              <KeyboardAvoidingView
+                behavior="padding"
+                style={{justifyContent: 'space-between'}}>
+                <View style={{marginTop: 2, paddingTop: 2}}>
+                  <Dropdown
+                    style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+                    placeholderStyle={style.placeholderStyle}
+                    selectedTextStyle={style.selectedTextStyle}
+                    inputSearchStyle={style.inputSearchStyle}
+                    iconStyle={style.iconStyle}
+                    data={useWTData}
+                    search
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder={!isFocus ? 'Select Work Type' : '...'}
+                    searchPlaceholder="Search Work Type"
+                    //value={wtdataLabel}
+                    onFocus={() => setIsFocus(true)}
+                    onBlur={() => setIsFocus(false)}
+                    onChange={item => {
+                      setwtdataValue(item.value);
+                      setwtdataLabel(item.label);
+                      // handleState(item.value);
+                      setIsFocus(false);
+                    }}
+                  />
+                </View>
+                <View style={{marginTop: 2, paddingTop: 2}}>
+                  <TextInput
+                    label="Remarks"
+                    mode="outlined"
+                    autoCapitalize="none"
+                    numberOfLines={4}
+                    autoCorrect={false}
+                    multiline={true}
+                    style={{marginBottom: 5}}
+                    value={useRemarks}
+                    onChangeText={text => setRemarks(text)}
+                  />
+                </View>
+              </KeyboardAvoidingView>
+            </View>
           </View>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={{justifyContent: 'space-between'}}>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <Dropdown
-                style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
-                placeholderStyle={style.placeholderStyle}
-                selectedTextStyle={style.selectedTextStyle}
-                inputSearchStyle={style.inputSearchStyle}
-                iconStyle={style.iconStyle}
-                data={useWTData}
-                search
-                maxHeight={300}
-                labelField="label"
-                valueField="value"
-                placeholder={!isFocus ? 'Select Work Type' : '...'}
-                searchPlaceholder="Search Work Type"
-                //value={wtdataLabel}
-                onFocus={() => setIsFocus(true)}
-                onBlur={() => setIsFocus(false)}
-                onChange={item => {
-                  setwtdataValue(item.value);
-                  setwtdataLabel(item.label);
-                  // handleState(item.value);
-                  setIsFocus(false);
-                }}
-              />
-            </View>
-            <View style={{marginTop: 2, paddingTop: 2}}>
-              <TextInput
-                label="Remarks"
-                mode="outlined"
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={{marginBottom: 5}}
-                value={useRemarks}
-                onChangeText={text => setRemarks(text)}
-              />
-            </View>
-          </KeyboardAvoidingView>
-        </View>
-        <View style={{margin: 5, padding: 5}}>
-          <CustomButton label={'Start DCR'} onPress={() => save()} />
-        </View>
-      </ImageBackground>
-    </ScrollView>
+          <View style={{margin: 5, padding: 5}}>
+            <CustomButton label={'Start DCR'} onPress={() => save()} />
+          </View>
+        </ImageBackground>
+      </ScrollView>
+    </>
   );
 };
 

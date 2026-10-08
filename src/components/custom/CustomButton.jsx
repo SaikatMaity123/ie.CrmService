@@ -6,7 +6,7 @@ const CustomButton = ({label, onPress}) => {
     <TouchableOpacity
     onPress={onPress}
     style={{
-      backgroundColor: '#33767C',
+      backgroundColor: '#005696',
       padding: 20,
       borderRadius: 10,
       marginTop:5,
@@ -18,7 +18,7 @@ const CustomButton = ({label, onPress}) => {
         textAlign: 'center',
         fontWeight: '700',
         fontSize: 16,
-        color: '#fff',
+        color: '#ffffff',
       }}>
       {label}
     </Text>

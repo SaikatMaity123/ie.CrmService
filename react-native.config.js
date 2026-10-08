@@ -6,6 +6,13 @@ module.exports = {
   //     },
   //   },
   // },
+  dependencies: {
+    "react-native-push-notification": {
+      platforms: {
+        ios: null, // prevent iOS autolinking
+      },
+    },
+  },
   project: {
     ios: {},
     android: {},

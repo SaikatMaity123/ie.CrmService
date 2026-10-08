@@ -8,12 +8,15 @@ import {
   Button,
   Image,
   SafeAreaView,
+  Platform,
   PermissionsAndroid,
   Modal,
   Alert,
   TouchableOpacity,
+  BackHandler,
+  StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {TextInput} from 'react-native-paper';
 import {Dropdown} from 'react-native-element-dropdown';
@@ -23,6 +26,8 @@ import axios from 'axios';
 import {BASE_URL} from '@env';
 import DeviceInfo from 'react-native-device-info';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import {useFocusEffect} from '@react-navigation/native';
+import {showLocalNotification} from '../services/notifications';
 // import {
 //   launchImageLibrary as _launchImageLibrary,
 //   //launchCamera as _launchCamera,
@@ -75,6 +80,10 @@ const ExpenseScreen = ({navigation}) => {
   const [useBusinessID, setBusinessID] = useState('');
   const [deviceType, setDevice] = useState('');
   const [isEmpty, setIsEmpty] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
+  const [empPassword, setusePassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [useManagerToken, setuseManagerToken] = useState('');
   const openImagePicker = () => {
     const options = {
       mediaType: 'photo',
@@ -93,27 +102,75 @@ const ExpenseScreen = ({navigation}) => {
     // maxHeight: 180,
     // maxWidth: 150,
   };
+  // const handleCameraLaunch = async () => {
+  //   const granted = await PermissionsAndroid.request(
+  //     PermissionsAndroid.PERMISSIONS.CAMERA,
+  //   );
+  //   if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //     const result = await launchCamera(options);
+
+  //     const imageuri = result.assets[0].uri;
+  //     const fileName = result.assets[0].fileName;
+  //     const fileType = result.assets[0].type;
+
+  //     setSelectedImage(imageuri);
+  //     setSelectedImageName(fileName);
+  //     setSelectedImageType(fileType);
+  //     // console.log('imageuri',imageuri);
+  //     // console.log('fileName',fileName);
+  //     // console.log('fileType',fileType);
+  //     //(result.assets[0].uri);
+  //   }
+  //   setModalVisible(false);
+  // };
+
   const handleCameraLaunch = async () => {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      const result = await launchCamera(options);
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          return;
+        }
+      }
 
-      const imageuri = result.assets[0].uri;
-      const fileName = result.assets[0].fileName;
-      const fileType = result.assets[0].type;
+      const result = await launchCamera({
+        mediaType: 'photo',
+        saveToPhotos: true,
+        quality: 1,
+      });
 
-      setSelectedImage(imageuri);
-      setSelectedImageName(fileName);
-      setSelectedImageType(fileType);
-      // console.log('imageuri',imageuri);
-      // console.log('fileName',fileName);
-      // console.log('fileType',fileType);
-      //(result.assets[0].uri);
+      if (result.didCancel) return;
+      if (result.errorMessage) {
+        console.log('Camera error:', result.errorMessage);
+        return;
+      }
+
+      const asset = result.assets?.[0];
+      if (!asset) return;
+
+      setSelectedImage(asset.uri);
+      setSelectedImageName(asset.fileName);
+      setSelectedImageType(asset.type);
+      setModalVisible(false);
+    } catch (error) {
+      console.log('Camera launch error: ', error);
     }
-    setModalVisible(false);
   };
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const handleResponse = response => {
     if (response.didCancel) {
@@ -163,7 +220,10 @@ const ExpenseScreen = ({navigation}) => {
           let user = JSON.parse(value);
           setIDEmployee(user.IDEmployee);
           setEmpEmail(user.Empemail);
+          setusePassword(user.Password);
+          setUsername(user.Empname);
           setBusinessID(user.BusinessID);
+          setuseManagerToken(user.ManagerToken);
           setuseMobileAccess(user.MobileAccess);
           NetInfo.fetch().then(state => {
             if (state.isConnected) {
@@ -233,7 +293,146 @@ const ExpenseScreen = ({navigation}) => {
     });
   };
 
+  const isValidImageExtension = uri => {
+    if (typeof uri !== 'string') return false;
+
+    const allowedExtensions = ['jpg', 'jpeg', 'png'];
+    const extension = uri.split('.').pop().toLowerCase();
+    return allowedExtensions.includes(extension);
+  };
+
+  const getAccessToken = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}Authentication/Generatetoken`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Token request failed:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+
+      if (data && data.Token) {
+        console.log('Access Token:', data.Token);
+
+        // Optionally store in AsyncStorage or state
+        // await AsyncStorage.setItem('AccessToken', data.Token);
+        setAccessToken(data.Token);
+
+        return data.Token;
+      } else {
+        console.warn('No token returned from API');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching access token:', error);
+      return null;
+    }
+  };
+
+  const sendNotificationToManager = async (
+    managerToken,
+    title,
+    body,
+    accessToken,
+  ) => {
+    if (!managerToken || managerToken.trim() === '') {
+      console.warn(
+        '⚠️ No manager FCM token available — skipping notification.',
+      );
+      return;
+    }
+    try {
+      const url =
+        'https://fcm.googleapis.com/v1/projects/iecrmnotificationapp-5ed0c/messages:send';
+
+      const message = {
+        message: {
+          token: managerToken,
+          notification: {title, body},
+        },
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(message),
+      });
+
+      if (response.ok) {
+        console.log('✅ Notification sent successfully');
+        return;
+      }
+
+      // Parse FCM error response
+      let err;
+      try {
+        err = await response.json();
+      } catch {
+        console.warn('⚠️ FCM error not JSON');
+        return;
+      }
+
+      console.warn('❌ Notification failed:', JSON.stringify(err, null, 2));
+
+      const isUnregistered = err?.error?.details?.some(
+        d => d.errorCode === 'UNREGISTERED',
+      );
+
+      if (isUnregistered) {
+        console.log('⚠️ Manager token invalid — attempting refresh.');
+        await regenerateManagerTokenLocal(managerToken);
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+
+  const regenerateManagerTokenLocal = async oldToken => {
+    try {
+      const loginBody = {
+        businessid: useBusinessID,
+        email: empEmail,
+        password: empPassword,
+      };
+
+      const response = await fetch(`${BASE_URL}/login/validlogin`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(loginBody),
+      });
+
+      const data = await response.json();
+
+      if (data?.Success && data?.Token) {
+        const newToken = data.Token.trim();
+        const oldTrimmed = oldToken?.trim();
+
+        if (newToken === oldTrimmed) {
+          console.log('ℹ️ New FCM token same as previous — skipping update.');
+        } else {
+          console.log('✅ New FCM token detected:', newToken);
+          // Update locally only
+          useManagerToken = newToken; // or setManagerToken(newToken);
+        }
+      } else {
+        console.warn('⚠️ Failed to regenerate FCM token.');
+      }
+    } catch (error) {
+      console.error('Error regenerating FCM token:', error);
+    }
+  };
+
   const submit = async () => {
+    var date = moment().utcOffset('+05:30').format('YYYY-MM-DD hh:mm:ss A');
     if (useBookingNo === '') {
       Alert.alert('Type Booking Number');
     } else if (currDate === '') {
@@ -244,7 +443,15 @@ const ExpenseScreen = ({navigation}) => {
       Alert.alert('Type Booking Amount');
     } else if (useRemarks === '') {
       Alert.alert('Type Remarks');
+    } else if (!selectedImage) {
+      Alert.alert('Please select an image before submitting.');
     }
+    // else if (!isValidImageExtension(selectedImage?.uri)) {
+    //   Alert.alert(
+    //     'Invalid Image',
+    //     'Only JPG, JPEG, and PNG images are allowed.',
+    //   );
+    // }
     //  else
     // {
     //   const data_api = {
@@ -417,6 +624,8 @@ const ExpenseScreen = ({navigation}) => {
         type: selectedImageType,
         name: selectedImageName,
       });
+      console.log('FormData',formData);
+      
       if (useMobileAccess === 'ONLINE') {
         NetInfo.fetch().then(async state => {
           if (state.isConnected) {
@@ -432,6 +641,13 @@ const ExpenseScreen = ({navigation}) => {
               let result = await response.json();
               console.log('Response:', result);
               if (result.result === '') {
+                // 🔔 Show local notification
+                showLocalNotification(
+                  `Hi ${username}`,
+                  `Successfully submitted your Expense of Amount ${useAmount} Rs.\nDate & Time: ${
+                    date || 'N/A'
+                  }.`,
+                );
                 Alert.alert(
                   'Success',
                   'Record Successfully Saved',
@@ -443,6 +659,15 @@ const ExpenseScreen = ({navigation}) => {
                     },
                   ],
                   {cancelable: false},
+                );
+                const token = await getAccessToken(); // get Bearer token
+                const messageTitle = 'New Expense Submitted';
+                const messageBody = `Employee ${username} submitted a new expense of amount ${useAmount} successfully on ${date}`;
+                await sendNotificationToManager(
+                  useManagerToken,
+                  messageTitle,
+                  messageBody,
+                  token,
                 );
               } else {
                 Alert.alert('Else : ' + result.result);
@@ -478,6 +703,23 @@ const ExpenseScreen = ({navigation}) => {
                     },
                   ],
                   {cancelable: false},
+                );
+                // 🔔 Show local notification
+                showLocalNotification(
+                  `Hi ${username}`,
+                  `Successfully submitted your Expense of Amount ${useAmount} Rs!\nDate & Time: ${
+                    date || 'N/A'
+                  }.`,
+                );
+
+                const token = await getAccessToken(); // get Bearer token
+                const messageTitle = 'New Expense Submitted';
+                const messageBody = `Employee ${username} submitted a new expense of amount ${useAmount} successfully on ${date}`;
+                await sendNotificationToManager(
+                  useManagerToken,
+                  messageTitle,
+                  messageBody,
+                  token,
                 );
               } else {
                 Alert.alert('Else : ' + result.result);
@@ -568,6 +810,13 @@ const ExpenseScreen = ({navigation}) => {
         [JSON.stringify(data)],
         (_, result) => {
           console.log('Data inserted successfully:', result);
+          // 🔔 Show local notification
+          showLocalNotification(
+            `Hi ${username}`,
+            `Successfully submitted your Expense of Amount ${useAmount} Rs!\nDate & Time: ${
+              date || 'N/A'
+            }.`,
+          );
           navigation.navigate('AppNavScreen');
           db.transaction(txn => {
             txn.executeSql('DELETE from CRM_ExpenseCode', []);
@@ -658,6 +907,7 @@ const ExpenseScreen = ({navigation}) => {
     <ScrollView
       style={{flex: 1, backgroundColor: false}}
       showsVerticalScrollIndicator={false}>
+      <StatusBar barStyle="light-content" backgroundColor="#a9ddfaff" />
       <ImageBackground
         source={require('../images/bg2.png')}
         style={{height: Dimensions.get('window').height}}>
@@ -704,15 +954,17 @@ const ExpenseScreen = ({navigation}) => {
               marginTop: 5,
             }}
             onPress={showDatePicker}>
-            <TextInput
-              label="Booking Date"
-              mode="outlined"
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={{marginBottom: 5}}
-              value={currDate}
-              editable={false}
-            />
+            <View pointerEvents="none">
+              <TextInput
+                label="Booking Date"
+                mode="outlined"
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={{marginBottom: 5}}
+                value={currDate}
+                editable={false}
+              />
+            </View>
           </TouchableOpacity>
           <DateTimePickerModal
             isVisible={isDatePickerVisible}
@@ -720,6 +972,7 @@ const ExpenseScreen = ({navigation}) => {
             onConfirm={handleDateConfirm}
             onCancel={hideDatePicker}
             maximumDate={new Date()}
+            presentationStyle="overFullScreen" // REQUIRED FOR iOS
           />
           <Dropdown
             style={[style.dropdown, isFocus && {borderColor: 'blue'}]}

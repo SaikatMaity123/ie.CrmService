@@ -1,69 +1,229 @@
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ImageBackground,
-  FlatList,
+  BackHandler,
   TouchableOpacity,
-  Dimensions,
-  Alert,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import React from 'react';
-import HomeImg from '../images/home.svg'; // Reuse your SVG
+import React, {useEffect, useCallback, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import CRMImg from '../images/CRMNEW.svg';
-
-const quizModules = [
-  {label: 'Doctor Survey', value: 'Doctor'},
-  {label: 'Employee Survey', value: 'Employee'},
-  {label: 'Market Survey', value: 'Market Survey'},
-];
-
+import {CommonActions} from '@react-navigation/native';
+import {
+  isLocationEnabled,
+  promptForEnableLocationIfNeeded,
+} from 'react-native-android-location-enabler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {BASE_URL} from '@env';
+import {openDatabase} from 'react-native-sqlite-storage';
+import NetInfo from '@react-native-community/netinfo';
+import HomeImg from '../images/home.svg';
+import {useAppContext} from '../components/custom/AppContext';
+import axios from 'axios';
+const db = openDatabase(
+  {
+    name: 'CRM_db',
+    location: 'default',
+  },
+  () => {
+    //console.log('Database connected!');
+  }, //on success
+  error => console.log('Database error', error), //on error
+);
 const QuizDashboard = ({navigation}) => {
-  const handleNavigation = module => {
-    if (module.value === 'Doctor') {
-      navigation.navigate('Doctor Survey');
-    } else if (module.value === 'Employee') {
-      navigation.navigate('Employee Survey');
-    } else if (module.value === 'Market Survey') {
-      navigation.navigate('Market Survey');
-    } else {
-      Alert.alert('Module not available');
+  const {useBusinessID} = useAppContext();
+  const [useSubmenu, setSubmenu] = useState([]);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    // setLoading(true);
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 5000);
+    handleCheckPressed();
+    AsyncStorage.getItem('UserData').then(value => {
+      if (value != null) {
+        let user = JSON.parse(value);
+        fetchModules(user.BusinessID, user.IDEmployee);
+      }
+    });
+  }, []);
+  const handleCheckPressed = async () => {
+    if (Platform.OS === 'android') {
+      var checkEnabled = await isLocationEnabled();
+      console.log('checkEnabled', checkEnabled);
+      if (checkEnabled === false) {
+        Alert.alert('GPS Not Active');
+        //BackHandler.exitApp();
+        handleEnabledPressed();
+      } else if (checkEnabled === true) {
+        //Alert.alert('GPS Active');
+      }
     }
   };
 
+  const handleEnabledPressed = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        var enableResult = await promptForEnableLocationIfNeeded();
+        console.log('enableResult', enableResult);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        }
+      }
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavScreen'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
+  const fetchModules = (businessID, IDEmployee) => {
+    NetInfo.fetch().then(async state => {
+      if (state.isConnected) {
+        try {
+          const url =
+            BASE_URL +
+            'user/MobileSubMenuList?Businessid=' +
+            businessID +
+            '&IDEmployee=' +
+            IDEmployee +
+            '&Module=SURVEY';
+          const response = await axios.get(url);
+          setSubmenu(response.data);
+          console.log(response.data);
+          console.log(url);
+          const dashBoardJsonArray = response.data;
+          //CREATE TABLE for CRM_TourPlanDate
+          db.transaction(txn => {
+            txn.executeSql('DROP TABLE IF EXISTS SURVEYModuleData', []);
+            txn.executeSql(
+              'CREATE TABLE IF NOT EXISTS SURVEYModuleData(SubMenu VARCHAR,SubMenuSRL VARCHAR)',
+              [],
+            );
+          });
+
+          //SQLITE INSERT CRM_TourPlanDate
+          var _value = [];
+          _value = dashBoardJsonArray;
+          //console.log(_value);
+          for (var j = 0; j < _value.length; j++) {
+            const array = _value[j];
+            let sql =
+              'INSERT INTO SURVEYModuleData(SubMenu,SubMenuSRL) VALUES (?,?)';
+            let params = [array.SubMenu, array.SubMenuSRL]; //storing user data in an array
+            db.executeSql(sql, params);
+          }
+        } catch (error) {
+          console.error('Failed to fetch modules:', error);
+        }
+      } else {
+        db.transaction(tx => {
+          tx.executeSql(
+            'SELECT SubMenu, SubMenuSRL FROM SURVEYModuleData',
+            [],
+            (tx, results) => {
+              const rows = results.rows;
+              let temp = [];
+
+              for (let i = 0; i < rows.length; i++) {
+                temp.push(rows.item(i));
+              }
+              console.log(temp);
+
+              setSubmenu(temp);
+            },
+            error => {
+              console.log('Error fetching modules: ', error);
+            },
+          );
+        });
+      }
+    }, []);
+  };
+
+  const submit = async module => {
+    switch (module.SubMenu) {
+      case 'DOCTOR':
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'Doctor Survey'}], // or whatever your main screen is
+          }),
+        );
+        break;
+      case 'EMPLOYEE':
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'Employee Survey'}], // or whatever your main screen is
+          }),
+        );
+        break;
+      case 'MARKET':
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'Market Survey'}], // or whatever your main screen is
+          }),
+        );
+        break;
+      default:
+        Alert.alert(module.Module);
+    }
+  };
+
+  const renderItem = ({item}) => (
+    <TouchableOpacity onPress={() => submit(item)}>
+      <View style={[styles.menu, {backgroundColor: '#ecf0f1'}]}>
+        <HomeImg
+          height={30}
+          width={30}
+          style={styles.imageDesign}
+          // style={{transform: [{rotate: '-5deg'}]}}
+        />
+        <Text style={styles.menuItem}>{item.SubMenu}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#33767C" />
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <ImageBackground
-        source={require('../images/bg2.png')}
-        style={{height: Dimensions.get('window').height}}>
-        <View style={styles.container}>
-          <CRMImg height={150} width={200} />
-          <FlatList
-            data={quizModules}
-            numColumns={2}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleNavigation(item)}>
-                <View style={[styles.menu, {backgroundColor: '#ecf0f1'}]}>
-                  <HomeImg height={30} width={30} style={styles.imageDesign} />
-                  <Text style={styles.menuItem}>{item.label}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <CRMImg height={100} width={100} />
+      <FlatList
+        data={useSubmenu}
+        keyExtractor={item => item.SubMenuSRL.toString()}
+        showsVerticalScrollIndicator={false}
+        renderItem={renderItem}
+        numColumns={2}
+        contentContainerStyle={styles.list}
+      />
+    </View>
   );
 };
 
 export default QuizDashboard;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
   menu: {
     margin: 5,
     padding: 5,
@@ -71,6 +231,10 @@ const styles = StyleSheet.create({
     height: 130,
     elevation: 5,
     borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   menuItem: {
     fontSize: 16,
@@ -80,12 +244,26 @@ const styles = StyleSheet.create({
     padding: 5,
     textAlignVertical: 'center',
     textAlign: 'center',
+    alignItems: 'center', // Centered horizontally
   },
   imageDesign: {
     width: 40,
     height: 40,
     marginTop: 15,
     padding: 5,
-    alignSelf: 'center',
+    justifyContent: 'center', //Centered vertically
+    alignSelf: 'center', // Centered horizontally
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  list: {
+    justifyContent: 'center',
   },
 });

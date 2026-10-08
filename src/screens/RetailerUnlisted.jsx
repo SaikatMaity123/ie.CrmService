@@ -373,15 +373,30 @@ const RetailerUnlisted = props => {
               //Mvisitwith.push(value);
             });
 
+            // if (sampleQtyData.length === 0) {
+            //   samples = [];
+            // } else {
+            //   sampleQtyData.map(function (value) {
+            //     samples.push({
+            //       IDProduct: value.IDProduct,
+            //       Qty: value.Qty,
+            //     });
+            //   });
+            // }
+
             if (sampleQtyData.length === 0) {
               samples = [];
             } else {
-              sampleQtyData.map(function (value) {
-                samples.push({
-                  IDProduct: value.IDProduct,
-                  Qty: value.Qty,
-                });
-              });
+              // sampleQtyData.map(function (value) {
+              //   samples.push({
+              //     IDProduct: value.IDProduct,
+              //     Qty: value.Qty,
+              //   });
+              // });
+              samples = sampleQtyData.map(item => ({
+                IDProduct: String(parseInt(item.IDProduct)), // removes .0
+                Qty: item.Qty,
+              }));
             }
 
             if (giftQtyData.length === 0) {
@@ -549,15 +564,30 @@ const RetailerUnlisted = props => {
               //Mvisitwith.push(value);
             });
 
+            // if (sampleQtyData.length === 0) {
+            //   samples = [];
+            // } else {
+            //   sampleQtyData.map(function (value) {
+            //     samples.push({
+            //       IDProduct: value.IDProduct,
+            //       Qty: value.Qty,
+            //     });
+            //   });
+            // }
+
             if (sampleQtyData.length === 0) {
               samples = [];
             } else {
-              sampleQtyData.map(function (value) {
-                samples.push({
-                  IDProduct: value.IDProduct,
-                  Qty: value.Qty,
-                });
-              });
+              // sampleQtyData.map(function (value) {
+              //   samples.push({
+              //     IDProduct: value.IDProduct,
+              //     Qty: value.Qty,
+              //   });
+              // });
+              samples = sampleQtyData.map(item => ({
+                IDProduct: String(parseInt(item.IDProduct)), // removes .0
+                Qty: item.Qty,
+              }));
             }
 
             if (giftQtyData.length === 0) {
@@ -635,15 +665,30 @@ const RetailerUnlisted = props => {
               //Mvisitwith.push(value);
             });
 
+            // if (sampleQtyData.length === 0) {
+            //   samples = [];
+            // } else {
+            //   sampleQtyData.map(function (value) {
+            //     samples.push({
+            //       IDProduct: value.IDProduct,
+            //       Qty: value.Qty,
+            //     });
+            //   });
+            // }
+
             if (sampleQtyData.length === 0) {
               samples = [];
             } else {
-              sampleQtyData.map(function (value) {
-                samples.push({
-                  IDProduct: value.IDProduct,
-                  Qty: value.Qty,
-                });
-              });
+              // sampleQtyData.map(function (value) {
+              //   samples.push({
+              //     IDProduct: value.IDProduct,
+              //     Qty: value.Qty,
+              //   });
+              // });
+              samples = sampleQtyData.map(item => ({
+                IDProduct: String(parseInt(item.IDProduct)), // removes .0
+                Qty: item.Qty,
+              }));
             }
 
             if (giftQtyData.length === 0) {
@@ -1067,7 +1112,7 @@ const RetailerUnlisted = props => {
         {/* {showData ? ( */}
         <TouchableOpacity
           style={{
-            backgroundColor: '#33767C',
+            backgroundColor: '#005696',
             width: '30%',
             padding: 5,
             margin: 5,
@@ -1230,7 +1275,7 @@ const RetailerUnlisted = props => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#33767C',
+                  backgroundColor: '#005696',
                   width: '25%',
 
                   margin: 5,

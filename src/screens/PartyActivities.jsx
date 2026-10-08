@@ -1,20 +1,24 @@
-import {View, Text, ScrollView, Alert, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import { View, Text, ScrollView, Alert, StyleSheet, BackHandler, StatusBar } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
 import Geolocation from '@react-native-community/geolocation';
 import {
   isLocationEnabled,
   promptForEnableLocationIfNeeded,
 } from 'react-native-android-location-enabler';
 import CustomButton from '../components/custom/CustomButton';
-import {TextInput} from 'react-native-paper';
-import {Dropdown} from 'react-native-element-dropdown';
+import { TextInput } from 'react-native-paper';
+import { Dropdown } from 'react-native-element-dropdown';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import {BASE_URL} from '@env';
+import { BASE_URL } from '@env';
 import DeviceInfo from 'react-native-device-info';
+import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import KeyboardAwareLayout from '../components/custom/KeyboardAwareLayout';
 
-const PartyActivities = ({navigation}) => {
+const PartyActivities = ({ navigation }) => {
   const [currentLongitude, setCurrentLongitude] = useState('0.00');
   const [currentLatitude, setCurrentLatitude] = useState('0.00');
   const [locationStatus, setLocationStatus] = useState('');
@@ -55,6 +59,20 @@ const PartyActivities = ({navigation}) => {
     return () => clearInterval(interval);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AppNavActivity'); // <-- Your main screen
+        return true; // prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
+
   const getOneTimeLocation = () => {
     setLocationStatus('Getting Location ...');
     Geolocation.getCurrentPosition(
@@ -76,7 +94,7 @@ const PartyActivities = ({navigation}) => {
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
       // {enableHighAccuracy: true, timeout: 15000, maximumAge: 1000},
-      {timeout: 15000}, // 15 seconds timeout
+      { timeout: 15000 }, // 15 seconds timeout
     );
   };
 
@@ -128,7 +146,7 @@ const PartyActivities = ({navigation}) => {
         setLocationStatus(error.message);
       },
       //{enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
-      {enableHighAccuracy: false, timeout: 10000, maximumAge: 1000},
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 1000 },
       //{ timeout: 15000 } // 15 seconds timeout
     );
   };
@@ -359,9 +377,9 @@ const PartyActivities = ({navigation}) => {
         User: empEmail,
         Businessid: useBusinessID,
         UNListed: false,
-        Employee: {IDEmployee: useIDEmployee},
-        Worktype: {IDMisc: 57},
-        Doctor: {IDDoctor: useDoctorValue},
+        Employee: { IDEmployee: useIDEmployee },
+        Worktype: { IDMisc: 57 },
+        Doctor: { IDDoctor: useDoctorValue },
         IDVisitwith: useVWTEmp,
       };
       console.log(data_api);
@@ -387,7 +405,7 @@ const PartyActivities = ({navigation}) => {
               onPress: () => navigation.navigate('Activity DashBoard'),
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
       } else {
         Alert.alert('Else : ' + result.result);
@@ -396,9 +414,23 @@ const PartyActivities = ({navigation}) => {
   };
 
   return (
-    <ScrollView
-      style={{flex: 1, backgroundColor: false}}
+    <KeyboardAwareLayout
+      style={{
+        flex: 1,
+        backgroundColor: "#ffffff",
+        borderRadius: 4,
+        borderWidth: 0.1,
+        borderColor: '#d6d7da',
+        elevation: 1,
+        margin: 10,
+        padding: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+      }}
       showsVerticalScrollIndicator={false}>
+      <StatusBar backgroundColor="#a9ddfaff" barStyle="light-content" />
       <View
         style={{
           backgroundColor: '#ecf0f1',
@@ -411,18 +443,23 @@ const PartyActivities = ({navigation}) => {
           elevation: 2,
           borderRadius: 1,
         }}>
-        <View>
-          <Text style={{padding: 5}}>Lat : {currentLatitude}</Text>
-          <Text style={{padding: 5}}>Long : {currentLongitude} </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
+          {/* Big Location Icon */}
+          <Ionicons name="location-outline" size={40} color="#005696" style={{ marginRight: 12 }} />
+
+          <View style={{flexDirection: 'row'}}>
+            <Text style={{ padding: 5 }}>Lat : {currentLatitude}</Text>
+            <Text style={{ padding: 5 }}>Long : {currentLongitude} </Text>
+          </View>
         </View>
       </View>
-      <View style={{marginLeft: 10, marginRight: 10}}>
+      <View style={{ marginLeft: 10, marginRight: 10 }}>
         <TextInput
           label="Date"
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={currDate}
           editable={false}
         />
@@ -431,12 +468,12 @@ const PartyActivities = ({navigation}) => {
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={useWorkType}
           editable={false}
         />
         <Dropdown
-          style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+          style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
           placeholderStyle={style.placeholderStyle}
           selectedTextStyle={style.selectedTextStyle}
           inputSearchStyle={style.inputSearchStyle}
@@ -455,9 +492,9 @@ const PartyActivities = ({navigation}) => {
             setIsFocus(false);
           }}
         />
-        <View style={{marginTop: 5}}>
+        <View style={{ marginTop: 5 }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -478,9 +515,9 @@ const PartyActivities = ({navigation}) => {
             }}
           />
         </View>
-        <View style={{marginTop: 5}}>
+        <View style={{ marginTop: 5 }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -501,9 +538,9 @@ const PartyActivities = ({navigation}) => {
             }}
           />
         </View>
-        <View style={{marginTop: 5}}>
+        <View style={{ marginTop: 5 }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -524,9 +561,9 @@ const PartyActivities = ({navigation}) => {
             }}
           />
         </View>
-        <View style={{marginTop: 5}}>
+        <View style={{ marginTop: 5 }}>
           <Dropdown
-            style={[style.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={[style.dropdown, isFocus && { borderColor: 'blue' }]}
             placeholderStyle={style.placeholderStyle}
             selectedTextStyle={style.selectedTextStyle}
             inputSearchStyle={style.inputSearchStyle}
@@ -550,16 +587,18 @@ const PartyActivities = ({navigation}) => {
           label="Remarks"
           mode="outlined"
           autoCapitalize="none"
+          multiline={true}
+          numberOfLines={3}
           autoCorrect={false}
-          style={{marginBottom: 5}}
+          style={{ marginBottom: 5 }}
           value={useRemarks}
           onChangeText={text => setRemarks(text)}
         />
       </View>
-      <View style={{marginLeft: 75, marginRight: 75, padding: 10}}>
+      <View style={{ marginLeft: 75, marginRight: 75, padding: 10 }}>
         <CustomButton label={'Submit'} onPress={() => save()} />
       </View>
-    </ScrollView>
+    </KeyboardAwareLayout>
   );
 };
 

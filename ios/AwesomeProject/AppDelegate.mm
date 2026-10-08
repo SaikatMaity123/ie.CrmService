@@ -1,31 +1,103 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <FirebaseCore/FirebaseCore.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  self.moduleName = @"AwesomeProject";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
-  self.initialProps = @{};
+    /*
+     * =========================================================
+     * Firebase
+     * =========================================================
+     */
+    if ([FIRApp defaultApp] == nil) {
+        [FIRApp configure];
+    }
 
-  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    /*
+     * =========================================================
+     * Google Maps
+     * =========================================================
+     *
+     * IMPORTANT:
+     * Keep your existing Google Maps API key here.
+     *
+     * Example:
+     *
+     * [GMSServices provideAPIKey:@"YOUR_EXISTING_API_KEY"];
+     *
+     */
+    
+    [GMSServices provideAPIKey:@"AIzaSyAK6U3-x1ro826D0T0P1_gShb4rst_ka2c"];
+
+
+    /*
+     * =========================================================
+     * React Native
+     * =========================================================
+     */
+
+    self.moduleName = @"AwesomeProject";
+
+    self.initialProps = @{};
+
+
+    return [super application:application
+        didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
-{
-  return [self bundleURL];
-}
+
+/*
+ * =============================================================
+ * React Native JavaScript Bundle
+ * =============================================================
+ *
+ * This method is REQUIRED.
+ *
+ * DEBUG:
+ *     Metro bundler provides the JavaScript bundle.
+ *
+ * RELEASE:
+ *     React Native loads main.jsbundle from the application.
+ *
+ * =============================================================
+ */
 
 - (NSURL *)bundleURL
 {
 #if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+
+    return [[RCTBundleURLProvider sharedSettings]
+            jsBundleURLForBundleRoot:@"index"];
+
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+
+    return [[NSBundle mainBundle]
+            URLForResource:@"main"
+            withExtension:@"jsbundle"];
+
 #endif
+}
+
+
+/*
+ * =============================================================
+ * Optional Bridge Source URL
+ * =============================================================
+ *
+ * Keeping this method makes the AppDelegate compatible with
+ * React Native bridge-based initialization.
+ *
+ * =============================================================
+ */
+
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+    return [self bundleURL];
 }
 
 @end

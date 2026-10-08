@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "298674373880",
+    "project_id": "iecrmnotificationapp-5ed0c",
+    "storage_bucket": "iecrmnotificationapp-5ed0c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:298674373880:android:8f1456919d99e50603670d",
+        "android_client_info": {
+          "package_name": "com.ieCRMSERVICE"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6cE6VNIoOf6P3RQ0NMdhVaKOCfWaoCD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
