@@ -116,6 +116,7 @@ import LeadGenerationView from './src/screens/LeadGenerationView';
 import LeadFollowup from './src/screens/LeadFollowup';
 import LeadGeneration from './src/screens/LeadGeneration';
 import PendingFollowUpDrillDown from './src/screens/PendingFollowUpDrillDown';
+import AppContainer from './src/components/custom/AppContainer';
 
 console.log('NativeModules:', Object.keys(NativeModules));
 const Stack = createNativeStackNavigator();
@@ -249,9 +250,24 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#ffffff" />
-      <NavigationContainer>
-        <Stack.Navigator>
-          {showSplashScreen ? (
+      {/* <AppContainer> */}
+        <NavigationContainer>
+          <Stack.Navigator>
+            {showSplashScreen ? (
+              <Stack.Screen
+                options={{
+                  headerShown: false,
+                  animation: 'none',
+                  presentation: 'card',
+                  freezeOnBlur: false,
+                  contentStyle: {
+                    backgroundColor: '#F8FAFC',
+                  },
+                }}
+                name="Splash"
+                component={Splashscreen}
+              />
+            ) : null}
             <Stack.Screen
               options={{
                 headerShown: false,
@@ -262,56 +278,42 @@ const App = () => {
                   backgroundColor: '#F8FAFC',
                 },
               }}
-              name="Splash"
-              component={Splashscreen}
+              name="LogIn"
+              component={LogInScreen}
             />
-          ) : null}
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-            name="LogIn"
-            component={LogInScreen}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavScreen"
-            component={AppNavScreen}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-            name="AppNavDash"
-            component={AppNavDash}
-          />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavScreen"
+              component={AppNavScreen}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+              name="AppNavDash"
+              component={AppNavDash}
+            />
 
-          <Stack.Screen
-            options={{
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-            }}
-            name="Attendance"
-            component={Attendance}
-          />
+            <Stack.Screen
+              options={{
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+              }}
+              name="Attendance"
+              component={Attendance}
+            />
 
-          {/* <Stack.Screen
+            {/* <Stack.Screen
             options={{
               headerBackTitleVisible: false,
               headerTintColor: 'black',
@@ -319,72 +321,72 @@ const App = () => {
             name="Client Visits"
             component={ClientVisitScreen}
           /> */}
-          <Stack.Screen
-            name="Client Visits"
-            component={ClientVisitScreen}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Client Visit List"
-            component={ViewCustomerVisitList}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Lead Generation"
-            component={LeadGeneration}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Lead Followup"
-            component={LeadFollowup}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Pending Follow Up"
-            component={PendingFollowUpDrillDown}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          {/* <Stack.Screen
+            <Stack.Screen
+              name="Client Visits"
+              component={ClientVisitScreen}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Client Visit List"
+              component={ViewCustomerVisitList}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Lead Generation"
+              component={LeadGeneration}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Lead Followup"
+              component={LeadFollowup}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Pending Follow Up"
+              component={PendingFollowUpDrillDown}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            {/* <Stack.Screen
             options={{
               headerBackTitleVisible: false,
               headerTintColor: 'black',
@@ -393,7 +395,7 @@ const App = () => {
             component={ViewCustomerVisitList}
           /> */}
 
-          {/* <Stack.Screen
+            {/* <Stack.Screen
           options={{
             //headerShown: false,
             headerBackTitleVisible: false,
@@ -403,284 +405,284 @@ const App = () => {
           name="Tour Program Approval"
           component={ManagerApproval}
         /> */}
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitleAlign: 'center',
-              // headerTitle: () => (
-              //   <Text
-              //     style={{
-              //       fontSize: 18,
-              //       fontWeight: 'bold',
-              //       textAlign: 'center',
-              //       //flex: 1,
-              //       color: '#ffffff',
-              //     }}>
-              //     Tour Plan Submission
-              //   </Text>
-              // ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }],
-                      }),
-                    )
-                  }
-                  style={{
-                    paddingHorizontal: 10, // control your own spacing
-                    paddingVertical: 8,
-                    backgroundColor: 'transparent', // REMOVE iOS highlight
-                  }}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // safe touch area
-                  activeOpacity={0.9} // nice iOS feedback without white circle
-                >
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Tour Plan Submission"
-            component={TourPlanSubmission}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Activity DashBoard"
-            component={ActivityDashBoard}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitleAlign: 'center',
-              //headerBackVisible: false,
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'Tour Plan Submission' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Tour Program"
-            //component={TourNavScreen}
-            component={TourProgScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              //headerBackVisible: false,
-              headerTitleAlign: 'center',
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            }}
-            name="Tour View"
-            component={TourViewScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="RX-Survey"
-            component={RXsurvey}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitleAlign: 'center',
-              //headerBackVisible: false,
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            }}
-            name="Request Approval"
-            component={RequestApprovalScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            // name="Secondary Closing Stock Entry"
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                  }}>
-                  Secondary Closing Stock Entry
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Secondary Closing Stock Entry"
-            component={SecondaryStockClosing}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitleAlign: 'center',
+                // headerTitle: () => (
+                //   <Text
+                //     style={{
+                //       fontSize: 18,
+                //       fontWeight: 'bold',
+                //       textAlign: 'center',
+                //       //flex: 1,
+                //       color: '#ffffff',
+                //     }}>
+                //     Tour Plan Submission
+                //   </Text>
+                // ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }],
+                        }),
+                      )
+                    }
+                    style={{
+                      paddingHorizontal: 10, // control your own spacing
+                      paddingVertical: 8,
+                      backgroundColor: 'transparent', // REMOVE iOS highlight
+                    }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // safe touch area
+                    activeOpacity={0.9} // nice iOS feedback without white circle
+                  >
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Tour Plan Submission"
+              component={TourPlanSubmission}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Activity DashBoard"
+              component={ActivityDashBoard}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitleAlign: 'center',
+                //headerBackVisible: false,
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'Tour Plan Submission' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Tour Program"
+              //component={TourNavScreen}
+              component={TourProgScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                //headerBackVisible: false,
+                headerTitleAlign: 'center',
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              }}
+              name="Tour View"
+              component={TourViewScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="RX-Survey"
+              component={RXsurvey}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitleAlign: 'center',
+                //headerBackVisible: false,
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              }}
+              name="Request Approval"
+              component={RequestApprovalScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              // name="Secondary Closing Stock Entry"
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                    }}>
+                    Secondary Closing Stock Entry
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Secondary Closing Stock Entry"
+              component={SecondaryStockClosing}
+            />
 
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              //headerBackVisible: false,
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            }}
-            name="DPC Entry"
-            component={DPCScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              //headerBackVisible: false,
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            }}
-            name="DPC View"
-            component={DPCList}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: true,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-              headerTitleAlign: 'center',
-            }}
-            name="Dashboard"
-            component={ClientDashBoard}
-          />
-          <Stack.Screen
-            options={{
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-            }}
-            name="Customer Visit"
-            component={ClientMSRList}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  SettingScreen
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="SettingScreen"
-            component={SettingScreenNew}
-          />
-          {/* <Stack.Screen
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                //headerBackVisible: false,
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              }}
+              name="DPC Entry"
+              component={DPCScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                //headerBackVisible: false,
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              }}
+              name="DPC View"
+              component={DPCList}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: true,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+                headerTitleAlign: 'center',
+              }}
+              name="Dashboard"
+              component={ClientDashBoard}
+            />
+            <Stack.Screen
+              options={{
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+              }}
+              name="Customer Visit"
+              component={ClientMSRList}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    SettingScreen
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="SettingScreen"
+              component={SettingScreenNew}
+            />
+            {/* <Stack.Screen
             options={({ navigation }) => ({
               headerBackTitleVisible: false,
               headerTintColor: 'black',
@@ -712,95 +714,95 @@ const App = () => {
             name="RX-Survey"
             component={RXsurvey}
           /> */}
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavOrder"
-            component={AppNavOrder}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavExpense"
-            component={AppNavExpense}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavMaster"
-            component={AppNavMaster}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavLead"
-            component={AppNavLead}
-          />
-          <Stack.Screen
-            name="Master Account"
-            component={MasterAccount}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Master Referr"
-            component={MasterRefer}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Master Product"
-            component={MasterProduct}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            name="View Master"
-            component={ViewMaster}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          {/* <Stack.Screen
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavOrder"
+              component={AppNavOrder}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavExpense"
+              component={AppNavExpense}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavMaster"
+              component={AppNavMaster}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavLead"
+              component={AppNavLead}
+            />
+            <Stack.Screen
+              name="Master Account"
+              component={MasterAccount}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Master Referr"
+              component={MasterRefer}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Master Product"
+              component={MasterProduct}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              name="View Master"
+              component={ViewMaster}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            {/* <Stack.Screen
             options={({ navigation }) => ({
               headerBackTitleVisible: false,
               headerTintColor: '#ffffff',
@@ -830,864 +832,864 @@ const App = () => {
             name="Lead Generation View"
             component={LeadGenerationView}
           /> */}
-          <Stack.Screen
-            name="Lead Generation View"
-            component={LeadGenerationView}
-            options={{
-              headerShown: false,
-              animation: 'none',
-              presentation: 'card',
-              freezeOnBlur: false,
-              contentStyle: {
-                backgroundColor: '#F8FAFC',
-              },
-            }}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  Master Doctor
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Master Doctor"
-            component={MasterDoctor}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    color: '#ffffff',
-                    paddingRight: 50,
-                    flex: 1,
-                  }}>
-                  Master Retailer
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Master Retailer"
-            component={MasterRetailer}
-          />
+            <Stack.Screen
+              name="Lead Generation View"
+              component={LeadGenerationView}
+              options={{
+                headerShown: false,
+                animation: 'none',
+                presentation: 'card',
+                freezeOnBlur: false,
+                contentStyle: {
+                  backgroundColor: '#F8FAFC',
+                },
+              }}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    Master Doctor
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Master Doctor"
+              component={MasterDoctor}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      color: '#ffffff',
+                      paddingRight: 50,
+                      flex: 1,
+                    }}>
+                    Master Retailer
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Master Retailer"
+              component={MasterRetailer}
+            />
 
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  View Master Data
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="View Master Data"
-            component={ViewMasterData}
-          />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    View Master Data
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="View Master Data"
+              component={ViewMasterData}
+            />
 
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  Universal Search
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Universal Search"
-            component={UniversalSearch}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              //headerBackVisible: false,
-              headerTitleAlign: 'center',
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            }}
-            name="DCR Session"
-            component={StartDCRScreen}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavDCRScreen"
-            component={AppNavDCRScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              // headerStyle: {
-              //   backgroundColor: '#005696', // background color for the header
-              // },
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    color: '#ffffff', // white title text
-                    flex: 1,
-                    paddingRight: 50,
-                  }}>
-                  Doctor Daily Call Report
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Doctor Daily Call Report"
-            //component={DCRDoctor}
-            component={DCRDoctorNew}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              // headerStyle: {
-              //   backgroundColor: '#005696', // background color for the header
-              // },
-              // ✅ Add gradient background
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    color: '#ffffff', // white title text
-                    flex: 1,
-                    paddingRight: 50,
-                  }}>
-                  Retailer Daily Call Report
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Retailer Daily Call Report"
-            component={RetailerDCRScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="User Info"
-            component={UserInfoScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  Doctor Activities
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            })}
-            name="Doctor Activities"
-            component={DoctorActivities}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  Party Visit
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            })}
-            name="Party Visit"
-            component={PartyActivities}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Doctor Unlisted"
-            component={DoctorUScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Retailer Unlisted"
-            component={RetailerUnlisted}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                  }}>
-                  Unlisted Screen
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Unlisted Screen"
-            component={UnlistedScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    color: '#ffffff',
-                    flex: 1,
-                    paddingRight: 50,
-                  }}>
-                  Others
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Others"
-            component={OtherScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  Stay
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Stay"
-            component={StayScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  RCPA
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="RCPA"
-            component={RCPAN}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    color: '#ffffff',
-                    paddingRight: 50,
-                  }}>
-                  View DCR
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="View DCR"
-            component={ViewDCRScreen}
-          />
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  View Activity
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            })}
-            name="View Activity"
-            component={ViewActivity}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavreport"
-            component={AppNavreport}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavActivity"
-            component={AppNavActivity}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavDPC"
-            component={AppNavDPC}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerBackVisible: false,
-            }}
-            name="AppNavQuiz"
-            component={AppNavQuiz}
-          />
-          <Stack.Screen
-            options={{
-              headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Test GPS"
-            component={TestGps}
-          />
-          <Stack.Screen
-            name="Leave Application"
-            component={LeaveScreen}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'white', // back arrow color
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              headerTitleStyle: {
-                color: 'white', // white title text
-                fontWeight: 'bold',
-              },
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Leave Application List"
-            component={LeaveApplicationList}
-          />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    Universal Search
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavMaster' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Universal Search"
+              component={UniversalSearch}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                //headerBackVisible: false,
+                headerTitleAlign: 'center',
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              }}
+              name="DCR Session"
+              component={StartDCRScreen}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavDCRScreen"
+              component={AppNavDCRScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                // headerStyle: {
+                //   backgroundColor: '#005696', // background color for the header
+                // },
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      color: '#ffffff', // white title text
+                      flex: 1,
+                      paddingRight: 50,
+                    }}>
+                    Doctor Daily Call Report
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Doctor Daily Call Report"
+              //component={DCRDoctor}
+              component={DCRDoctorNew}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                // headerStyle: {
+                //   backgroundColor: '#005696', // background color for the header
+                // },
+                // ✅ Add gradient background
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      color: '#ffffff', // white title text
+                      flex: 1,
+                      paddingRight: 50,
+                    }}>
+                    Retailer Daily Call Report
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Retailer Daily Call Report"
+              component={RetailerDCRScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="User Info"
+              component={UserInfoScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    Doctor Activities
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              })}
+              name="Doctor Activities"
+              component={DoctorActivities}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    Party Visit
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              })}
+              name="Party Visit"
+              component={PartyActivities}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Doctor Unlisted"
+              component={DoctorUScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Retailer Unlisted"
+              component={RetailerUnlisted}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                    }}>
+                    Unlisted Screen
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Unlisted Screen"
+              component={UnlistedScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      color: '#ffffff',
+                      flex: 1,
+                      paddingRight: 50,
+                    }}>
+                    Others
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Others"
+              component={OtherScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    Stay
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Stay"
+              component={StayScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    RCPA
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="RCPA"
+              component={RCPAN}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      color: '#ffffff',
+                      paddingRight: 50,
+                    }}>
+                    View DCR
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavDCRScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="View DCR"
+              component={ViewDCRScreen}
+            />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    View Activity
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavActivity' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              })}
+              name="View Activity"
+              component={ViewActivity}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavreport"
+              component={AppNavreport}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavActivity"
+              component={AppNavActivity}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavDPC"
+              component={AppNavDPC}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerBackVisible: false,
+              }}
+              name="AppNavQuiz"
+              component={AppNavQuiz}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Test GPS"
+              component={TestGps}
+            />
+            <Stack.Screen
+              name="Leave Application"
+              component={LeaveScreen}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'white', // back arrow color
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                headerTitleStyle: {
+                  color: 'white', // white title text
+                  fontWeight: 'bold',
+                },
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Leave Application List"
+              component={LeaveApplicationList}
+            />
 
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Half Day Leave Application"
-            component={HalfDayLeaveScreen}
-          />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Half Day Leave Application"
+              component={HalfDayLeaveScreen}
+            />
 
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,
-            }}
-            name="Full Day Leave Application"
-            component={FullDayLeaveScreen}
-          />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,
+              }}
+              name="Full Day Leave Application"
+              component={FullDayLeaveScreen}
+            />
 
-          {/* <Stack.Screen
+            {/* <Stack.Screen
           // options={{
           //   //headerShown: false,
           //   headerBackTitleVisible: false,
@@ -1726,952 +1728,953 @@ const App = () => {
           component={QuizDashboard}
         /> */}
 
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,s
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  Employee Survey
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            })}
-            name="Employee Survey"
-            component={EmployeeQuizScreen}
-          />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,s
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    Employee Survey
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              })}
+              name="Employee Survey"
+              component={EmployeeQuizScreen}
+            />
 
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,s
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  Doctor Survey
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-            })}
-            name="Doctor Survey"
-            component={DoctorQuizScreen}
-          />
-          <Stack.Screen
-            options={{
-              //headerShown: false,
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              //headerBackVisible: false,s
-            }}
-            name="ReportsWebView"
-            component={ReportsWebView}
-          />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,s
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    Doctor Survey
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+              })}
+              name="Doctor Survey"
+              component={DoctorQuizScreen}
+            />
+            <Stack.Screen
+              options={{
+                //headerShown: false,
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                //headerBackVisible: false,s
+              }}
+              name="ReportsWebView"
+              component={ReportsWebView}
+            />
 
-          <Stack.Screen
-            // options={{
-            //   //headerShown: false,
-            //   headerBackTitleVisible: false,
-            //   headerTintColor: 'black',
-            //   //headerBackVisible: false,s
-            // }}
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                  }}>
-                  Market Survey
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="Market Survey"
-            component={MarketSurveyScreen}
-          />
+            <Stack.Screen
+              // options={{
+              //   //headerShown: false,
+              //   headerBackTitleVisible: false,
+              //   headerTintColor: 'black',
+              //   //headerBackVisible: false,s
+              // }}
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                    }}>
+                    Market Survey
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavQuiz' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="Market Survey"
+              component={MarketSurveyScreen}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    //headerTintColor:'#005696',
-                    color: '#005696',
-                  }}>
-                  ADMIN SALES DASHBOARD
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#005696" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="ADMIN SALES REPORT"
-            component={AdminSalesDashboard}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      //headerTintColor:'#005696',
+                      color: '#005696',
+                    }}>
+                    ADMIN SALES DASHBOARD
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#005696" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="ADMIN SALES REPORT"
+              component={AdminSalesDashboard}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitleAlign: 'center',
-              // headerTitle: () => (
-              //   <Text
-              //     style={{
-              //       fontSize: 20,
-              //       fontWeight: 'bold',
-              //       textAlign: 'center',
-              //       flex: 1,
-              //       paddingRight: 50,
-              //       //headerTintColor:'#005696',
-              //       color: '#ffffff',
-              //     }}>
-              //     SALES DASHBOARD
-              //   </Text>
-              // ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="SALES REPORT"
-            component={SalesDashBoard}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  MY STATUS
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitleAlign: 'center',
+                // headerTitle: () => (
+                //   <Text
+                //     style={{
+                //       fontSize: 20,
+                //       fontWeight: 'bold',
+                //       textAlign: 'center',
+                //       flex: 1,
+                //       paddingRight: 50,
+                //       //headerTintColor:'#005696',
+                //       color: '#ffffff',
+                //     }}>
+                //     SALES DASHBOARD
+                //   </Text>
+                // ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="SALES REPORT"
+              component={SalesDashBoard}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    MY STATUS
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
 
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="MY STATUS"
-            component={MyStatusScreen}
-          />
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="MY STATUS"
+              component={MyStatusScreen}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    //textAlign: 'center',
-                    alignContent: 'center',
-                    // flex: 1,
-                    paddingRight: 10,
-                    color: '#ffffff',
-                  }}>
-                  Comparative Sales
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="Comparative Sales"
-            component={ComparativeSales}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      //textAlign: 'center',
+                      alignContent: 'center',
+                      // flex: 1,
+                      paddingRight: 10,
+                      color: '#ffffff',
+                    }}>
+                    Comparative Sales
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="Comparative Sales"
+              component={ComparativeSales}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  Product Wise Sales
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="ProductWise Sales"
-            component={ProductWiseSale}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    Product Wise Sales
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="ProductWise Sales"
+              component={ProductWiseSale}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  Hierarchy Wise Sales
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="HierarchyWise Sales"
-            component={HierarchyWiseSale}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    Hierarchy Wise Sales
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="HierarchyWise Sales"
+              component={HierarchyWiseSale}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  OutStanding Reports
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="OutStanding Reports"
-            component={OutStandingReports}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    OutStanding Reports
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="OutStanding Reports"
+              component={OutStandingReports}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  Stock Reports
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="Stock Reports"
-            component={StockReports}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    Stock Reports
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="Stock Reports"
+              component={StockReports}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    // flex: 1,
-                    paddingRight: 30,
-                    color: '#ffffff',
-                  }}>
-                  Sales Order Transaction
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              // headerLeft: () => (
-              //   <TouchableOpacity
-              //     onPress={() =>
-              //       navigation.dispatch(
-              //         CommonActions.reset({
-              //           index: 0,
-              //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
-              //         }),
-              //       )
-              //     }>
-              //     <Ionicons name="arrow-back" size={24} color="#005696" />
-              //   </TouchableOpacity>
-              // ),
-            })}
-            name="SalesOrderTransaction"
-            component={SalesOrderTransaction}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    //headerTintColor:'#005696',
-                    color: '#ffffff', // ✅ Add this line
-                  }}>
-                  Leave Approval
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="leaveApproval"
-            component={LeaveApproval}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      // flex: 1,
+                      paddingRight: 30,
+                      color: '#ffffff',
+                    }}>
+                    Sales Order Transaction
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                // headerLeft: () => (
+                //   <TouchableOpacity
+                //     onPress={() =>
+                //       navigation.dispatch(
+                //         CommonActions.reset({
+                //           index: 0,
+                //           routes: [{ name: 'SALES REPORT' }], // or whatever your main screen is
+                //         }),
+                //       )
+                //     }>
+                //     <Ionicons name="arrow-back" size={24} color="#005696" />
+                //   </TouchableOpacity>
+                // ),
+              })}
+              name="SalesOrderTransaction"
+              component={SalesOrderTransaction}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      //headerTintColor:'#005696',
+                      color: '#ffffff', // ✅ Add this line
+                    }}>
+                    Leave Approval
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="leaveApproval"
+              component={LeaveApproval}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff',
-                    //headerTintColor:'#005696',
-                  }}>
-                  Leave DashBoard
-                </Text>
-              ),
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="approvalDashboard"
-            component={ApprovalDashboard}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff', // ✅ Add this line
-                  }}>
-                  Leave Status
-                </Text>
-              ),
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff', // back arrow color
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              headerTitleStyle: {
-                color: 'white', // white title text
-                fontWeight: 'bold',
-              },
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="leaveStatus"
-            component={LeaveStatus}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                  }}>
-                  Admin Others
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="AdminOthers"
-            component={AdminOthers}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff',
+                      //headerTintColor:'#005696',
+                    }}>
+                    Leave DashBoard
+                  </Text>
+                ),
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="approvalDashboard"
+              component={ApprovalDashboard}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff', // ✅ Add this line
+                    }}>
+                    Leave Status
+                  </Text>
+                ),
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff', // back arrow color
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                headerTitleStyle: {
+                  color: 'white', // white title text
+                  fontWeight: 'bold',
+                },
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'approvalDashboard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="leaveStatus"
+              component={LeaveStatus}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                    }}>
+                    Admin Others
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="AdminOthers"
+              component={AdminOthers}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                  }}>
-                  Admin Retailer
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="AdminRetailer"
-            component={AdminRetailer}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                    }}>
+                    Admin Retailer
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="AdminRetailer"
+              component={AdminRetailer}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                  }}>
-                  Admin Doctor
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="AdminDoctor"
-            component={AdminDoctor}
-          />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                    }}>
+                    Admin Doctor
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="AdminDoctor"
+              component={AdminDoctor}
+            />
 
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitleAlign: 'center',
-              // headerTitle: () => (
-              //   <Text
-              //     style={{
-              //       fontSize: 18,
-              //       fontWeight: 'bold',
-              //       textAlign: 'center',
-              //       flex: 1,
-              //     }}>
-              //     Admin DCR Dashboard
-              //   </Text>
-              // ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="DcrAdminDashBoard"
-            component={DcrAdminDashBoard}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: 'black',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                  }}>
-                  Admin View Dcr
-                </Text>
-              ),
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="black" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="AdminViewDcr"
-            component={AdminViewDcr}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff', // ✅ Add this line
-                  }}>
-                  Notice Board List
-                </Text>
-              ),
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff', // back arrow color
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              headerTitleStyle: {
-                color: 'white', // white title text
-                fontWeight: 'bold',
-              },
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="NoticeBoardList"
-            component={NoticeBoardList}
-          />
-          <Stack.Screen
-            options={({ navigation }) => ({
-              headerBackTitleVisible: false,
-              headerTintColor: '#005696',
-              headerTitle: () => (
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    flex: 1,
-                    paddingRight: 50,
-                    color: '#ffffff', // ✅ Add this line
-                  }}>
-                  Facebook Promotion
-                </Text>
-              ),
-              headerBackTitleVisible: false,
-              headerTintColor: '#ffffff', // back arrow color
-              headerBackground: () => (
-                <LinearGradient
-                  colors={['#a9ddfaff', '#005696']} // light → dark
-                  style={{ flex: 1 }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-              ),
-              headerTitleAlign: 'center', // ✅ center the title
-              headerTitleStyle: {
-                color: 'white', // white title text
-                fontWeight: 'bold',
-              },
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.dispatch(
-                      CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
-                      }),
-                    )
-                  }>
-                  <Ionicons name="arrow-back" size={24} color="#ffffff" />
-                </TouchableOpacity>
-              ),
-            })}
-            name="FacebookPromotion"
-            component={FacebookUserShare}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitleAlign: 'center',
+                // headerTitle: () => (
+                //   <Text
+                //     style={{
+                //       fontSize: 18,
+                //       fontWeight: 'bold',
+                //       textAlign: 'center',
+                //       flex: 1,
+                //     }}>
+                //     Admin DCR Dashboard
+                //   </Text>
+                // ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="DcrAdminDashBoard"
+              component={DcrAdminDashBoard}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: 'black',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                    }}>
+                    Admin View Dcr
+                  </Text>
+                ),
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'DcrAdminDashBoard' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="AdminViewDcr"
+              component={AdminViewDcr}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff', // ✅ Add this line
+                    }}>
+                    Notice Board List
+                  </Text>
+                ),
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff', // back arrow color
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                headerTitleStyle: {
+                  color: 'white', // white title text
+                  fontWeight: 'bold',
+                },
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="NoticeBoardList"
+              component={NoticeBoardList}
+            />
+            <Stack.Screen
+              options={({ navigation }) => ({
+                headerBackTitleVisible: false,
+                headerTintColor: '#005696',
+                headerTitle: () => (
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      flex: 1,
+                      paddingRight: 50,
+                      color: '#ffffff', // ✅ Add this line
+                    }}>
+                    Facebook Promotion
+                  </Text>
+                ),
+                headerBackTitleVisible: false,
+                headerTintColor: '#ffffff', // back arrow color
+                headerBackground: () => (
+                  <LinearGradient
+                    colors={['#a9ddfaff', '#005696']} // light → dark
+                    style={{ flex: 1 }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                ),
+                headerTitleAlign: 'center', // ✅ center the title
+                headerTitleStyle: {
+                  color: 'white', // white title text
+                  fontWeight: 'bold',
+                },
+                headerLeft: () => (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.dispatch(
+                        CommonActions.reset({
+                          index: 0,
+                          routes: [{ name: 'AppNavScreen' }], // or whatever your main screen is
+                        }),
+                      )
+                    }>
+                    <Ionicons name="arrow-back" size={24} color="#ffffff" />
+                  </TouchableOpacity>
+                ),
+              })}
+              name="FacebookPromotion"
+              component={FacebookUserShare}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      {/* </AppContainer> */}
     </SafeAreaProvider>
   );
 };
